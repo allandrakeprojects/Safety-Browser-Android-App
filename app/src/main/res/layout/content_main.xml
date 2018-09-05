@@ -10,31 +10,280 @@
     tools:layout_editor_absoluteY="81dp"
     tools:showIn="@layout/app_bar_main">
 
+    <RelativeLayout
+        android:id="@+id/relativeLayout2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView_textchanged"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="92dp"
+            android:layout_marginTop="82dp"
+            android:visibility="invisible" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout_connection"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.drake.safetybrowser.GifImageView
+            android:id="@+id/gifImageView_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="168dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.512"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.427" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="235dp"
+            android:text="Check your Internet connection"
+            android:textColor="#535353"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.512"
+            app:layout_constraintStart_toStartOf="@+id/webView"
+            app:layout_constraintTop_toTopOf="@+id/webView"
+            app:layout_constraintVertical_bias="0.551" />
+
+    </RelativeLayout>
+
     <com.drake.safetybrowser.GifImageView
         android:id="@+id/gifImageView_loader"
         android:layout_width="23dp"
         android:layout_height="4dp"
         android:layout_gravity="center"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="216dp"
         android:gravity="center"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.475" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <WebView
         android:id="@+id/webView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="368dp"
+            android:layout_height="495dp"
+            android:orientation="horizontal"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="8dp"></LinearLayout>
+
+    </WebView>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout_helpandsupport"
+        android:layout_width="315dp"
+        android:layout_height="401dp"
+        android:layout_marginBottom="73dp"
+        android:layout_marginEnd="46dp"
+        android:layout_marginLeft="46dp"
+        android:layout_marginRight="46dp"
+        android:layout_marginStart="46dp"
+        android:layout_marginTop="73dp"
+        android:background="@drawable/relative_layout_background"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/imageView_help_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="25dp"
+            android:layout_marginTop="25dp"
+            app:srcCompat="@drawable/ic_help_back" />
+
+        <TextView
+            android:id="@+id/textView_helpandsupport"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_alignTop="@+id/imageView_help_back"
+            android:layout_centerHorizontal="true"
+            android:text="Help and Support"
+            android:textColor="#ffffff"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/imageView_help_notification_1"
+            android:layout_width="100dp"
+            android:layout_height="103dp"
+            android:layout_alignEnd="@+id/imageView_help_notification_3"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="-12dp"
+            android:layout_marginTop="76dp"
+            app:srcCompat="@drawable/ic_notification_1" />
+
+        <ImageView
+            android:id="@+id/imageView_help_notification_2"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="90dp"
+            android:layout_marginTop="61dp"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/ic_notification_2" />
+
+        <ImageView
+            android:id="@+id/imageView_help_notification_3"
+            android:layout_width="43dp"
+            android:layout_height="41dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="34dp"
+            app:srcCompat="@drawable/ic_notification_3" />
+
+        <TextView
+            android:id="@+id/textView_chatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back"
+            android:layout_below="@+id/imageView_help_notification_2"
+            android:text="Chat Us"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_emailus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/textView_emailus_1"
+            android:layout_alignStart="@+id/textView_chatus_1"
+            android:text="Email Us"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_clearcache"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="11dp"
+            android:layout_marginStart="43dp"
+            android:text="CLEAR CACHE"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_getdiagnostics"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/textView_clearcache"
+            android:layout_marginEnd="39dp"
+            android:text="GET DIAGNOSTICS"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_social"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/textView_chatus_1"
+            android:layout_marginBottom="156dp"
+            android:text="Social"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_chatus_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back"
+            android:layout_below="@+id/textView_chatus"
+            android:text="Have questions? Get 24/7 live chat, real-time help with chat support."
+            android:textColor="#fff"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_emailus_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textView_chatus_1"
+            android:layout_centerVertical="true"
+            android:clickable="true"
+            android:text="cs@yb188.com"
+            android:textColor="#EB6306"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_social_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textView_chatus_1"
+            android:layout_below="@+id/textView_social"
+            android:layout_marginTop="-156dp"
+            android:clickable="true"
+            android:text="• QQ: 2715693882"
+            android:textColor="#fff"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_social_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textView_chatus_1"
+            android:layout_below="@+id/textView_social_2"
+            android:clickable="true"
+            android:text="• WeChat: yb188yb"
+            android:textColor="#fff"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_chatus_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back"
+            android:layout_below="@+id/textView_chatus_1"
+            android:clickable="true"
+            android:text="Chat now"
+            android:textColor="#EB6306"
+            android:textSize="9sp" />
+
+        <ImageView
+            android:id="@+id/imageView_help_qr"
+            android:layout_width="94dp"
+            android:layout_height="89dp"
+            android:layout_alignStart="@+id/textView_chatus_1"
+            android:layout_below="@+id/textView_social_3"
+            app:srcCompat="@drawable/ic_qr" />
+    </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

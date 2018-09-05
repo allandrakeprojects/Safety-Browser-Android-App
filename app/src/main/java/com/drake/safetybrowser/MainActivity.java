@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -16,6 +17,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +27,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -33,21 +37,40 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private WebView webView;
+    String[] text_to_search_service = { "http://www.ssicortex.com/GetTxt2Search", "http://www.ssitectonic.com/GetTxt2Search", "http://www.ssihedonic.com/GetTxt2Search" };
+    String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
+    String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
+    String BRAND_CODE = "YB";
+    String domain = "";
+    String text_search = "";
+    int detect_no_internet_connection = 0;
+    int domain_count_max = -1;
+    int domain_count_current = 0;
     boolean loadingFinished = true;
     boolean redirect = false;
-    final Context context = this;
     boolean isConnected;
+    boolean isHijacked;
+    boolean isLoadingFinished = false;
+    boolean isHelpAndSupportVisible = false;
+    private WebView webView;
+    ArrayList<String> domain_list = new ArrayList<>();
+    final Context context = this;
     GifImageView gifImageView_loader;
     RelativeLayout relativeLayout_connection;
     GifImageView gifImageView_connection;
-    int detect_no_internet_connection = 0;
+    TextView textView_textchanged;
+    TextView textView_chatus_2;
+    TextView textView_emailus_1;
+    RelativeLayout relativeLayout_helpandsupport;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +82,24 @@ public class MainActivity extends AppCompatActivity
         this.registerReceiver(this.mConnReceiver,
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
+        // Find ID
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        gifImageView_loader = findViewById(R.id.gifImageView_loader);
+        gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
+        relativeLayout_connection = findViewById(R.id.relativeLayout_connection);
+        gifImageView_connection = findViewById(R.id.gifImageView_connection);
+        gifImageView_connection.setGifImageResource(R.drawable.ic_connection);
+        textView_textchanged = findViewById(R.id.textView_textchanged);
+        relativeLayout_helpandsupport = findViewById(R.id.relativeLayout_helpandsupport);
+        textView_chatus_2 = findViewById(R.id.textView_chatus_3);
+        textView_emailus_1 = findViewById(R.id.textView_emailus_1);
+        // End of Find ID
+
+        textView_chatus_2.setPaintFlags(textView_chatus_2.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        textView_emailus_1.setPaintFlags(textView_emailus_1.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -79,38 +119,53 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        // Functions
+        GETAPI(text_to_search_service[0]);
 
-        gifImageView_loader = findViewById(R.id.gifImageView_loader);
-        gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
-        relativeLayout_connection = findViewById(R.id.relativeLayout_connection);
-        gifImageView_connection = findViewById(R.id.gifImageView_connection);
-        gifImageView_connection.setGifImageResource(R.drawable.ic_connection);
+        textView_textchanged.addTextChangedListener(new TextWatcher() {
 
-        // Load url
-        webView = findViewById(R.id.webView);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDefaultTextEncodingName("utf-8");
-        webSettings.setLoadWithOverviewMode(true);
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
-        webSettings.setSavePassword(true);
-        webSettings.setSaveFormData(true);
-        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        webSettings.setAppCacheMaxSize(1024 * 1024 * 10);
-        webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
-        webSettings.setLoadsImagesAutomatically(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setSupportZoom(true);
-        webSettings.setDisplayZoomControls(true);
-        webView.loadUrl("http://yb188.com");
-        webView.requestFocus();
-        webView.setWebViewClient(new MyBrowser());
+            public void onTextChanged(CharSequence s, int start, int before,
+                                      int count) {
+//                if(s.length() > 0) {
+//                    Toast.makeText(getApplicationContext(), "dasdasdasdsa1", Toast.LENGTH_LONG).show();
+//                }
+            }
 
-        GETAPI();
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+//                if(s.length() > 0) {
+//                    Toast.makeText(getApplicationContext(), "dasdasdasdsa2", Toast.LENGTH_LONG).show();
+//                }
+            }
+
+            public void afterTextChanged(Editable s) {
+                if(s.length() > 0) {
+                    // Load URL
+                    if(domain_count_max != domain_count_current){
+                        webView = findViewById(R.id.webView);
+                        WebSettings webSettings = webView.getSettings();
+                        webSettings.setJavaScriptEnabled(true);
+                        webSettings.setDefaultTextEncodingName("utf-8");
+                        webSettings.setLoadWithOverviewMode(true);
+                        webSettings.setBuiltInZoomControls(false);
+                        webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+                        webSettings.setSavePassword(true);
+                        webSettings.setSaveFormData(true);
+                        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                        webSettings.setAppCacheMaxSize(1024 * 1024 * 10);
+                        webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
+                        webSettings.setLoadsImagesAutomatically(true);
+                        webSettings.setDomStorageEnabled(true);
+                        webSettings.setBuiltInZoomControls(true);
+                        webSettings.setSupportZoom(true);
+                        webSettings.setDisplayZoomControls(true);
+                        webView.loadUrl(domain_list.get(domain_count_current));
+                        webView.requestFocus();
+                        webView.setWebViewClient(new MyBrowser());
+                    }
+                }
+            }
+        });
     }
 
     // WebView --------------
@@ -132,6 +187,7 @@ public class MainActivity extends AppCompatActivity
             super.onPageStarted(view, url, favicon);
             loadingFinished = false;
             if (isConnected) {
+                textView_textchanged.setText("");
                 gifImageView_loader.setVisibility(View.VISIBLE);
                 webView.setVisibility(View.INVISIBLE);
             }
@@ -144,9 +200,53 @@ public class MainActivity extends AppCompatActivity
             }
 
             if (loadingFinished && !redirect) {
-                gifImageView_loader.setVisibility(View.INVISIBLE);
                 if (isConnected) {
-                    webView.setVisibility(View.VISIBLE);
+                    if(!isLoadingFinished){
+                        String webtitle = webView.getTitle();
+                        String[] namesList = text_search.split(",");
+                        for(String text_search : namesList){
+                            boolean contains = webtitle.contains(text_search);
+
+                            if(contains == true){
+                                isHijacked = false;
+                                break;
+                            } else {
+                                isHijacked = true;
+                            }
+                        }
+
+                        if(isHijacked){
+                            domain_count_current++;
+                            textView_textchanged.setText("0");
+                        } else{
+                            gifImageView_loader.setVisibility(View.INVISIBLE);
+                            webView.setVisibility(View.VISIBLE);
+                            isLoadingFinished = true;
+                        }
+                    } else{
+                        String webtitle = webView.getTitle();
+                        String[] namesList = text_search.split(",");
+
+                        for(String text_search : namesList){
+                            boolean contains = webtitle.contains(text_search);
+
+                            if(contains == true){
+                                isHijacked = false;
+                                break;
+                            } else {
+                                isHijacked = true;
+                            }
+                        }
+
+                        if(isHijacked){
+//                            Toast.makeText(getApplicationContext(), "Hijacked", Toast.LENGTH_LONG).show();
+                            webView.goForward();
+                        } else {
+//                            Toast.makeText(getApplicationContext(), "Not Hijacked", Toast.LENGTH_LONG).show();
+                            gifImageView_loader.setVisibility(View.INVISIBLE);
+                            webView.setVisibility(View.VISIBLE);
+                        }
+                    }
                 }
             } else {
                 redirect = false;
@@ -156,18 +256,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     // Get API --------------
-    private void GETAPI() {
+    private void GETAPI(String get) {
         RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
 
-        String url = "http://ssicortex.com/getTxt2Search";
-        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, get, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                //This code is executed if the server responds, whether or not the response contains data.
-                //The String 'response' contains the server's response.
-                Toast.makeText(getApplicationContext(), StringEscapeUtils.unescapeJava(response), Toast.LENGTH_LONG).show();
+                String replace_responce = StringEscapeUtils.unescapeJava(response);
+                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                while(m.find()){
+                    text_search = m.group(1).replace("\"", "");
+                }
+
+                if(response.contains("OK")){
+                    GETDOMAIN(domain_service[0]);
+                } else{
+                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                }
             }
-        }, new Response.ErrorListener() { //Create an error listener to handle errors appropriately.
+        }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 //This code is executed if there is an error.
@@ -175,8 +283,60 @@ public class MainActivity extends AppCompatActivity
         }) {
             protected Map<String, String> getParams() {
                 Map<String, String> MyData = new HashMap<>();
-                MyData.put("api_key", "6b8c7e5617414bf2d4ace37600b6ab71"); //Add the data you'd like to send to the server.
-                MyData.put("brand_code", "YB");
+                MyData.put("api_key", API_KEY);
+                MyData.put("brand_code", BRAND_CODE);
+                return MyData;
+            }
+        };
+
+        MyRequestQueue.add(MyStringRequest);
+    }
+
+    // Get Domain --------------
+    private void GETDOMAIN(String get) {
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, get, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                String replace_responce = StringEscapeUtils.unescapeJava(response);
+                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                while(m.find()){
+                    domain = m.group(1);
+                }
+
+                domain = domain.replace("domain_ur", "");
+                domain = domain.replace("\"", "");
+                domain = domain.replace("l:", "");
+                domain = domain.replace("{", "");
+                domain = domain.replace("}", "");
+
+                if(response.contains("OK")){
+                    String[] namesList = domain.split(",");
+                    for(String domain : namesList){
+                        domain_list.add(domain);
+                        domain_count_max++;
+                    }
+
+                    textView_textchanged.setText("0");
+
+//                    Toast.makeText(getApplicationContext(), domain_list.get(0), Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(), domain_count_max + "", Toast.LENGTH_LONG).show();
+                } else{
+                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //This code is executed if there is an error.
+            }
+        }) {
+            protected Map<String, String> getParams() {
+                Map<String, String> MyData = new HashMap<>();
+                MyData.put("api_key", API_KEY);
+                MyData.put("brand_code", BRAND_CODE);
                 return MyData;
             }
         };
@@ -229,7 +389,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_forward) {
             webView.goForward();
         } else if (id == R.id.nav_home) {
-            webView.loadUrl("http://yb188.com");
+            webView.loadUrl(domain_list.get(domain_count_current));
         } else if (id == R.id.nav_reload) {
             webView.reload();
         } else if (id == R.id.nav_hard_reload) {
@@ -237,6 +397,10 @@ public class MainActivity extends AppCompatActivity
             webView.clearCache(true);
             webView.loadUrl("about:blank");
             webView.reload();
+        } else if (id == R.id.item_help) {
+            Toast.makeText(getApplicationContext(), "Help and Support", Toast.LENGTH_LONG).show();
+        } else if (id == R.id.item_notification) {
+            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
         }
 //        else if (id == R.id.nav_zoom_reset) {
 //
@@ -267,6 +431,29 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        int id = item.getItemId();
+
+        if (id == R.id.item_help) {
+            if(isHelpAndSupportVisible){
+                relativeLayout_helpandsupport.setVisibility(View.INVISIBLE);
+                webView.setVisibility(View.VISIBLE);
+                isHelpAndSupportVisible = false;
+            } else{
+                webView.setVisibility(View.INVISIBLE);
+                relativeLayout_helpandsupport.setVisibility(View.VISIBLE);
+                relativeLayout_helpandsupport.bringToFront();
+                isHelpAndSupportVisible = true;
+            }
+        } else if (id == R.id.item_notification) {
+            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
+        }
+
         return true;
     }
 
