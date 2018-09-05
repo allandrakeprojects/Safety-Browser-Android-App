@@ -7,9 +7,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +30,8 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,16 +67,18 @@ public class MainActivity extends AppCompatActivity
     boolean isHijacked;
     boolean isLoadingFinished = false;
     boolean isHelpAndSupportVisible = false;
+    boolean isClearCache = false;
     private WebView webView;
     ArrayList<String> domain_list = new ArrayList<>();
     final Context context = this;
     GifImageView gifImageView_loader;
     RelativeLayout relativeLayout_connection;
     GifImageView gifImageView_connection;
-    TextView textView_textchanged;
-    TextView textView_chatus_2;
-    TextView textView_emailus_1;
+    TextView textView_textchanged, textView_chatus_2, textView_emailus_1, textView_clearcache, textView_getdiagnostics;
     RelativeLayout relativeLayout_helpandsupport;
+    ImageView imageView_help_back;
+    DrawerLayout drawer;
+    NavigationView nav_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,9 +91,9 @@ public class MainActivity extends AppCompatActivity
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         // Find ID
-        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        drawer = findViewById(R.id.drawer_layout);
+        nav_view = findViewById(R.id.nav_view);
+        nav_view.setNavigationItemSelectedListener(this);
         gifImageView_loader = findViewById(R.id.gifImageView_loader);
         gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
         relativeLayout_connection = findViewById(R.id.relativeLayout_connection);
@@ -95,10 +103,48 @@ public class MainActivity extends AppCompatActivity
         relativeLayout_helpandsupport = findViewById(R.id.relativeLayout_helpandsupport);
         textView_chatus_2 = findViewById(R.id.textView_chatus_3);
         textView_emailus_1 = findViewById(R.id.textView_emailus_1);
+        textView_clearcache = findViewById(R.id.textView_clearcache);
+        textView_getdiagnostics = findViewById(R.id.textView_getdiagnostics);
+        imageView_help_back = findViewById(R.id.imageView_help_back);
         // End of Find ID
 
         textView_chatus_2.setPaintFlags(textView_chatus_2.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
         textView_emailus_1.setPaintFlags(textView_emailus_1.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+
+        textView_clearcache.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                textView_clearcache.setText("CLEARING...");
+                isClearCache = true;
+                webView.getSettings().setAppCacheEnabled(false);
+                webView.clearCache(true);
+                webView.loadUrl("about:blank");
+                webView.reload();
+            }
+        });
+
+        textView_getdiagnostics.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), "Get Diagnostics", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        imageView_help_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isHelpAndSupportVisible){
+                    relativeLayout_helpandsupport.setVisibility(View.INVISIBLE);
+                    webView.setVisibility(View.VISIBLE);
+                    isHelpAndSupportVisible = false;
+                } else{
+                    webView.setVisibility(View.INVISIBLE);
+                    relativeLayout_helpandsupport.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport.bringToFront();
+                    isHelpAndSupportVisible = true;
+                }
+            }
+        });
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -111,6 +157,10 @@ public class MainActivity extends AppCompatActivity
         toggle.setToolbarNavigationClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                drawer.openDrawer(Gravity.START);
+//                nav_view.getMenu().clear();
+//                nav_view.inflateMenu(R.menu.activity_main_drawer);
+//                invalidateOptionsMenu();
                 if (drawer.isDrawerVisible(GravityCompat.START)) {
                     drawer.closeDrawer(GravityCompat.START);
                 } else {
@@ -168,6 +218,53 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void displayRightNavigation(){
+        final NavigationView navigationViewRight = (NavigationView) findViewById(R.id.nav_view_notification);
+        navigationViewRight.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                // Handle navigation view item clicks here.
+                int id = item.getItemId();
+
+//                if (id == R.id.nav_camera_right) {
+//                    // Handle the camera action
+//                } else if (id == R.id.nav_gallery_right) {
+//
+//                } else if (id == R.id.nav_slideshow_right) {
+//
+//                } else if (id == R.id.nav_manage_right) {
+//
+//                } else if (id == R.id.nav_share_right) {
+//
+//                } else if (id == R.id.nav_send_right) {
+//
+//                }
+
+                Toast.makeText(MainActivity.this, "Handle from navigation right", Toast.LENGTH_SHORT).show();
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.END);
+                return true;
+
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // WebView --------------
     private class MyBrowser extends WebViewClient {
         @Override
@@ -220,7 +317,11 @@ public class MainActivity extends AppCompatActivity
                             textView_textchanged.setText("0");
                         } else{
                             gifImageView_loader.setVisibility(View.INVISIBLE);
-                            webView.setVisibility(View.VISIBLE);
+
+                            if(!isHelpAndSupportVisible){
+                                webView.setVisibility(View.VISIBLE);
+                            }
+
                             isLoadingFinished = true;
                         }
                     } else{
@@ -244,7 +345,16 @@ public class MainActivity extends AppCompatActivity
                         } else {
 //                            Toast.makeText(getApplicationContext(), "Not Hijacked", Toast.LENGTH_LONG).show();
                             gifImageView_loader.setVisibility(View.INVISIBLE);
-                            webView.setVisibility(View.VISIBLE);
+
+                            if(!isHelpAndSupportVisible){
+                                webView.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                        if(isClearCache){
+                            isClearCache = false;
+                            textView_clearcache.setText("CLEAR CACHE");
+                            Toast.makeText(getApplicationContext(), "Cache has been cleared", Toast.LENGTH_LONG).show();
                         }
                     }
                 }
@@ -366,6 +476,8 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if(drawer.isDrawerOpen(GravityCompat.END)){
+            drawer.closeDrawer(GravityCompat.END);
         } else {
             super.onBackPressed();
         }
@@ -451,10 +563,20 @@ public class MainActivity extends AppCompatActivity
                 isHelpAndSupportVisible = true;
             }
         } else if (id == R.id.item_notification) {
-            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
+            drawer.openDrawer(GravityCompat.END);
+//            nav_view.getMenu().clear();
+//            nav_view.inflateMenu(R.menu.activity_notification_drawer);
+//            invalidateOptionsMenu();
+//            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
+//            if (drawer.isDrawerVisible(GravityCompat.START)) {
+//                drawer.closeDrawer(GravityCompat.START);
+//            } else {
+//                drawer.openDrawer(GravityCompat.START);
+//            }
         }
 
-        return true;
+//        return true;
+        return super.onOptionsItemSelected(item);
     }
 
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
