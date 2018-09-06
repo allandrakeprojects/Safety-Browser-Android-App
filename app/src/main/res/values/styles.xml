@@ -29,4 +29,8 @@
         <item name="android:contentDescription">"Lala"</item>
     </style>
 
+    <style name="NavigationTheme" parent="AppTheme">
+        <item name="listPreferredItemHeightSmall">39dp</item><!-- menu item height- vary as u need -->
+    </style>
+
 </resources>

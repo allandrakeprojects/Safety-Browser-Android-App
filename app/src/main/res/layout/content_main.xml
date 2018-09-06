@@ -10,19 +10,6 @@
     tools:layout_editor_absoluteY="81dp"
     tools:showIn="@layout/app_bar_main">
 
-    <com.drake.safetybrowser.GifImageView
-        android:id="@+id/gifImageView_loader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="216dp"
-        android:gravity="center"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <RelativeLayout
         android:id="@+id/relativeLayout2"
         android:layout_width="0dp"
@@ -87,6 +74,19 @@
 
     </RelativeLayout>
 
+    <com.drake.safetybrowser.GifImageView
+        android:id="@+id/gifImageView_loader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="216dp"
+        android:gravity="center"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <WebView
         android:id="@+id/webView"
         android:layout_width="0dp"
@@ -124,18 +124,21 @@
 
         <ImageView
             android:id="@+id/imageView_help_notification_3"
-            android:layout_width="43dp"
-            android:layout_height="41dp"
-            android:layout_alignBottom="@+id/textView_emailus_1"
+            android:layout_width="47dp"
+            android:layout_height="45dp"
+            android:layout_alignTop="@+id/imageView_help_notification_2"
+            android:layout_marginStart="-3dp"
+            android:layout_marginTop="-7dp"
             android:layout_toEndOf="@+id/textView_helpandsupport"
             app:srcCompat="@drawable/ic_notification_3" />
 
         <ImageView
             android:id="@+id/imageView_help_notification_1"
-            android:layout_width="100dp"
+            android:layout_width="110dp"
             android:layout_height="103dp"
             android:layout_alignEnd="@+id/textView_chatus_1"
-            android:layout_alignTop="@+id/textView_social"
+            android:layout_below="@+id/imageView_help_notification_2"
+            android:layout_marginEnd="-9dp"
             app:srcCompat="@drawable/ic_notification_1" />
 
         <ImageView

@@ -1,5 +1,6 @@
 package com.drake.safetybrowser;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,6 +11,7 @@ import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,10 +46,22 @@ import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.NetworkInterface;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,6 +76,7 @@ public class MainActivity extends AppCompatActivity
     String[] text_to_search_service = { "http://www.ssicortex.com/GetTxt2Search", "http://www.ssitectonic.com/GetTxt2Search", "http://www.ssihedonic.com/GetTxt2Search" };
     String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
     String[] send_service = { "http://www.ssicortex.com/SendDetails", "http://www.ssitectonic.com/SendDetails", "http://www.ssihedonic.com/SendDetails" };
+    String[] notifications_service = { "http://www.ssicortex.com/GetNotifications", "http://www.ssitectonic.com/GetNotifications", "http://www.ssihedonic.com/GetNotifications" };
     String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
     String BRAND_CODE = "YB";
     String domain = "";
@@ -138,7 +154,23 @@ public class MainActivity extends AppCompatActivity
         textView_getdiagnostics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Get Diagnostics", Toast.LENGTH_LONG).show();
+                try {
+                    Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    int i;
+                    char[] buffer = new char[4096];
+                    StringBuffer output = new StringBuffer();
+                    while ((i = reader.read(buffer)) > 0)
+                        output.append(buffer, 0, i);
+                    reader.close();
+                    Log.d("*************", "" + output);
+                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+//                Toast.makeText(getApplicationContext(), "Get Diagnostics", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -179,6 +211,7 @@ public class MainActivity extends AppCompatActivity
 
         // Functions
         GETAPI(text_to_search_service[0]);
+        GETNOTIFICATIONS(notifications_service[0]);
 //        GETPUBLICIPADDRESS();
 //        GETIPINFO();
 
@@ -227,6 +260,25 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // WebView --------------
     private class MyBrowser extends WebViewClient {
@@ -392,6 +444,84 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    // Get Notifications
+    private void GETNOTIFICATIONS(String get){
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, get, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                try {
+                    JSONObject obj = new JSONObject(response);
+                    JSONArray array = obj.getJSONArray("data");
+
+                    for(int i=0;i<array.length();i++){
+                        JSONObject student = array.getJSONObject(i);
+
+                        String id = student.getString("id");
+                        String message_date = student.getString("message_date");
+                        String message_title = student.getString("message_title");
+                        String message_content = student.getString("message_content");
+                        String status = student.getString("status");
+                        String message_type = student.getString("message_type");
+                        String edited_id = student.getString("edited_id");
+
+                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id;
+                        writeToFile(notification);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //This code is executed if there is an error.
+            }
+        }) {
+            protected Map<String, String> getParams() {
+                Map<String, String> MyData = new HashMap<>();
+                MyData.put("macid", GETMACADDRESS());
+                MyData.put("brand_code", BRAND_CODE);
+                MyData.put("api_key", API_KEY);
+                return MyData;
+            }
+        };
+
+        MyRequestQueue.add(MyStringRequest);
+    }
+
+    public void writeToFile(String data)
+    {
+        @SuppressLint("SdCardPath") String path =
+                Environment.getExternalStorageDirectory() + File.separator  + "/data/data/com.drake.safetybrowser/";
+        // Create the folder.
+        File folder = new File(path);
+        folder.mkdirs();
+
+        // Create the file.
+        File file = new File(folder, "config.txt");
+
+        // Save your stream, don't forget to flush() it before closing it.
+
+        try
+        {
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(data);
+
+            myOutWriter.close();
+
+            fOut.flush();
+            fOut.close();
+        }
+        catch (IOException e)
+        {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+    
     // Get IP Info --------------
     private void GETIPINFO(){
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -423,7 +553,6 @@ public class MainActivity extends AppCompatActivity
     // Get API --------------
     private void GETAPI(String get) {
         RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
-
         StringRequest MyStringRequest = new StringRequest(Request.Method.POST, get, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -648,7 +777,9 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.item_help) {
             if(isHelpAndSupportVisible){
                 relativeLayout_helpandsupport.setVisibility(View.INVISIBLE);
-                webView.setVisibility(View.VISIBLE);
+                if(isLoadingFinished){
+                    webView.setVisibility(View.VISIBLE);
+                }
                 isHelpAndSupportVisible = false;
             } else{
                 webView.setVisibility(View.INVISIBLE);
