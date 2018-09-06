@@ -521,7 +521,7 @@ public class MainActivity extends AppCompatActivity
             Log.e("Exception", "File write failed: " + e.toString());
         }
     }
-    
+
     // Get IP Info --------------
     private void GETIPINFO(){
         RequestQueue queue = Volley.newRequestQueue(this);
