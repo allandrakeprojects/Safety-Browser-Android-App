@@ -7,13 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -22,7 +23,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,21 +31,38 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import org.apache.commons.lang3.StringEscapeUtils;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +75,7 @@ public class MainActivity extends AppCompatActivity
     String BRAND_CODE = "YB";
     String domain = "";
     String text_search = "";
+    String get_external_ip_address = "";
     int detect_no_internet_connection = 0;
     int domain_count_max = -1;
     int domain_count_current = 0;
@@ -79,6 +97,7 @@ public class MainActivity extends AppCompatActivity
     ImageView imageView_help_back;
     DrawerLayout drawer;
     NavigationView nav_view;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +125,7 @@ public class MainActivity extends AppCompatActivity
         textView_clearcache = findViewById(R.id.textView_clearcache);
         textView_getdiagnostics = findViewById(R.id.textView_getdiagnostics);
         imageView_help_back = findViewById(R.id.imageView_help_back);
+        mContext = getApplicationContext();
         // End of Find ID
 
         textView_chatus_2.setPaintFlags(textView_chatus_2.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
@@ -170,7 +190,10 @@ public class MainActivity extends AppCompatActivity
         });
 
         // Functions
+        GETPUBLICIPADDRESS();
+        GETIPINFO();
         GETAPI(text_to_search_service[0]);
+        Toast.makeText(getApplicationContext(), "asdasdsadsasd11111", Toast.LENGTH_LONG).show();
 
         textView_textchanged.addTextChangedListener(new TextWatcher() {
 
@@ -218,36 +241,21 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void displayRightNavigation(){
-        final NavigationView navigationViewRight = (NavigationView) findViewById(R.id.nav_view_notification);
-        navigationViewRight.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                // Handle navigation view item clicks here.
-                int id = item.getItemId();
 
-//                if (id == R.id.nav_camera_right) {
-//                    // Handle the camera action
-//                } else if (id == R.id.nav_gallery_right) {
-//
-//                } else if (id == R.id.nav_slideshow_right) {
-//
-//                } else if (id == R.id.nav_manage_right) {
-//
-//                } else if (id == R.id.nav_share_right) {
-//
-//                } else if (id == R.id.nav_send_right) {
-//
-//                }
 
-                Toast.makeText(MainActivity.this, "Handle from navigation right", Toast.LENGTH_SHORT).show();
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                drawer.closeDrawer(GravityCompat.END);
-                return true;
 
-            }
-        });
-    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -363,6 +371,82 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
+    }
+
+    // Get MAC Address --------------
+    private String GETMACADDRESS(){
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(String.format("%02X",b));
+                }
+
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "02:00:00:00:00:00";
+    }
+
+    // Get External IP --------------
+    private void GETPUBLICIPADDRESS() {
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, "https://canihazip.com/s", new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Toast.makeText(getApplicationContext(), "Public IP: " + response, Toast.LENGTH_LONG).show();
+                get_external_ip_address = response;
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        MyRequestQueue.add(MyStringRequest);
+    }
+
+    // Get IP Info --------------
+    private void GETIPINFO(){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://ip-api.com/json/";
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    String city = (String) response.get("city");
+                    String isp = (String) response.get("isp");
+                    String country = (String) response.get("country");
+                    Toast.makeText(getApplicationContext(), city, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), isp, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), country, Toast.LENGTH_LONG).show();
+                } catch (JSONException e) {
+                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        queue.add(jsObjRequest);
     }
 
     // Get API --------------
@@ -577,6 +661,37 @@ public class MainActivity extends AppCompatActivity
 
 //        return true;
         return super.onOptionsItemSelected(item);
+    }
+
+    private void displayRightNavigation(){
+        final NavigationView navigationViewRight = (NavigationView) findViewById(R.id.nav_view_notification);
+        navigationViewRight.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                // Handle navigation view item clicks here.
+                int id = item.getItemId();
+
+//                if (id == R.id.nav_camera_right) {
+//                    // Handle the camera action
+//                } else if (id == R.id.nav_gallery_right) {
+//
+//                } else if (id == R.id.nav_slideshow_right) {
+//
+//                } else if (id == R.id.nav_manage_right) {
+//
+//                } else if (id == R.id.nav_share_right) {
+//
+//                } else if (id == R.id.nav_send_right) {
+//
+//                }
+
+                Toast.makeText(MainActivity.this, "Handle from navigation right", Toast.LENGTH_SHORT).show();
+                DrawerLayout drawer = findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.END);
+                return true;
+
+            }
+        });
     }
 
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
