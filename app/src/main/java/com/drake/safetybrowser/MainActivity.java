@@ -9,12 +9,9 @@ import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -38,31 +35,23 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.error.VolleyError;
+import com.android.volley.request.JsonObjectRequest;
+import com.android.volley.request.SimpleMultiPartRequest;
+import com.android.volley.request.StringRequest;
 import com.android.volley.toolbox.RequestFuture;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +60,7 @@ public class MainActivity extends AppCompatActivity
 
     String[] text_to_search_service = { "http://www.ssicortex.com/GetTxt2Search", "http://www.ssitectonic.com/GetTxt2Search", "http://www.ssihedonic.com/GetTxt2Search" };
     String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
+    String[] send_service = { "http://www.ssicortex.com/SendDetails", "http://www.ssitectonic.com/SendDetails", "http://www.ssihedonic.com/SendDetails" };
     String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
     String BRAND_CODE = "YB";
     String domain = "";
@@ -98,6 +88,8 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
     NavigationView nav_view;
     private Context mContext;
+    private ImageView mAvatarImage;
+    private ImageView mCoverImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,10 +169,6 @@ public class MainActivity extends AppCompatActivity
         toggle.setToolbarNavigationClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                drawer.openDrawer(Gravity.START);
-//                nav_view.getMenu().clear();
-//                nav_view.inflateMenu(R.menu.activity_main_drawer);
-//                invalidateOptionsMenu();
                 if (drawer.isDrawerVisible(GravityCompat.START)) {
                     drawer.closeDrawer(GravityCompat.START);
                 } else {
@@ -190,10 +178,9 @@ public class MainActivity extends AppCompatActivity
         });
 
         // Functions
-        GETPUBLICIPADDRESS();
-        GETIPINFO();
         GETAPI(text_to_search_service[0]);
-        Toast.makeText(getApplicationContext(), "asdasdsadsasd11111", Toast.LENGTH_LONG).show();
+//        GETPUBLICIPADDRESS();
+//        GETIPINFO();
 
         textView_textchanged.addTextChangedListener(new TextWatcher() {
 
@@ -240,38 +227,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // WebView --------------
     private class MyBrowser extends WebViewClient {
@@ -400,23 +355,41 @@ public class MainActivity extends AppCompatActivity
         return "02:00:00:00:00:00";
     }
 
-    // Get External IP --------------
-    private void GETPUBLICIPADDRESS() {
+    // Get Public IP Address
+    public void getString(final VolleyCallback callback) {
         RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
         StringRequest MyStringRequest = new StringRequest(Request.Method.POST, "https://canihazip.com/s", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Toast.makeText(getApplicationContext(), "Public IP: " + response, Toast.LENGTH_LONG).show();
-                get_external_ip_address = response;
+                callback.onSuccess(response);
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
+            public void onErrorResponse(com.android.volley.error.VolleyError error) {
                 Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
             }
         });
 
         MyRequestQueue.add(MyStringRequest);
+    }
+
+    public interface VolleyCallback{
+        void onSuccess(String result);
+    }
+
+    public void onResume(){
+        super.onResume();
+
+        getString(new VolleyCallback(){
+            @Override
+            public void onSuccess(String result){
+                if(get_external_ip_address == ""){
+                    get_external_ip_address = result;
+                }
+
+                GETIPINFO();
+            }
+        });
     }
 
     // Get IP Info --------------
@@ -429,19 +402,17 @@ public class MainActivity extends AppCompatActivity
             public void onResponse(JSONObject response) {
                 try {
                     String city = (String) response.get("city");
-                    String isp = (String) response.get("isp");
                     String country = (String) response.get("country");
-                    Toast.makeText(getApplicationContext(), city, Toast.LENGTH_LONG).show();
-                    Toast.makeText(getApplicationContext(), isp, Toast.LENGTH_LONG).show();
-                    Toast.makeText(getApplicationContext(), country, Toast.LENGTH_LONG).show();
+                    String province = (String) response.get("regionName");
+                    SENDDEVICEINFO(send_service[0], get_external_ip_address, city, province, country);
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                 }
+
             }
         }, new Response.ErrorListener() {
-
             @Override
-            public void onErrorResponse(VolleyError error) {
+            public void onErrorResponse(com.android.volley.error.VolleyError error) {
                 Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
             }
         });
@@ -536,6 +507,45 @@ public class MainActivity extends AppCompatActivity
         };
 
         MyRequestQueue.add(MyStringRequest);
+    }
+
+    // Send Device Information
+    private void SENDDEVICEINFO(String get, final String ip, final String city, final String province, final String country){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        StringRequest putRequest = new StringRequest(Request.Method.POST, get,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+//                        Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError response) {
+                        Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                    }
+                }
+        ) {
+
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String>  params = new HashMap<>();
+                params.put("api_key", API_KEY);
+                params.put("brand_code", BRAND_CODE);
+                params.put("ip", ip);
+                params.put("macid", GETMACADDRESS());
+                params.put("city", city);
+                params.put("province", province);
+                params.put("country", country);
+                return params;
+            }
+
+        };
+
+        queue.add(putRequest);
     }
 
     @Override

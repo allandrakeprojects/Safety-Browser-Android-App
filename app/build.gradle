@@ -35,7 +35,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     //noinspection GradleCompatible
     implementation 'com.android.support:customtabs:23.3.0'
-    implementation 'com.android.volley:volley:1.0.0'
+//    implementation 'com.android.volley:volley:1.1.1'
+    implementation 'dev.dworks.libs:volleyplus:+'
     implementation 'org.apache.commons:commons-lang3:3.0'
     //noinspection GradleCompatible
     implementation 'com.android.support:design:22.2.1'
