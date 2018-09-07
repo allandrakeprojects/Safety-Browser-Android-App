@@ -1,6 +1,5 @@
 package com.drake.safetybrowser;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,7 +10,6 @@ import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,6 +19,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -40,9 +39,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
-import com.android.volley.request.SimpleMultiPartRequest;
 import com.android.volley.request.StringRequest;
-import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -55,19 +52,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.NetworkInterface;
-import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,6 +83,7 @@ public class MainActivity extends AppCompatActivity
     int detect_no_internet_connection = 0;
     int domain_count_max = -1;
     int domain_count_current = 0;
+    int notifications_count = 0;
     boolean loadingFinished = true;
     boolean redirect = false;
     boolean isConnected;
@@ -93,6 +91,7 @@ public class MainActivity extends AppCompatActivity
     boolean isLoadingFinished = false;
     boolean isHelpAndSupportVisible = false;
     boolean isClearCache = false;
+    boolean isUnread = false;
     private WebView webView;
     ArrayList<String> domain_list = new ArrayList<>();
     final Context context = this;
@@ -149,7 +148,7 @@ public class MainActivity extends AppCompatActivity
                 webView.clearCache(true);
                 webView.loadUrl("about:blank");
                 webView.reload();
-                readToFile("sb_ping.txt");
+                readToFile("sb_notifications.txt");
             }
         });
 
@@ -169,7 +168,7 @@ public class MainActivity extends AppCompatActivity
                     reader.close();
                     Log.d("*************", "" + output);
                     Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
-                    writeToFile(output + "", "sb_ping.txt");
+//                    writeToFile(output + "", "sb_ping.txt");
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -216,7 +215,7 @@ public class MainActivity extends AppCompatActivity
 
         // Functions
         GETAPI(text_to_search_service[0]);
-        GETNOTIFICATIONS(notifications_service[0]);
+//        GETNOTIFICATIONS(notifications_service[0]);
 //        GETPUBLICIPADDRESS();
 //        GETIPINFO();
 
@@ -437,27 +436,11 @@ public class MainActivity extends AppCompatActivity
     public void onResume(){
         super.onResume();
 
-        getString(new VolleyCallback(){
+        getString_notification(new VolleyCallback(){
             @Override
             public void onSuccess(String result){
-                if(get_external_ip_address == ""){
-                    get_external_ip_address = result;
-                }
-
-                GETIPINFO();
-            }
-        });
-    }
-
-    // Get Notifications
-    private void GETNOTIFICATIONS(String get){
-        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
-        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, get, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-
                 try {
-                    JSONObject obj = new JSONObject(response);
+                    JSONObject obj = new JSONObject(result);
                     JSONArray array = obj.getJSONArray("data");
 
                     for(int i=0;i<array.length();i++){
@@ -471,12 +454,467 @@ public class MainActivity extends AppCompatActivity
                         String message_type = student.getString("message_type");
                         String edited_id = student.getString("edited_id");
 
-                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id;
-//                        writeToFile(notification);
+                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                        writeToFile(notification, "sb_notifications.txt");
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+                try {
+//                    File fdelete = new File(getFilesDir() + "/sb_notifications.txt");
+//                    if (fdelete.exists()) {
+//                        fdelete.delete();
+//                    }
+
+                    FileInputStream is;
+                    BufferedReader reader;
+                    final File file = new File(getFilesDir() + "/sb_notifications.txt");
+
+                    if (file.exists()) {
+//                        is = new FileInputStream(file);
+//                        reader = new BufferedReader(new InputStreamReader(is));
+//                        String line = reader.readLine();
+
+//                        List<String> tmp = new ArrayList<>();
+//                        do{
+//                            tmp.add(line);
+//                            Log.d("Test 1", line+"<br/>");
+//                        } while(line != null);
+//
+//                        for(int i=tmp.size()-1;i>=0;i--) {
+//                            Log.d("Test 1", tmp.get(i)+"<br/>");
+//                        }
+
+//                        ReversedLinesFileReader fr = new ReversedLinesFileReader(new File(strpath));
+//                        String ch;
+//                        int time=0;
+//                        String Conversion="";
+//                        do {
+//                            ch = fr.readLine();
+//                            out.print(ch+"<br/>");
+//                        } while (ch != null);
+//                        fr.close();
+
+                        String path = getFilesDir() + "/sb_notifications.txt";
+                        FileReader fr=new FileReader(path);
+                        BufferedReader br=new BufferedReader(fr);
+                        String s;
+
+                        int count_line = 0;
+                        List<String> tmp = new ArrayList<>();
+                        do{
+                            count_line++;
+                            s = br.readLine();
+                            tmp.add(s);
+                        }while(s!=null);
+
+
+                        for(int i=count_line-1;i>=0;i--) {
+                            if(tmp.get(i) != null){
+                                String line = tmp.get(i);
+                                NavigationView navView = findViewById(R.id.nav_view_notification);
+                                String id = "";
+                                String message_date = "";
+                                String message_title = "";
+                                String message_content = "";
+
+                                String[] values = line.split("\\*\\|\\*");
+
+                                int i_inner = 1;
+                                for(String str : values){
+                                    if(i_inner == 1){
+                                        Log.d("Test", "id: " + str);
+                                        id = str;
+                                    } else if(i_inner == 2){
+                                        Log.d("Test", "message date: " + str);
+                                        message_date = str;
+                                    }else if(i_inner == 3){
+                                        Log.d("Test", "message title: " + str);
+                                        message_title = str;
+                                    }else if(i_inner == 4){
+                                        Log.d("Test", "message content: " + str);
+                                        message_content = str;
+                                    }else if(i_inner == 8){
+                                        Log.d("Test", "message status: " + str);
+                                        if(str.contains("U")){
+                                            isUnread = true;
+                                            notifications_count++;
+                                            Menu menu = navView.getMenu();
+                                            MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                            notification_header.setTitle("Notifications (" + notifications_count + ")");
+                                        } else {
+                                            Menu menu = navView.getMenu();
+                                            MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                            notification_header.setTitle("Notifications");
+                                        }
+                                    }
+
+                                    i_inner++;
+                                }
+
+                                // Add Navigation View
+                                Menu menu = navView.getMenu();
+
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                String final_datetime = "";
+                                Date past = format.parse(message_date);
+                                Date now = new Date();
+                                long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+                                long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+                                long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+                                long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+
+                                if(seconds<60)
+                                {
+                                    Log.d("Test", "just now");
+                                    final_datetime = "just now";
+                                }
+                                else if(minutes<60)
+                                {
+                                    if(minutes == 1){
+                                        Log.d("Test", minutes+" min ago");
+                                        final_datetime = minutes+" min ago";
+                                    } else{
+                                        Log.d("Test", minutes+" mins ago");
+                                        final_datetime = minutes+" mins ago";
+                                    }
+                                }
+                                else if(hours<24)
+                                {
+                                    if(hours == 1){
+                                        Log.d("Test", hours+" hr ago");
+                                        final_datetime = hours+" hr ago";
+                                    } else{
+                                        Log.d("Test", hours+" hrs ago");
+                                        final_datetime = hours+" hrs ago";
+                                    }
+                                }
+                                else if(hours<48)
+                                {
+                                    Log.d("Test", days+" yesterday");
+                                    final_datetime = days+" yesterday";
+                                }
+                                else if(days<30)
+                                {
+                                    if(days == 1){
+                                        Log.d("Test", days+" day ago");
+                                        final_datetime = days+" day ago";
+                                    } else{
+                                        Log.d("Test", days+" days ago");
+                                        final_datetime = days+" days ago";
+                                    }
+                                }
+                                else if(days>30)
+                                {
+                                    long months = days / 30;
+                                    if(months == 1){
+                                        Log.d("Test", months+" month ago");
+                                        final_datetime = months+" month ago";
+                                    } else{
+                                        Log.d("Test", months+" months ago");
+                                        final_datetime = months+" months ago";
+                                    }
+                                }
+                                else
+                                {
+                                    long years = days / 365;
+                                    if(years == 1){
+                                        Log.d("Test", years+" year ago");
+                                        final_datetime = years+" year ago";
+                                    } else{
+                                        Log.d("Test", years+" years ago");
+                                        final_datetime = years+" years ago";
+                                    }
+                                }
+
+                                if(isUnread){
+                                    Menu submenu = menu.addSubMenu("• " +getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
+                                    submenu.add(getSafeSubstring(message_content, 20, "content")).setEnabled(false);
+                                    isUnread = false;
+                                } else {
+                                    Menu submenu = menu.addSubMenu(message_title + " (" + message_date + ")");
+                                    submenu.add(getSafeSubstring(message_content, 5, "content")).setEnabled(false);
+                                    isUnread = false;
+                                }
+                            }
+                        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//                        BufferedReader br = null;
+
+//                        try {
+//                            br = new BufferedReader(new FileReader(path));
+//                            Stack<String> lines = new Stack<>();
+//                            String line_get = br.readLine();
+//                            while(line_get != null) {
+//                                lines.push(line_get);
+//                                line_get = br.readLine();
+//                                Log.d("Test1", line_get);
+//                                Toast.makeText(getApplicationContext(), line_get, Toast.LENGTH_LONG).show();
+//                            }
+//
+//                            while(! lines.empty()) {
+//                                Log.d("Test1", lines.pop());
+//                                Toast.makeText(getApplicationContext(), lines.pop(), Toast.LENGTH_LONG).show();
+//
+//                                System.out.println(lines.pop());
+//                            }
+//
+//                        } finally {
+//                            if(br != null) {
+//                                try {
+//                                    br.close();
+//                                } catch(IOException e) {
+//                                    // can't help it
+//                                }
+//                            }
+//                        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//                        while(line != null){
+//                            Log.d("Test", line);
+//
+//                            NavigationView navView = findViewById(R.id.nav_view_notification);
+//                            String id = "";
+//                            String message_date = "";
+//                            String message_title = "";
+//                            String message_content = "";
+//
+//                            String[] values = line.split("\\*\\|\\*");
+//
+//                            int i = 1;
+//                            for(String str : values){
+//                                if(i == 1){
+//                                    Log.d("Test", "id: " + str);
+//                                    id = str;
+//                                } else if(i == 2){
+//                                    Log.d("Test", "message date: " + str);
+//                                    message_date = str;
+//                                }else if(i == 3){
+//                                    Log.d("Test", "message title: " + str);
+//                                    message_title = str;
+//                                }else if(i == 4){
+//                                    Log.d("Test", "message content: " + str);
+//                                    message_content = str;
+//                                }else if(i == 8){
+//                                    Log.d("Test", "message status: " + str);
+//                                    if(str.contains("U")){
+//                                        isUnread = true;
+//                                        notifications_count++;
+//                                        Menu menu = navView.getMenu();
+//                                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+//                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
+//                                    } else {
+//                                        Menu menu = navView.getMenu();
+//                                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+//                                        notification_header.setTitle("Notifications");
+//                                    }
+//                                }
+//
+//                                i++;
+//                            }
+//
+//                            // Add Navigation View
+//                            Menu menu = navView.getMenu();
+//
+//                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//                            String final_datetime = "";
+//                            Date past = format.parse(message_date);
+//                            Date now = new Date();
+//                            long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+//                            long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+//                            long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+//                            long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+//
+//                            if(seconds<60)
+//                            {
+//                                Log.d("Test", "just now");
+//                                final_datetime = "just now";
+//                            }
+//                            else if(minutes<60)
+//                            {
+//                                if(minutes == 1){
+//                                    Log.d("Test", minutes+" min ago");
+//                                    final_datetime = minutes+" min ago";
+//                                } else{
+//                                    Log.d("Test", minutes+" mins ago");
+//                                    final_datetime = minutes+" mins ago";
+//                                }
+//                            }
+//                            else if(hours<24)
+//                            {
+//                                if(hours == 1){
+//                                    Log.d("Test", hours+" hr ago");
+//                                    final_datetime = hours+" hr ago";
+//                                } else{
+//                                    Log.d("Test", hours+" hrs ago");
+//                                    final_datetime = hours+" hrs ago";
+//                                }
+//                            }
+//                            else if(hours<48)
+//                            {
+//                                Log.d("Test", days+" yesterday");
+//                                final_datetime = days+" yesterday";
+//                            }
+//                            else if(days<30)
+//                            {
+//                                if(days == 1){
+//                                    Log.d("Test", days+" day ago");
+//                                    final_datetime = days+" day ago";
+//                                } else{
+//                                    Log.d("Test", days+" days ago");
+//                                    final_datetime = days+" days ago";
+//                                }
+//                            }
+//                            else if(days>30)
+//                            {
+//                                long months = days / 30;
+//                                if(months == 1){
+//                                    Log.d("Test", months+" month ago");
+//                                    final_datetime = months+" month ago";
+//                                } else{
+//                                    Log.d("Test", months+" months ago");
+//                                    final_datetime = months+" months ago";
+//                                }
+//                            }
+//                            else
+//                            {
+//                                long years = days / 365;
+//                                if(years == 1){
+//                                    Log.d("Test", years+" year ago");
+//                                    final_datetime = years+" year ago";
+//                                } else{
+//                                    Log.d("Test", years+" years ago");
+//                                    final_datetime = years+" years ago";
+//                                }
+//                            }
+//
+//                            if(isUnread){
+//                                Menu submenu = menu.addSubMenu("• " +getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
+//                                submenu.add(getSafeSubstring(message_content, 20, "content")).setEnabled(false);
+//                                isUnread = false;
+//                            } else {
+//                                Menu submenu = menu.addSubMenu(message_title + " (" + message_date + ")");
+//                                submenu.add(getSafeSubstring(message_content, 5, "content")).setEnabled(false);
+//                                isUnread = false;
+//                            }
+//
+//                            line = reader.readLine();
+//                        }
+                    } else {
+                        NavigationView navView = findViewById(R.id.nav_view_notification);
+                        Menu menu = navView.getMenu();
+                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                        notification_header.setTitle("There are currently no notifications.");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        getString(new VolleyCallback(){
+            @Override
+            public void onSuccess(String result){
+                if(get_external_ip_address == ""){
+                    get_external_ip_address = result;
+                }
+
+                GETIPINFO();
+            }
+        });
+    }
+
+    public String getSafeSubstring(String s, int maxLength, String type){
+        if(type == "title"){
+            if(!TextUtils.isEmpty(s)){
+                if(s.length() >= maxLength){
+                    return s.substring(0, maxLength) + "...";
+                } else{
+
+                }
+            }
+        } else {
+            if(!TextUtils.isEmpty(s)){
+                if(s.length() >= maxLength){
+                    return s.substring(0, maxLength) + "... view more";
+                } else{
+
+                }
+            }
+        }
+        return s;
+    }
+
+    // Get Notifications
+    public void getString_notification(final VolleyCallback callback) {
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, notifications_service[0], new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                callback.onSuccess(response);
             }
         }, new Response.ErrorListener() {
             @Override
@@ -496,45 +934,14 @@ public class MainActivity extends AppCompatActivity
         MyRequestQueue.add(MyStringRequest);
     }
 
-//    public void writeToFile(String data)
-//    {
-//        @SuppressLint("SdCardPath") String path =
-//                Environment.getExternalStorageDirectory() + File.separator  + "/data/data/com.drake.safetybrowser/";
-//        // Create the folder.
-//        File folder = new File(path);
-//        folder.mkdirs();
-//
-//        // Create the file.
-//        File file = new File(folder, "config.txt");
-//
-//        // Save your stream, don't forget to flush() it before closing it.
-//
-//        try
-//        {
-//            file.createNewFile();
-//            FileOutputStream fOut = new FileOutputStream(file);
-//            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-//            myOutWriter.append(data);
-//
-//            myOutWriter.close();
-//
-//            fOut.flush();
-//            fOut.close();
-//        }
-//        catch (IOException e)
-//        {
-//            Log.e("Exception", "File write failed: " + e.toString());
-//        }
-//    }
-
     private void writeToFile(String data, String file_name){
         FileOutputStream fos = null;
 
         try {
-            fos = openFileOutput(file_name, MODE_PRIVATE);
+            fos = openFileOutput(file_name, MODE_APPEND);
             fos.write(data.getBytes());
 
-            Toast.makeText(getApplicationContext(), "Saved to " + getFilesDir() + "/" + file_name, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "Saved to " + getFilesDir() + "/" + file_name, Toast.LENGTH_SHORT).show();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -556,7 +963,7 @@ public class MainActivity extends AppCompatActivity
                 sb.append(text).append("\n");
             }
 
-            Toast.makeText(getApplicationContext(), "Output \n" + sb.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), sb.toString(), Toast.LENGTH_SHORT).show();
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -572,58 +979,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
-
-//    public void writeToFile(String data)
-//    {
-//        // Get the directory for the user's public pictures directory.
-//
-////        String path = getFilesDir().getAbsolutePath();
-//
-//        final File path =
-//                Environment.getExternalStoragePublicDirectory
-//                        (
-//                                //Environment.DIRECTORY_PICTURES
-//                                Environment.DIRECTORY_DCIM + "/SB/testsadas.txt"
-//                        );
-//
-//
-//        Toast.makeText(getApplicationContext(), path + "", Toast.LENGTH_SHORT).show();
-//
-//        // Make sure the path directory exists.
-//        if(!path.exists())
-//        {
-//            Toast.makeText(getApplicationContext(), "not exists", Toast.LENGTH_SHORT).show();
-//            // Make it, if it doesn't exit
-//            path.mkdirs();
-//        } else {
-//            Toast.makeText(getApplicationContext(), "exists", Toast.LENGTH_SHORT).show();
-//        }
-//
-//        final File file = new File(path, "config.txt");
-//
-//        // Save your stream, don't forget to flush() it before closing it.
-//
-//        try
-//        {
-//            file.createNewFile();
-//            FileOutputStream fOut = new FileOutputStream(file);
-//            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-//            myOutWriter.append(data);
-//
-//            myOutWriter.close();
-//
-//            fOut.flush();
-//            fOut.close();
-//        }
-//        catch (IOException e)
-//        {
-//            Log.e("Exception", "File write failed: " + e.toString());
-//        }
-//    }
-
-//    private void writeToFile(String text) {
-//
-//    }
 
     // Get IP Info --------------
     private void GETIPINFO(){
