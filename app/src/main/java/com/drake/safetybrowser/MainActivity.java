@@ -52,6 +52,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -148,12 +149,14 @@ public class MainActivity extends AppCompatActivity
                 webView.clearCache(true);
                 webView.loadUrl("about:blank");
                 webView.reload();
+                readToFile("sb_ping.txt");
             }
         });
 
         textView_getdiagnostics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // asd123
                 try {
                     Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
 
@@ -166,6 +169,8 @@ public class MainActivity extends AppCompatActivity
                     reader.close();
                     Log.d("*************", "" + output);
                     Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
+                    writeToFile(output + "", "sb_ping.txt");
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -467,7 +472,7 @@ public class MainActivity extends AppCompatActivity
                         String edited_id = student.getString("edited_id");
 
                         String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id;
-                        writeToFile(notification);
+//                        writeToFile(notification);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -491,36 +496,134 @@ public class MainActivity extends AppCompatActivity
         MyRequestQueue.add(MyStringRequest);
     }
 
-    public void writeToFile(String data)
-    {
-        @SuppressLint("SdCardPath") String path =
-                Environment.getExternalStorageDirectory() + File.separator  + "/data/data/com.drake.safetybrowser/";
-        // Create the folder.
-        File folder = new File(path);
-        folder.mkdirs();
+//    public void writeToFile(String data)
+//    {
+//        @SuppressLint("SdCardPath") String path =
+//                Environment.getExternalStorageDirectory() + File.separator  + "/data/data/com.drake.safetybrowser/";
+//        // Create the folder.
+//        File folder = new File(path);
+//        folder.mkdirs();
+//
+//        // Create the file.
+//        File file = new File(folder, "config.txt");
+//
+//        // Save your stream, don't forget to flush() it before closing it.
+//
+//        try
+//        {
+//            file.createNewFile();
+//            FileOutputStream fOut = new FileOutputStream(file);
+//            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+//            myOutWriter.append(data);
+//
+//            myOutWriter.close();
+//
+//            fOut.flush();
+//            fOut.close();
+//        }
+//        catch (IOException e)
+//        {
+//            Log.e("Exception", "File write failed: " + e.toString());
+//        }
+//    }
 
-        // Create the file.
-        File file = new File(folder, "config.txt");
+    private void writeToFile(String data, String file_name){
+        FileOutputStream fos = null;
 
-        // Save your stream, don't forget to flush() it before closing it.
+        try {
+            fos = openFileOutput(file_name, MODE_PRIVATE);
+            fos.write(data.getBytes());
 
-        try
-        {
-            file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file);
-            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-            myOutWriter.append(data);
-
-            myOutWriter.close();
-
-            fOut.flush();
-            fOut.close();
-        }
-        catch (IOException e)
-        {
-            Log.e("Exception", "File write failed: " + e.toString());
+            Toast.makeText(getApplicationContext(), "Saved to " + getFilesDir() + "/" + file_name, Toast.LENGTH_SHORT).show();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+    public void readToFile(String file_name) {
+        FileInputStream fis = null;
+
+        try {
+            fis = openFileInput(file_name);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+            String text;
+
+            while ((text = br.readLine()) != null) {
+                sb.append(text).append("\n");
+            }
+
+            Toast.makeText(getApplicationContext(), "Output \n" + sb.toString(), Toast.LENGTH_SHORT).show();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+//    public void writeToFile(String data)
+//    {
+//        // Get the directory for the user's public pictures directory.
+//
+////        String path = getFilesDir().getAbsolutePath();
+//
+//        final File path =
+//                Environment.getExternalStoragePublicDirectory
+//                        (
+//                                //Environment.DIRECTORY_PICTURES
+//                                Environment.DIRECTORY_DCIM + "/SB/testsadas.txt"
+//                        );
+//
+//
+//        Toast.makeText(getApplicationContext(), path + "", Toast.LENGTH_SHORT).show();
+//
+//        // Make sure the path directory exists.
+//        if(!path.exists())
+//        {
+//            Toast.makeText(getApplicationContext(), "not exists", Toast.LENGTH_SHORT).show();
+//            // Make it, if it doesn't exit
+//            path.mkdirs();
+//        } else {
+//            Toast.makeText(getApplicationContext(), "exists", Toast.LENGTH_SHORT).show();
+//        }
+//
+//        final File file = new File(path, "config.txt");
+//
+//        // Save your stream, don't forget to flush() it before closing it.
+//
+//        try
+//        {
+//            file.createNewFile();
+//            FileOutputStream fOut = new FileOutputStream(file);
+//            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+//            myOutWriter.append(data);
+//
+//            myOutWriter.close();
+//
+//            fOut.flush();
+//            fOut.close();
+//        }
+//        catch (IOException e)
+//        {
+//            Log.e("Exception", "File write failed: " + e.toString());
+//        }
+//    }
+
+//    private void writeToFile(String text) {
+//
+//    }
 
     // Get IP Info --------------
     private void GETIPINFO(){
