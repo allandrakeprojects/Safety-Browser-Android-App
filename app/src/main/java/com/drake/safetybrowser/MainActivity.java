@@ -608,13 +608,6 @@ public class MainActivity extends AppCompatActivity
                                 if(isUnread){
                                     menu.add(notification_count, 120, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
                                     menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
-//                                    menu.setGroupCheckable(notification_count, true, true);
-//                                    menu.setGroupVisible(notification_count, true);
-
-//                                    menu_create.add(notification_count, 120, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
-//                                    menu_create.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
-//                                    SubMenu submenu = menu.addSubMenu(notification_count, Menu.FIRST, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
-//                                    submenu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                     isUnread = false;
                                 } else {
                                     Menu submenu = menu.addSubMenu(notification_count, Menu.NONE, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
@@ -959,15 +952,7 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(getApplicationContext(), "Help and Support", Toast.LENGTH_LONG).show();
         } else if (id == R.id.item_notification) {
             Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
-        }
-//        else if (id == R.id.nav_zoom_reset) {
-//
-//        } else if (id == R.id.nav_zoom_in) {
-//
-//        } else if (id == R.id.nav_zoom_out) {
-//
-//        }
-        else if (id == R.id.nav_exit) {
+        } else if (id == R.id.nav_exit) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                     context);
             alertDialogBuilder.setTitle("\n" + "Exit the program?");
@@ -1013,18 +998,8 @@ public class MainActivity extends AppCompatActivity
             }
         } else if (id == R.id.item_notification) {
             drawer.openDrawer(GravityCompat.END);
-//            nav_view.getMenu().clear();
-//            nav_view.inflateMenu(R.menu.activity_notification_drawer);
-//            invalidateOptionsMenu();
-//            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
-//            if (drawer.isDrawerVisible(GravityCompat.START)) {
-//                drawer.closeDrawer(GravityCompat.START);
-//            } else {
-//                drawer.openDrawer(GravityCompat.START);
-//            }
         }
 
-//        return true;
         return super.onOptionsItemSelected(item);
     }
 
@@ -1063,14 +1038,10 @@ public class MainActivity extends AppCompatActivity
                                 count_notification++;
 
                                 if(Integer.parseInt(group_id) == count_notification){
-//                                    Toast.makeText(getApplicationContext(), tmp.get(i), Toast.LENGTH_LONG).show();
-
                                     String line = tmp.get(i);
-
                                     String message_date = "";
                                     String message_title = "";
                                     String message_content = "";
-
                                     String[] values = line.split("\\*\\|\\*");
 
                                     int i_inner = 1;
