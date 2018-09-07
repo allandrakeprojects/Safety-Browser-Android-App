@@ -1041,7 +1041,7 @@ public class MainActivity extends AppCompatActivity
 
                     try {
                         String group_id = String.valueOf(item.getGroupId());
-                        Toast.makeText(getApplicationContext(), group_id, Toast.LENGTH_SHORT).show();
+
 
                         String path = getFilesDir() + "/sb_notifications.txt";
                         FileReader fr=new FileReader(path);
@@ -1049,6 +1049,7 @@ public class MainActivity extends AppCompatActivity
                         String s;
 
                         int count_line = 0;
+                        int count_notification = 0;
                         List<String> tmp = new ArrayList<>();
                         do{
                             count_line++;
@@ -1056,31 +1057,124 @@ public class MainActivity extends AppCompatActivity
                             tmp.add(s);
                         }while(s!=null);
 
+
                         for(int i=count_line-1;i>=0;i--) {
-                            if(tmp.get(i) != null){
-                                String line = tmp.get(i);
-//                                Toast.makeText(getApplicationContext(), (i+1) + "", Toast.LENGTH_SHORT).show();
+                            if(tmp.get(i) != null) {
+                                count_notification++;
 
+                                if(Integer.parseInt(group_id) == count_notification){
+//                                    Toast.makeText(getApplicationContext(), tmp.get(i), Toast.LENGTH_LONG).show();
 
-//                                if((i+1) == Integer.parseInt(group_id)){
-//                                    Toast.makeText(getApplicationContext(), "Found", Toast.LENGTH_SHORT).show();
-//                                    Toast.makeText(getApplicationContext(), line, Toast.LENGTH_SHORT).show();
-//                                }
+                                    String line = tmp.get(i);
 
+                                    String message_date = "";
+                                    String message_title = "";
+                                    String message_content = "";
 
+                                    String[] values = line.split("\\*\\|\\*");
 
-//                                String[] values = line.split("\\*\\|\\*");
-//                                int i_inner = 1;
-//                                for(String str : values){
-//                                    if(i_inner == 1){
-//                                        Log.d("Test", "id: " + str);
-//                                        if(group_id.contains(str)){
-//                                            Toast.makeText(getApplicationContext(), "Found", Toast.LENGTH_SHORT).show();
-//                                        }
-//                                    }
-//
-//                                    i_inner++;
-//                                }
+                                    int i_inner = 1;
+                                    for(String str : values){
+                                        if(i_inner == 2){
+                                            Log.d("Test", "message date: " + str);
+                                            message_date = str;
+                                        }else if(i_inner == 3){
+                                            Log.d("Test", "message title: " + str);
+                                            message_title = str;
+                                        }else if(i_inner == 4){
+                                            Log.d("Test", "message content: " + str);
+                                            message_content = str;
+                                        }
+
+                                        i_inner++;
+                                    }
+
+                                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                    String final_datetime = "";
+                                    Date past = format.parse(message_date);
+                                    Date now = new Date();
+                                    long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+                                    long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+                                    long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+                                    long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+
+                                    if(seconds<60)
+                                    {
+                                        Log.d("Test", "just now");
+                                        final_datetime = "just now";
+                                    }
+                                    else if(minutes<60)
+                                    {
+                                        if(minutes == 1){
+                                            Log.d("Test", minutes+" min ago");
+                                            final_datetime = minutes+" min ago";
+                                        } else{
+                                            Log.d("Test", minutes+" mins ago");
+                                            final_datetime = minutes+" mins ago";
+                                        }
+                                    }
+                                    else if(hours<24)
+                                    {
+                                        if(hours == 1){
+                                            Log.d("Test", hours+" hr ago");
+                                            final_datetime = hours+" hr ago";
+                                        } else{
+                                            Log.d("Test", hours+" hrs ago");
+                                            final_datetime = hours+" hrs ago";
+                                        }
+                                    }
+                                    else if(hours<48)
+                                    {
+                                        Log.d("Test", days+" yesterday");
+                                        final_datetime = days+" yesterday";
+                                    }
+                                    else if(days<30)
+                                    {
+                                        if(days == 1){
+                                            Log.d("Test", days+" day ago");
+                                            final_datetime = days+" day ago";
+                                        } else{
+                                            Log.d("Test", days+" days ago");
+                                            final_datetime = days+" days ago";
+                                        }
+                                    }
+                                    else if(days>30)
+                                    {
+                                        long months = days / 30;
+                                        if(months == 1){
+                                            Log.d("Test", months+" month ago");
+                                            final_datetime = months+" month ago";
+                                        } else{
+                                            Log.d("Test", months+" months ago");
+                                            final_datetime = months+" months ago";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        long years = days / 365;
+                                        if(years == 1){
+                                            Log.d("Test", years+" year ago");
+                                            final_datetime = years+" year ago";
+                                        } else{
+                                            Log.d("Test", years+" years ago");
+                                            final_datetime = years+" years ago";
+                                        }
+                                    }
+
+                                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                                            context);
+                                    alertDialogBuilder.setMessage(message_content);
+                                    alertDialogBuilder.setTitle(message_title + " (" + final_datetime + ")");
+                                    alertDialogBuilder
+                                            .setCancelable(false)
+                                            .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog,int id) {
+                                                    dialog.cancel();
+                                                }
+                                            });
+                                    AlertDialog alertDialog = alertDialogBuilder.create();
+                                    alertDialog.show();
+                                }
                             }
                         }
                     }
