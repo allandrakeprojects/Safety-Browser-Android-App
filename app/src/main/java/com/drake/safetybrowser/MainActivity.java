@@ -24,7 +24,9 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -56,6 +58,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.NetworkInterface;
+import java.security.acl.Group;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,7 +158,6 @@ public class MainActivity extends AppCompatActivity
         textView_getdiagnostics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // asd123
                 try {
                     Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
 
@@ -467,35 +469,9 @@ public class MainActivity extends AppCompatActivity
 //                        fdelete.delete();
 //                    }
 
-                    FileInputStream is;
-                    BufferedReader reader;
                     final File file = new File(getFilesDir() + "/sb_notifications.txt");
 
                     if (file.exists()) {
-//                        is = new FileInputStream(file);
-//                        reader = new BufferedReader(new InputStreamReader(is));
-//                        String line = reader.readLine();
-
-//                        List<String> tmp = new ArrayList<>();
-//                        do{
-//                            tmp.add(line);
-//                            Log.d("Test 1", line+"<br/>");
-//                        } while(line != null);
-//
-//                        for(int i=tmp.size()-1;i>=0;i--) {
-//                            Log.d("Test 1", tmp.get(i)+"<br/>");
-//                        }
-
-//                        ReversedLinesFileReader fr = new ReversedLinesFileReader(new File(strpath));
-//                        String ch;
-//                        int time=0;
-//                        String Conversion="";
-//                        do {
-//                            ch = fr.readLine();
-//                            out.print(ch+"<br/>");
-//                        } while (ch != null);
-//                        fr.close();
-
                         String path = getFilesDir() + "/sb_notifications.txt";
                         FileReader fr=new FileReader(path);
                         BufferedReader br=new BufferedReader(fr);
@@ -509,7 +485,7 @@ public class MainActivity extends AppCompatActivity
                             tmp.add(s);
                         }while(s!=null);
 
-
+                        int notification_count = 0;
                         for(int i=count_line-1;i>=0;i--) {
                             if(tmp.get(i) != null){
                                 String line = tmp.get(i);
@@ -628,241 +604,29 @@ public class MainActivity extends AppCompatActivity
                                     }
                                 }
 
+                                // asd123
                                 if(isUnread){
-                                    Menu submenu = menu.addSubMenu("• " +getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
-                                    submenu.add(getSafeSubstring(message_content, 20, "content")).setEnabled(false);
+                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+//                                    menu.setGroupCheckable(notification_count, true, true);
+//                                    menu.setGroupVisible(notification_count, true);
+
+//                                    menu_create.add(notification_count, 120, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
+//                                    menu_create.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+//                                    SubMenu submenu = menu.addSubMenu(notification_count, Menu.FIRST, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
+//                                    submenu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                     isUnread = false;
                                 } else {
-                                    Menu submenu = menu.addSubMenu(message_title + " (" + message_date + ")");
-                                    submenu.add(getSafeSubstring(message_content, 5, "content")).setEnabled(false);
+                                    Menu submenu = menu.addSubMenu(notification_count, Menu.NONE, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
+                                    submenu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                     isUnread = false;
                                 }
+
+                                displayRightNavigation();
                             }
+
+                            notification_count++;
                         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//                        BufferedReader br = null;
-
-//                        try {
-//                            br = new BufferedReader(new FileReader(path));
-//                            Stack<String> lines = new Stack<>();
-//                            String line_get = br.readLine();
-//                            while(line_get != null) {
-//                                lines.push(line_get);
-//                                line_get = br.readLine();
-//                                Log.d("Test1", line_get);
-//                                Toast.makeText(getApplicationContext(), line_get, Toast.LENGTH_LONG).show();
-//                            }
-//
-//                            while(! lines.empty()) {
-//                                Log.d("Test1", lines.pop());
-//                                Toast.makeText(getApplicationContext(), lines.pop(), Toast.LENGTH_LONG).show();
-//
-//                                System.out.println(lines.pop());
-//                            }
-//
-//                        } finally {
-//                            if(br != null) {
-//                                try {
-//                                    br.close();
-//                                } catch(IOException e) {
-//                                    // can't help it
-//                                }
-//                            }
-//                        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//                        while(line != null){
-//                            Log.d("Test", line);
-//
-//                            NavigationView navView = findViewById(R.id.nav_view_notification);
-//                            String id = "";
-//                            String message_date = "";
-//                            String message_title = "";
-//                            String message_content = "";
-//
-//                            String[] values = line.split("\\*\\|\\*");
-//
-//                            int i = 1;
-//                            for(String str : values){
-//                                if(i == 1){
-//                                    Log.d("Test", "id: " + str);
-//                                    id = str;
-//                                } else if(i == 2){
-//                                    Log.d("Test", "message date: " + str);
-//                                    message_date = str;
-//                                }else if(i == 3){
-//                                    Log.d("Test", "message title: " + str);
-//                                    message_title = str;
-//                                }else if(i == 4){
-//                                    Log.d("Test", "message content: " + str);
-//                                    message_content = str;
-//                                }else if(i == 8){
-//                                    Log.d("Test", "message status: " + str);
-//                                    if(str.contains("U")){
-//                                        isUnread = true;
-//                                        notifications_count++;
-//                                        Menu menu = navView.getMenu();
-//                                        MenuItem notification_header = menu.findItem(R.id.notification_header);
-//                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
-//                                    } else {
-//                                        Menu menu = navView.getMenu();
-//                                        MenuItem notification_header = menu.findItem(R.id.notification_header);
-//                                        notification_header.setTitle("Notifications");
-//                                    }
-//                                }
-//
-//                                i++;
-//                            }
-//
-//                            // Add Navigation View
-//                            Menu menu = navView.getMenu();
-//
-//                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//                            String final_datetime = "";
-//                            Date past = format.parse(message_date);
-//                            Date now = new Date();
-//                            long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
-//                            long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
-//                            long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
-//                            long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
-//
-//                            if(seconds<60)
-//                            {
-//                                Log.d("Test", "just now");
-//                                final_datetime = "just now";
-//                            }
-//                            else if(minutes<60)
-//                            {
-//                                if(minutes == 1){
-//                                    Log.d("Test", minutes+" min ago");
-//                                    final_datetime = minutes+" min ago";
-//                                } else{
-//                                    Log.d("Test", minutes+" mins ago");
-//                                    final_datetime = minutes+" mins ago";
-//                                }
-//                            }
-//                            else if(hours<24)
-//                            {
-//                                if(hours == 1){
-//                                    Log.d("Test", hours+" hr ago");
-//                                    final_datetime = hours+" hr ago";
-//                                } else{
-//                                    Log.d("Test", hours+" hrs ago");
-//                                    final_datetime = hours+" hrs ago";
-//                                }
-//                            }
-//                            else if(hours<48)
-//                            {
-//                                Log.d("Test", days+" yesterday");
-//                                final_datetime = days+" yesterday";
-//                            }
-//                            else if(days<30)
-//                            {
-//                                if(days == 1){
-//                                    Log.d("Test", days+" day ago");
-//                                    final_datetime = days+" day ago";
-//                                } else{
-//                                    Log.d("Test", days+" days ago");
-//                                    final_datetime = days+" days ago";
-//                                }
-//                            }
-//                            else if(days>30)
-//                            {
-//                                long months = days / 30;
-//                                if(months == 1){
-//                                    Log.d("Test", months+" month ago");
-//                                    final_datetime = months+" month ago";
-//                                } else{
-//                                    Log.d("Test", months+" months ago");
-//                                    final_datetime = months+" months ago";
-//                                }
-//                            }
-//                            else
-//                            {
-//                                long years = days / 365;
-//                                if(years == 1){
-//                                    Log.d("Test", years+" year ago");
-//                                    final_datetime = years+" year ago";
-//                                } else{
-//                                    Log.d("Test", years+" years ago");
-//                                    final_datetime = years+" years ago";
-//                                }
-//                            }
-//
-//                            if(isUnread){
-//                                Menu submenu = menu.addSubMenu("• " +getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
-//                                submenu.add(getSafeSubstring(message_content, 20, "content")).setEnabled(false);
-//                                isUnread = false;
-//                            } else {
-//                                Menu submenu = menu.addSubMenu(message_title + " (" + message_date + ")");
-//                                submenu.add(getSafeSubstring(message_content, 5, "content")).setEnabled(false);
-//                                isUnread = false;
-//                            }
-//
-//                            line = reader.readLine();
-//                        }
                     } else {
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
@@ -1168,6 +932,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
         return true;
     }
 
@@ -1224,6 +989,7 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 
@@ -1263,32 +1029,68 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void displayRightNavigation(){
-        final NavigationView navigationViewRight = (NavigationView) findViewById(R.id.nav_view_notification);
+        final NavigationView navigationViewRight = findViewById(R.id.nav_view_notification);
         navigationViewRight.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 // Handle navigation view item clicks here.
                 int id = item.getItemId();
 
-//                if (id == R.id.nav_camera_right) {
-//                    // Handle the camera action
-//                } else if (id == R.id.nav_gallery_right) {
-//
-//                } else if (id == R.id.nav_slideshow_right) {
-//
-//                } else if (id == R.id.nav_manage_right) {
-//
-//                } else if (id == R.id.nav_share_right) {
-//
-//                } else if (id == R.id.nav_send_right) {
-//
-//                }
+                // asd123
+                if (id == 120) {
 
-                Toast.makeText(MainActivity.this, "Handle from navigation right", Toast.LENGTH_SHORT).show();
-                DrawerLayout drawer = findViewById(R.id.drawer_layout);
-                drawer.closeDrawer(GravityCompat.END);
+                    try {
+                        String group_id = String.valueOf(item.getGroupId());
+                        Toast.makeText(getApplicationContext(), group_id, Toast.LENGTH_SHORT).show();
+
+                        String path = getFilesDir() + "/sb_notifications.txt";
+                        FileReader fr=new FileReader(path);
+                        BufferedReader br=new BufferedReader(fr);
+                        String s;
+
+                        int count_line = 0;
+                        List<String> tmp = new ArrayList<>();
+                        do{
+                            count_line++;
+                            s = br.readLine();
+                            tmp.add(s);
+                        }while(s!=null);
+
+                        for(int i=count_line-1;i>=0;i--) {
+                            if(tmp.get(i) != null){
+                                String line = tmp.get(i);
+//                                Toast.makeText(getApplicationContext(), (i+1) + "", Toast.LENGTH_SHORT).show();
+
+
+//                                if((i+1) == Integer.parseInt(group_id)){
+//                                    Toast.makeText(getApplicationContext(), "Found", Toast.LENGTH_SHORT).show();
+//                                    Toast.makeText(getApplicationContext(), line, Toast.LENGTH_SHORT).show();
+//                                }
+
+
+
+//                                String[] values = line.split("\\*\\|\\*");
+//                                int i_inner = 1;
+//                                for(String str : values){
+//                                    if(i_inner == 1){
+//                                        Log.d("Test", "id: " + str);
+//                                        if(group_id.contains(str)){
+//                                            Toast.makeText(getApplicationContext(), "Found", Toast.LENGTH_SHORT).show();
+//                                        }
+//                                    }
+//
+//                                    i_inner++;
+//                                }
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+
                 return true;
-
             }
         });
     }
