@@ -278,7 +278,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        NotificationTimer();
+//        NotificationTimer();
         isRunning = true;
         isOpened = true;
     }
@@ -748,7 +748,7 @@ public class MainActivity extends AppCompatActivity
                         // asd123
                         if(!isHide){
                             if(isUnread){
-                                menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "• " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "⍣ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                 isUnread = false;
                                 isInsertMenu = true;
@@ -922,187 +922,187 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
-
-    private void NotificationTimer() {
-        Runnable helloRunnable = new Runnable() {
-            public void run() {
-
-                if(!isOpened){
-                    if(isRunning){
-                        Log.d("Timer", "gotyaaaaaaaaaaa");
-
-                        getString_deletedid(new VolleyCallback(){
-                            @Override
-                            public void onSuccess(String result){
-
-                                String replace_responce = StringEscapeUtils.unescapeJava(result);
-                                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
-
-                                while(m.find()){
-                                    get_deleted_id = m.group(1);
-                                }
-
-                                if(result.contains("OK")){
-                                    get_deleted_id = get_deleted_id.replace("\"", "");
-                                    List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
-    //                                String[] get_delete_id_lists = get_deleted_id.split(",");
-                                    for(String get_delete_id_list : get_delete_id_lists){
-                                        if(get_delete_id_list != ""){
-    //                            get_id.add(get_delete_id_list);
-                                            try {
-                                                final File file = new File(getFilesDir() + "/sb_notifications.txt");
-
-                                                if (file.exists()) {
-                                                    String path = getFilesDir() + "/sb_notifications.txt";
-                                                    FileReader fr=new FileReader(path);
-                                                    BufferedReader br=new BufferedReader(fr);
-                                                    String s;
-
-                                                    int count_line = 0;
-                                                    List<String> tmp_asd = new ArrayList<>();
-                                                    do{
-                                                        count_line++;
-                                                        s = br.readLine();
-                                                        tmp_asd.add(s);
-                                                    }while(s!=null);
-
-                                                    for(int i=count_line-1;i>=0;i--) {
-                                                        if(tmp_asd.get(i) != null){
-                                                            String line = tmp_asd.get(i);
-                                                            String id = "";
-
-                                                            String[] values = line.split("\\*\\|\\*");
-
-                                                            int i_inner = 1;
-                                                            for(String str : values){
-                                                                if(i_inner == 1){
-                                                                    id = str;
-                                                                    if(id.contains(get_delete_id_list)){
-
-                                                                        FileReader fr_delete = new FileReader(path);
-                                                                        String s_delete;
-                                                                        String totalStr = "";
-                                                                        BufferedReader br_delete = new BufferedReader(fr_delete);
-
-
-                                                                        while ((s_delete = br_delete.readLine()) != null) {
-                                                                            if(s_delete.contains(line)) {
-                                                                                Log.d("Testshow", s_delete);
-                                                                                s_delete = s_delete.substring(0, s_delete.length() - 1) + "X";
-                                                                            }
-
-                                                                            totalStr += s_delete + "\n";
-                                                                        }
-
-                                                                        FileWriter fw = new FileWriter(path);
-                                                                        fw.write(totalStr);
-                                                                        fw.close();
-
-                                                                    }
-                                                                }
-
-                                                                i_inner++;
-                                                            }
-                                                        }
-                                                    }
-
-                                                } else {
-                                                    NavigationView navView = findViewById(R.id.nav_view_notification);
-                                                    Menu menu = navView.getMenu();
-                                                    MenuItem notification_header = menu.findItem(R.id.notification_header);
-                                                    notification_header.setTitle("There are currently no notifications.");
-                                                }
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-
-
-                                            // Delete
-                                            String path = getFilesDir() + "/sb_notifications.txt";
-                                            try {
-                                                try {
-
-
-                                                } catch (Exception e) {
-                                                    Log.d("Testshow", e.getMessage());
-                                                }
-                                            } catch (Exception e) {
-                                                Log.d("Testshow", e.getMessage());
-                                            }
-                                        }
-                                    }
-
-                                } else{
-                                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        });
-
-                        getString_notification(new VolleyCallback(){
-                            @Override
-                            public void onSuccess(String result){
-                                try {
-                                    JSONObject obj = new JSONObject(result);
-                                    JSONArray array = obj.getJSONArray("data");
-
-                                    for(int i=0;i<array.length();i++){
-                                        JSONObject student = array.getJSONObject(i);
-
-                                        String id = student.getString("id");
-                                        String message_date = student.getString("message_date");
-                                        String message_title = student.getString("message_title");
-                                        String message_content = student.getString("message_content");
-                                        String status = student.getString("status");
-                                        String message_type = student.getString("message_type");
-                                        String edited_id = student.getString("edited_id");
-
-                                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                        writeToFile(notification, "sb_notifications.txt");
-                                    }
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-
-                                // Preview Notification
-                                UpdateNotifications_EditedId();
-                                PreviewNotifications();
-                            }
-                        });
-                    }
-                } else {
-                    isOpened = false;
-                }
-            }
-        };
-
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(helloRunnable, 0, 15, TimeUnit.SECONDS);
-
-
-
-
-
-
-
-
-
-
-
-
-//        int delay = 1000; // delay for 1 sec.
-//        int period = 15000; // repeat every 10 sec.
-//        final Timer timer = new Timer();
-//        timer.scheduleAtFixedRate(new TimerTask()
-//        {
-//            public void run()
-//            {
-//                if(isRunning){
-//                    Log.d("Timer", "gotyaaaa");
 //
+//    private void NotificationTimer() {
+//        Runnable helloRunnable = new Runnable() {
+//            public void run() {
+//
+//                if(!isOpened){
+//                    if(isRunning){
+//                        Log.d("Timer", "gotyaaaaaaaaaaa");
+//
+//                        getString_deletedid(new VolleyCallback(){
+//                            @Override
+//                            public void onSuccess(String result){
+//
+//                                String replace_responce = StringEscapeUtils.unescapeJava(result);
+//                                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+//
+//                                while(m.find()){
+//                                    get_deleted_id = m.group(1);
+//                                }
+//
+//                                if(result.contains("OK")){
+//                                    get_deleted_id = get_deleted_id.replace("\"", "");
+//                                    List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+//    //                                String[] get_delete_id_lists = get_deleted_id.split(",");
+//                                    for(String get_delete_id_list : get_delete_id_lists){
+//                                        if(get_delete_id_list != ""){
+//    //                            get_id.add(get_delete_id_list);
+//                                            try {
+//                                                final File file = new File(getFilesDir() + "/sb_notifications.txt");
+//
+//                                                if (file.exists()) {
+//                                                    String path = getFilesDir() + "/sb_notifications.txt";
+//                                                    FileReader fr=new FileReader(path);
+//                                                    BufferedReader br=new BufferedReader(fr);
+//                                                    String s;
+//
+//                                                    int count_line = 0;
+//                                                    List<String> tmp_asd = new ArrayList<>();
+//                                                    do{
+//                                                        count_line++;
+//                                                        s = br.readLine();
+//                                                        tmp_asd.add(s);
+//                                                    }while(s!=null);
+//
+//                                                    for(int i=count_line-1;i>=0;i--) {
+//                                                        if(tmp_asd.get(i) != null){
+//                                                            String line = tmp_asd.get(i);
+//                                                            String id = "";
+//
+//                                                            String[] values = line.split("\\*\\|\\*");
+//
+//                                                            int i_inner = 1;
+//                                                            for(String str : values){
+//                                                                if(i_inner == 1){
+//                                                                    id = str;
+//                                                                    if(id.contains(get_delete_id_list)){
+//
+//                                                                        FileReader fr_delete = new FileReader(path);
+//                                                                        String s_delete;
+//                                                                        String totalStr = "";
+//                                                                        BufferedReader br_delete = new BufferedReader(fr_delete);
+//
+//
+//                                                                        while ((s_delete = br_delete.readLine()) != null) {
+//                                                                            if(s_delete.contains(line)) {
+//                                                                                Log.d("Testshow", s_delete);
+//                                                                                s_delete = s_delete.substring(0, s_delete.length() - 1) + "X";
+//                                                                            }
+//
+//                                                                            totalStr += s_delete + "\n";
+//                                                                        }
+//
+//                                                                        FileWriter fw = new FileWriter(path);
+//                                                                        fw.write(totalStr);
+//                                                                        fw.close();
+//
+//                                                                    }
+//                                                                }
+//
+//                                                                i_inner++;
+//                                                            }
+//                                                        }
+//                                                    }
+//
+//                                                } else {
+//                                                    NavigationView navView = findViewById(R.id.nav_view_notification);
+//                                                    Menu menu = navView.getMenu();
+//                                                    MenuItem notification_header = menu.findItem(R.id.notification_header);
+//                                                    notification_header.setTitle("There are currently no notifications.");
+//                                                }
+//                                            } catch (Exception e) {
+//                                                e.printStackTrace();
+//                                            }
+//
+//
+//                                            // Delete
+//                                            String path = getFilesDir() + "/sb_notifications.txt";
+//                                            try {
+//                                                try {
+//
+//
+//                                                } catch (Exception e) {
+//                                                    Log.d("Testshow", e.getMessage());
+//                                                }
+//                                            } catch (Exception e) {
+//                                                Log.d("Testshow", e.getMessage());
+//                                            }
+//                                        }
+//                                    }
+//
+//                                } else{
+//                                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+//                                }
+//                            }
+//                        });
+//
+//                        getString_notification(new VolleyCallback(){
+//                            @Override
+//                            public void onSuccess(String result){
+//                                try {
+//                                    JSONObject obj = new JSONObject(result);
+//                                    JSONArray array = obj.getJSONArray("data");
+//
+//                                    for(int i=0;i<array.length();i++){
+//                                        JSONObject student = array.getJSONObject(i);
+//
+//                                        String id = student.getString("id");
+//                                        String message_date = student.getString("message_date");
+//                                        String message_title = student.getString("message_title");
+//                                        String message_content = student.getString("message_content");
+//                                        String status = student.getString("status");
+//                                        String message_type = student.getString("message_type");
+//                                        String edited_id = student.getString("edited_id");
+//
+//                                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+//                                        writeToFile(notification, "sb_notifications.txt");
+//                                    }
+//                                } catch (JSONException e) {
+//                                    e.printStackTrace();
+//                                }
+//
+//                                // Preview Notification
+//                                UpdateNotifications_EditedId();
+//                                PreviewNotifications();
+//                            }
+//                        });
+//                    }
+//                } else {
+//                    isOpened = false;
 //                }
 //            }
-//        }, delay, period);
-    }
+//        };
+//
+//        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+//        executor.scheduleAtFixedRate(helloRunnable, 0, 15, TimeUnit.SECONDS);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+////        int delay = 1000; // delay for 1 sec.
+////        int period = 15000; // repeat every 10 sec.
+////        final Timer timer = new Timer();
+////        timer.scheduleAtFixedRate(new TimerTask()
+////        {
+////            public void run()
+////            {
+////                if(isRunning){
+////                    Log.d("Timer", "gotyaaaa");
+////
+////                }
+////            }
+////        }, delay, period);
+//    }
 
 
 
@@ -1645,9 +1645,9 @@ public class MainActivity extends AppCompatActivity
                                         }
                                     }
 
-                                    if(message_status.contains("U")){
-                                        UpdateNotifications("• " + message_title + " (" + final_datetime + ")", message_title, get_group_id);
-                                    }
+
+                                    UpdateNotifications("⍣ " + message_title + " (" + final_datetime + ")", message_title, get_group_id, final_datetime);
+
 
                                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                             context);
@@ -1677,7 +1677,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void UpdateNotifications(String title, String without_replace, Integer group_id){
+    private void UpdateNotifications(String title, String without_replace, Integer group_id, String date){
         //asd123
         Integer get_final_id = (group_id*2)-1;
         String path = getFilesDir() + "/sb_notifications.txt";
@@ -1690,7 +1690,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                 Menu menu_delete = navView_delete.getMenu();
 
-                if(title.contains("•")){
+                if(title.contains("⍣")){
                     while ((s = br.readLine()) != null) {
                         if(s.contains(without_replace)) {
                             s = s.substring(0, s.length() - 1) + "R";
@@ -1705,10 +1705,10 @@ public class MainActivity extends AppCompatActivity
 
                     MenuItem pinMenuItem = menu_delete.getItem(get_final_id);
                     String final_replace = title.substring(1);
-                    pinMenuItem.setTitle(final_replace.substring(1));
+                    pinMenuItem.setTitle(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
 
                     notifications_count--;
-                    if(notifications_count != 0){
+                    if(0 < notifications_count){
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(R.id.notification_header);
