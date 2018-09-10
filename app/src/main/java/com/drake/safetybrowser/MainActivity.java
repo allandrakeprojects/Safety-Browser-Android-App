@@ -26,7 +26,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -62,6 +61,7 @@ import java.io.InputStreamReader;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,11 +78,13 @@ public class MainActivity extends AppCompatActivity
     String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
     String[] send_service = { "http://www.ssicortex.com/SendDetails", "http://www.ssitectonic.com/SendDetails", "http://www.ssihedonic.com/SendDetails" };
     String[] notifications_service = { "http://www.ssicortex.com/GetNotifications", "http://www.ssitectonic.com/GetNotifications", "http://www.ssihedonic.com/GetNotifications" };
+    String[] notifications_delete_service = { "http://www.ssicortex.com/GetMessageX", "http://www.ssitectonic.com/GetMessageX", "http://www.ssihedonic.com/GetMessageX" };
     String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
     String BRAND_CODE = "YB";
     String domain = "";
     String text_search = "";
     String get_external_ip_address = "";
+    String get_deleted_id = "";
     int detect_no_internet_connection = 0;
     int domain_count_max = -1;
     int domain_count_current = 0;
@@ -95,8 +97,11 @@ public class MainActivity extends AppCompatActivity
     boolean isHelpAndSupportVisible = false;
     boolean isClearCache = false;
     boolean isUnread = false;
+    boolean isHide = false;
+    boolean isInsertMenu = false;
     private WebView webView;
     ArrayList<String> domain_list = new ArrayList<>();
+    List<String> get_id = new ArrayList<>();
     final Context context = this;
     GifImageView gifImageView_loader;
     RelativeLayout relativeLayout_connection;
@@ -438,6 +443,25 @@ public class MainActivity extends AppCompatActivity
     public void onResume(){
         super.onResume();
 
+        getString_deletedid(new VolleyCallback(){
+            @Override
+            public void onSuccess(String result){
+
+                String replace_responce = StringEscapeUtils.unescapeJava(result);
+                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                while(m.find()){
+                    get_deleted_id = m.group(1);
+                }
+
+                if(result.contains("OK")){
+                    get_deleted_id = get_deleted_id.replace("\"", "");
+                } else{
+                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
         getString_notification(new VolleyCallback(){
             @Override
             public void onSuccess(String result){
@@ -463,158 +487,9 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
 
-                try {
-//                    File fdelete = new File(getFilesDir() + "/sb_notifications.txt");
-//                    if (fdelete.exists()) {
-//                        fdelete.delete();
-//                    }
-
-                    final File file = new File(getFilesDir() + "/sb_notifications.txt");
-
-                    if (file.exists()) {
-                        String path = getFilesDir() + "/sb_notifications.txt";
-                        FileReader fr=new FileReader(path);
-                        BufferedReader br=new BufferedReader(fr);
-                        String s;
-
-                        int count_line = 0;
-                        List<String> tmp = new ArrayList<>();
-                        do{
-                            count_line++;
-                            s = br.readLine();
-                            tmp.add(s);
-                        }while(s!=null);
-
-                        int notification_count = 0;
-                        for(int i=count_line-1;i>=0;i--) {
-                            if(tmp.get(i) != null){
-                                String line = tmp.get(i);
-                                NavigationView navView = findViewById(R.id.nav_view_notification);
-                                String id = "";
-                                String message_date = "";
-                                String message_title = "";
-                                String message_content = "";
-
-                                String[] values = line.split("\\*\\|\\*");
-
-                                int i_inner = 1;
-                                for(String str : values){
-                                    if(i_inner == 1){
-                                        id = str;
-                                    } else if(i_inner == 2){
-                                        message_date = str;
-                                    }else if(i_inner == 3){
-                                        message_title = str;
-                                    }else if(i_inner == 4){
-                                        message_content = str;
-                                    }else if(i_inner == 8){
-                                        if(str.contains("U")){
-                                            isUnread = true;
-                                            notifications_count++;
-                                            Menu menu = navView.getMenu();
-                                            MenuItem notification_header = menu.findItem(R.id.notification_header);
-                                            notification_header.setTitle("Notifications (" + notifications_count + ")");
-                                        } else {
-                                            Menu menu = navView.getMenu();
-                                            MenuItem notification_header = menu.findItem(R.id.notification_header);
-                                            if(notifications_count == 0){
-                                                notification_header.setTitle("Notifications");
-                                            }
-                                        }
-                                    }
-
-                                    i_inner++;
-                                }
-
-                                // Add Navigation View
-                                Menu menu = navView.getMenu();
-
-                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                String final_datetime = "";
-                                Date past = format.parse(message_date);
-                                Date now = new Date();
-                                long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
-                                long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
-                                long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
-                                long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
-
-                                if(seconds<60)
-                                {
-
-                                    final_datetime = "just now";
-                                }
-                                else if(minutes<60)
-                                {
-                                    if(minutes == 1){
-                                        final_datetime = minutes+" min ago";
-                                    } else{
-                                        final_datetime = minutes+" mins ago";
-                                    }
-                                }
-                                else if(hours<24)
-                                {
-                                    if(hours == 1){
-                                        final_datetime = hours+" hr ago";
-                                    } else{
-                                        final_datetime = hours+" hrs ago";
-                                    }
-                                }
-                                else if(hours<48)
-                                {
-                                    final_datetime = days+" yesterday";
-                                }
-                                else if(days<30)
-                                {
-                                    if(days == 1){
-                                        final_datetime = days+" day ago";
-                                    } else{
-                                        final_datetime = days+" days ago";
-                                    }
-                                }
-                                else if(days>30)
-                                {
-                                    long months = days / 30;
-                                    if(months == 1){
-                                        final_datetime = months+" month ago";
-                                    } else{
-                                        final_datetime = months+" months ago";
-                                    }
-                                }
-                                else
-                                {
-                                    long years = days / 365;
-                                    if(years == 1){
-                                        final_datetime = years+" year ago";
-                                    } else{
-                                        final_datetime = years+" years ago";
-                                    }
-                                }
-
-                                // asd123
-                                if(isUnread){
-                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "• " + message_title, 18, "title") + " (" + final_datetime + ")");
-                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
-                                    isUnread = false;
-                                } else {
-                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
-                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
-                                    isUnread = false;
-                                }
-
-                                displayRightNavigation();
-                            }
-
-                            notification_count++;
-                        }
-                    } else {
-                        NavigationView navView = findViewById(R.id.nav_view_notification);
-                        Menu menu = navView.getMenu();
-                        MenuItem notification_header = menu.findItem(R.id.notification_header);
-                        notification_header.setTitle("There are currently no notifications.");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                // Preview Notification
+                UpdateNotifications_EditedId();
+                PreviewNotifications();
             }
         });
 
@@ -628,6 +503,255 @@ public class MainActivity extends AppCompatActivity
                 GETIPINFO();
             }
         });
+    }
+
+    private void PreviewNotifications(){
+        try {
+//            File fdelete = new File(getFilesDir() + "/sb_notifications.txt");
+//            if (fdelete.exists()) {
+//                fdelete.delete();
+//            }
+
+            final File file = new File(getFilesDir() + "/sb_notifications.txt");
+
+            if (file.exists()) {
+                String path = getFilesDir() + "/sb_notifications.txt";
+                FileReader fr=new FileReader(path);
+                BufferedReader br=new BufferedReader(fr);
+                String s;
+
+                int count_line = 0;
+                List<String> tmp = new ArrayList<>();
+                do{
+                    count_line++;
+                    s = br.readLine();
+                    tmp.add(s);
+                }while(s!=null);
+
+                int notification_count = 0;
+                for(int i=count_line-1;i>=0;i--) {
+                    if(tmp.get(i) != null){
+                        String line = tmp.get(i);
+                        NavigationView navView = findViewById(R.id.nav_view_notification);
+                        String id = "";
+                        String message_date = "";
+                        String message_title = "";
+                        String edited_id = "";
+                        String message_content = "";
+
+                        String[] values = line.split("\\*\\|\\*");
+
+                        int i_inner = 1;
+                        for(String str : values){
+                            if(i_inner == 1){
+                                id = str;
+                                for(String ids : get_id){
+                                    Log.d("asd", ids);
+                                    if(id.contains(ids)){
+                                        isHide = true;
+                                    }
+                                }
+                            } else if(i_inner == 2){
+                                message_date = str;
+                            }else if(i_inner == 3){
+                                message_title = str;
+                            }else if(i_inner == 4){
+                                String lineSep = System.getProperty("line.separator");
+                                message_content = str;
+                                message_content = message_content.replace("&lt;", "<");
+                                message_content = message_content.replace("&gt;", ">");
+                                message_content = message_content.replace("<br />", lineSep);
+                            }else if(i_inner == 7){
+                                if(!str.contains("null")){
+                                    edited_id = str;
+//                                    Log.d("Test", edited_id);
+                                }
+                            }else if(i_inner == 8){
+                                if(!isHide){
+                                    if(str.contains("U")){
+                                        isUnread = true;
+                                        notifications_count++;
+                                        Menu menu = navView.getMenu();
+                                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
+                                    } else {
+                                        Menu menu = navView.getMenu();
+                                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                        if(notifications_count == 0){
+                                            notification_header.setTitle("Notifications");
+                                        }
+                                    }
+                                }
+                            }
+
+                            i_inner++;
+                        }
+
+                        // Add Navigation View
+                        Menu menu = navView.getMenu();
+
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String final_datetime = "";
+                        Date past = format.parse(message_date);
+                        Date now = new Date();
+                        long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+                        long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+                        long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+                        long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+
+                        if(seconds<60)
+                        {
+
+                            final_datetime = "just now";
+                        }
+                        else if(minutes<60)
+                        {
+                            if(minutes == 1){
+                                final_datetime = minutes+" min ago";
+                            } else{
+                                final_datetime = minutes+" mins ago";
+                            }
+                        }
+                        else if(hours<24)
+                        {
+                            if(hours == 1){
+                                final_datetime = hours+" hr ago";
+                            } else{
+                                final_datetime = hours+" hrs ago";
+                            }
+                        }
+                        else if(hours<48)
+                        {
+                            final_datetime = days+" yesterday";
+                        }
+                        else if(days<30)
+                        {
+                            if(days == 1){
+                                final_datetime = days+" day ago";
+                            } else{
+                                final_datetime = days+" days ago";
+                            }
+                        }
+                        else if(days>30)
+                        {
+                            long months = days / 30;
+                            if(months == 1){
+                                final_datetime = months+" month ago";
+                            } else{
+                                final_datetime = months+" months ago";
+                            }
+                        }
+                        else
+                        {
+                            long years = days / 365;
+                            if(years == 1){
+                                final_datetime = years+" year ago";
+                            } else{
+                                final_datetime = years+" years ago";
+                            }
+                        }
+
+                        // asd123
+                        if(!isHide){
+                            if(isUnread){
+                                menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "• " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+                                isUnread = false;
+//                                isInsertMenu = false;
+                            } else {
+                                menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+                                isUnread = false;
+//                                isInsertMenu = false;
+                            }
+                        } else {
+                            isHide = false;
+//                            isInsertMenu = true;
+                        }
+
+//                        if(isInsertMenu){
+//                            MenuItem notification_header = menu.findItem(R.id.notification_header);
+//                            notification_header.setTitle("There are currently no notifications.");
+//                        }
+
+                        displayRightNavigation();
+                    }
+
+                    notification_count++;
+                }
+            } else {
+                NavigationView navView = findViewById(R.id.nav_view_notification);
+                Menu menu = navView.getMenu();
+                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                notification_header.setTitle("There are currently no notifications.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void UpdateNotifications_EditedId(){
+        try {
+            final File file = new File(getFilesDir() + "/sb_notifications.txt");
+
+            if (file.exists()) {
+                String path = getFilesDir() + "/sb_notifications.txt";
+                FileReader fr=new FileReader(path);
+                BufferedReader br=new BufferedReader(fr);
+                String s;
+
+                int count_line = 0;
+                List<String> tmp = new ArrayList<>();
+                do{
+                    count_line++;
+                    s = br.readLine();
+                    tmp.add(s);
+                }while(s!=null);
+
+                for(int i=count_line-1;i>=0;i--) {
+                    if(tmp.get(i) != null){
+                        String line = tmp.get(i);
+                        String id = "";
+                        String edited_id = "";
+
+
+
+                        String[] values = line.split("\\*\\|\\*");
+
+                        int i_inner = 1;
+                        for(String str : values){
+                            if(i_inner == 1){
+                                id = str;
+                                List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+//                                String[] get_delete_id_lists = get_deleted_id.split(",");
+                                for(String get_delete_id_list : get_delete_id_lists){
+                                    if(get_delete_id_list != ""){
+                                        if(id.contains(get_delete_id_list)){
+                                            get_id.add(id);
+                                        }
+                                    }
+                                }
+                            }
+                            if(i_inner == 7){
+                                if(!str.contains("null")){
+                                    edited_id = str;
+                                    get_id.add(edited_id);
+                                }
+                            }
+
+                            i_inner++;
+                        }
+                    }
+                }
+            } else {
+                NavigationView navView = findViewById(R.id.nav_view_notification);
+                Menu menu = navView.getMenu();
+                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                notification_header.setTitle("There are currently no notifications.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public String getSafeSubstring(String s, int maxLength, String type){
@@ -670,6 +794,32 @@ public class MainActivity extends AppCompatActivity
                 MyData.put("macid", GETMACADDRESS());
                 MyData.put("brand_code", BRAND_CODE);
                 MyData.put("api_key", API_KEY);
+                return MyData;
+            }
+        };
+
+        MyRequestQueue.add(MyStringRequest);
+    }
+
+    public void getString_deletedid(final VolleyCallback callback) {
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, notifications_delete_service[0], new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                callback.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //This code is executed if there is an error.
+            }
+        }) {
+            protected Map<String, String> getParams() {
+                Map<String, String> MyData = new HashMap<>();
+                MyData.put("api_key", API_KEY);
+                MyData.put("brand_code", BRAND_CODE);
+                MyData.put("macid", GETMACADDRESS());
                 return MyData;
             }
         };
@@ -878,6 +1028,13 @@ public class MainActivity extends AppCompatActivity
         queue.add(putRequest);
     }
 
+
+
+
+
+
+
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -1041,7 +1198,11 @@ public class MainActivity extends AppCompatActivity
                                         }else if(i_inner == 3){
                                             message_title = str;
                                         }else if(i_inner == 4){
+                                            String lineSep = System.getProperty("line.separator");
                                             message_content = str;
+                                            message_content = message_content.replace("&lt;", "<");
+                                            message_content = message_content.replace("&gt;", ">");
+                                            message_content = message_content.replace("<br />", lineSep);
                                         }else if(i_inner == 8){
                                             message_status = str;
                                         }
@@ -1110,7 +1271,7 @@ public class MainActivity extends AppCompatActivity
                                     }
 
                                     if(message_status.contains("U")){
-                                        UpdateNotification("• " + message_title + " (" + final_datetime + ")", message_title, get_group_id);
+                                        UpdateNotifications("• " + message_title + " (" + final_datetime + ")", message_title, get_group_id);
                                     }
 
                                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
@@ -1141,8 +1302,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private void UpdateNotification(String title, String without_replace, Integer group_id){
+    private void UpdateNotifications(String title, String without_replace, Integer group_id){
         //asd123
         Integer get_final_id = (group_id*2)-1;
         String path = getFilesDir() + "/sb_notifications.txt";
@@ -1150,7 +1310,8 @@ public class MainActivity extends AppCompatActivity
             FileReader fr = new FileReader(path);
             String s;
             String totalStr = "";
-            try (BufferedReader br = new BufferedReader(fr)) {
+            try {
+                BufferedReader br = new BufferedReader(fr);
                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                 Menu menu_delete = navView_delete.getMenu();
 
@@ -1184,6 +1345,8 @@ public class MainActivity extends AppCompatActivity
                         notification_header.setTitle("Notifications");
                     }
                 }
+            } catch (Exception e) {
+                System.out.println("Problem reading file.");
             }
         } catch (Exception e) {
             System.out.println("Problem reading file.");
