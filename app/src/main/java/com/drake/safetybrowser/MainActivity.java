@@ -9,8 +9,10 @@ import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,7 +28,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -55,10 +56,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.NetworkInterface;
-import java.security.acl.Group;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +67,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity
                     while ((i = reader.read(buffer)) > 0)
                         output.append(buffer, 0, i);
                     reader.close();
-                    Log.d("*************", "" + output);
+//                    Log.d("*************", "" + output);
                     Toast.makeText(getApplicationContext(), output, Toast.LENGTH_SHORT).show();
 //                    writeToFile(output + "", "sb_ping.txt");
 
@@ -500,19 +500,14 @@ public class MainActivity extends AppCompatActivity
                                 int i_inner = 1;
                                 for(String str : values){
                                     if(i_inner == 1){
-                                        Log.d("Test", "id: " + str);
                                         id = str;
                                     } else if(i_inner == 2){
-                                        Log.d("Test", "message date: " + str);
                                         message_date = str;
                                     }else if(i_inner == 3){
-                                        Log.d("Test", "message title: " + str);
                                         message_title = str;
                                     }else if(i_inner == 4){
-                                        Log.d("Test", "message content: " + str);
                                         message_content = str;
                                     }else if(i_inner == 8){
-                                        Log.d("Test", "message status: " + str);
                                         if(str.contains("U")){
                                             isUnread = true;
                                             notifications_count++;
@@ -522,7 +517,9 @@ public class MainActivity extends AppCompatActivity
                                         } else {
                                             Menu menu = navView.getMenu();
                                             MenuItem notification_header = menu.findItem(R.id.notification_header);
-                                            notification_header.setTitle("Notifications");
+                                            if(notifications_count == 0){
+                                                notification_header.setTitle("Notifications");
+                                            }
                                         }
                                     }
 
@@ -543,41 +540,34 @@ public class MainActivity extends AppCompatActivity
 
                                 if(seconds<60)
                                 {
-                                    Log.d("Test", "just now");
+
                                     final_datetime = "just now";
                                 }
                                 else if(minutes<60)
                                 {
                                     if(minutes == 1){
-                                        Log.d("Test", minutes+" min ago");
                                         final_datetime = minutes+" min ago";
                                     } else{
-                                        Log.d("Test", minutes+" mins ago");
                                         final_datetime = minutes+" mins ago";
                                     }
                                 }
                                 else if(hours<24)
                                 {
                                     if(hours == 1){
-                                        Log.d("Test", hours+" hr ago");
                                         final_datetime = hours+" hr ago";
                                     } else{
-                                        Log.d("Test", hours+" hrs ago");
                                         final_datetime = hours+" hrs ago";
                                     }
                                 }
                                 else if(hours<48)
                                 {
-                                    Log.d("Test", days+" yesterday");
                                     final_datetime = days+" yesterday";
                                 }
                                 else if(days<30)
                                 {
                                     if(days == 1){
-                                        Log.d("Test", days+" day ago");
                                         final_datetime = days+" day ago";
                                     } else{
-                                        Log.d("Test", days+" days ago");
                                         final_datetime = days+" days ago";
                                     }
                                 }
@@ -585,10 +575,8 @@ public class MainActivity extends AppCompatActivity
                                 {
                                     long months = days / 30;
                                     if(months == 1){
-                                        Log.d("Test", months+" month ago");
                                         final_datetime = months+" month ago";
                                     } else{
-                                        Log.d("Test", months+" months ago");
                                         final_datetime = months+" months ago";
                                     }
                                 }
@@ -596,22 +584,20 @@ public class MainActivity extends AppCompatActivity
                                 {
                                     long years = days / 365;
                                     if(years == 1){
-                                        Log.d("Test", years+" year ago");
                                         final_datetime = years+" year ago";
                                     } else{
-                                        Log.d("Test", years+" years ago");
                                         final_datetime = years+" years ago";
                                     }
                                 }
 
                                 // asd123
                                 if(isUnread){
-                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring("• " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "• " + message_title, 18, "title") + " (" + final_datetime + ")");
                                     menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                     isUnread = false;
                                 } else {
-                                    Menu submenu = menu.addSubMenu(notification_count, Menu.NONE, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
-                                    submenu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
+                                    menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                     isUnread = false;
                                 }
 
@@ -1006,16 +992,19 @@ public class MainActivity extends AppCompatActivity
     private void displayRightNavigation(){
         final NavigationView navigationViewRight = findViewById(R.id.nav_view_notification);
         navigationViewRight.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 // Handle navigation view item clicks here.
                 int id = item.getItemId();
+                Integer get_group_id = item.getGroupId();
 
                 // asd123
                 if (id == 120) {
 
                     try {
                         String group_id = String.valueOf(item.getGroupId());
+                        String id_get = String.valueOf(item.getItemId());
 
 
                         String path = getFilesDir() + "/sb_notifications.txt";
@@ -1042,19 +1031,19 @@ public class MainActivity extends AppCompatActivity
                                     String message_date = "";
                                     String message_title = "";
                                     String message_content = "";
+                                    String message_status = "";
                                     String[] values = line.split("\\*\\|\\*");
 
                                     int i_inner = 1;
                                     for(String str : values){
                                         if(i_inner == 2){
-                                            Log.d("Test", "message date: " + str);
                                             message_date = str;
                                         }else if(i_inner == 3){
-                                            Log.d("Test", "message title: " + str);
                                             message_title = str;
                                         }else if(i_inner == 4){
-                                            Log.d("Test", "message content: " + str);
                                             message_content = str;
+                                        }else if(i_inner == 8){
+                                            message_status = str;
                                         }
 
                                         i_inner++;
@@ -1071,41 +1060,33 @@ public class MainActivity extends AppCompatActivity
 
                                     if(seconds<60)
                                     {
-                                        Log.d("Test", "just now");
                                         final_datetime = "just now";
                                     }
                                     else if(minutes<60)
                                     {
                                         if(minutes == 1){
-                                            Log.d("Test", minutes+" min ago");
                                             final_datetime = minutes+" min ago";
                                         } else{
-                                            Log.d("Test", minutes+" mins ago");
                                             final_datetime = minutes+" mins ago";
                                         }
                                     }
                                     else if(hours<24)
                                     {
                                         if(hours == 1){
-                                            Log.d("Test", hours+" hr ago");
                                             final_datetime = hours+" hr ago";
                                         } else{
-                                            Log.d("Test", hours+" hrs ago");
                                             final_datetime = hours+" hrs ago";
                                         }
                                     }
                                     else if(hours<48)
                                     {
-                                        Log.d("Test", days+" yesterday");
                                         final_datetime = days+" yesterday";
                                     }
                                     else if(days<30)
                                     {
                                         if(days == 1){
-                                            Log.d("Test", days+" day ago");
                                             final_datetime = days+" day ago";
                                         } else{
-                                            Log.d("Test", days+" days ago");
                                             final_datetime = days+" days ago";
                                         }
                                     }
@@ -1113,10 +1094,8 @@ public class MainActivity extends AppCompatActivity
                                     {
                                         long months = days / 30;
                                         if(months == 1){
-                                            Log.d("Test", months+" month ago");
                                             final_datetime = months+" month ago";
                                         } else{
-                                            Log.d("Test", months+" months ago");
                                             final_datetime = months+" months ago";
                                         }
                                     }
@@ -1124,12 +1103,14 @@ public class MainActivity extends AppCompatActivity
                                     {
                                         long years = days / 365;
                                         if(years == 1){
-                                            Log.d("Test", years+" year ago");
                                             final_datetime = years+" year ago";
                                         } else{
-                                            Log.d("Test", years+" years ago");
                                             final_datetime = years+" years ago";
                                         }
+                                    }
+
+                                    if(message_status.contains("U")){
+                                        UpdateNotification("• " + message_title + " (" + final_datetime + ")", message_title, get_group_id);
                                     }
 
                                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
@@ -1158,6 +1139,55 @@ public class MainActivity extends AppCompatActivity
                 return true;
             }
         });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void UpdateNotification(String title, String without_replace, Integer group_id){
+        //asd123
+        Integer get_final_id = (group_id*2)-1;
+        String path = getFilesDir() + "/sb_notifications.txt";
+        try {
+            FileReader fr = new FileReader(path);
+            String s;
+            String totalStr = "";
+            try (BufferedReader br = new BufferedReader(fr)) {
+                NavigationView navView_delete = findViewById(R.id.nav_view_notification);
+                Menu menu_delete = navView_delete.getMenu();
+
+                if(title.contains("•")){
+                    while ((s = br.readLine()) != null) {
+                        if(s.contains(without_replace)) {
+                            s = s.substring(0, s.length() - 1) + "R";
+                        }
+
+                        totalStr += s + "\n";
+                    }
+
+                    FileWriter fw = new FileWriter(path);
+                    fw.write(totalStr);
+                    fw.close();
+
+                    MenuItem pinMenuItem = menu_delete.getItem(get_final_id);
+                    String final_replace = title.substring(1);
+                    pinMenuItem.setTitle(final_replace.substring(1));
+
+                    notifications_count--;
+                    if(notifications_count != 0){
+                        NavigationView navView = findViewById(R.id.nav_view_notification);
+                        Menu menu = navView.getMenu();
+                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                        notification_header.setTitle("Notifications (" + notifications_count + ")");
+                    } else{
+                        NavigationView navView = findViewById(R.id.nav_view_notification);
+                        Menu menu = navView.getMenu();
+                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                        notification_header.setTitle("Notifications");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Problem reading file.");
+        }
     }
 
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
