@@ -461,8 +461,96 @@ public class MainActivity extends AppCompatActivity
 //                                String[] get_delete_id_lists = get_deleted_id.split(",");
                     for(String get_delete_id_list : get_delete_id_lists){
                         if(get_delete_id_list != ""){
-                            Log.d("asd", get_delete_id_list);
-//                            UpdateID(get_delete_id_list);
+//                            get_id.add(get_delete_id_list);
+                            try {
+                                final File file = new File(getFilesDir() + "/sb_notifications.txt");
+
+                                if (file.exists()) {
+                                    String path = getFilesDir() + "/sb_notifications.txt";
+                                    FileReader fr=new FileReader(path);
+                                    BufferedReader br=new BufferedReader(fr);
+                                    String s;
+
+                                    int count_line = 0;
+                                    List<String> tmp_asd = new ArrayList<>();
+                                    do{
+                                        count_line++;
+                                        s = br.readLine();
+                                        tmp_asd.add(s);
+                                    }while(s!=null);
+
+                                    for(int i=count_line-1;i>=0;i--) {
+                                        if(tmp_asd.get(i) != null){
+                                            String line = tmp_asd.get(i);
+                                            String id = "";
+
+                                            String[] values = line.split("\\*\\|\\*");
+
+                                            int i_inner = 1;
+                                            for(String str : values){
+                                                if(i_inner == 1){
+                                                    id = str;
+                                                    if(id.contains(get_delete_id_list)){
+
+                                                        FileReader fr_delete = new FileReader(path);
+                                                        String s_delete;
+                                                        String totalStr = "";
+                                                        BufferedReader br_delete = new BufferedReader(fr_delete);
+
+
+                                                        while ((s_delete = br_delete.readLine()) != null) {
+                                                            if(s_delete.contains(line)) {
+                                                                Log.d("Testshow", s_delete);
+                                                                s_delete = s_delete.substring(0, s_delete.length() - 1) + "X";
+                                                            }
+
+                                                            totalStr += s_delete + "\n";
+                                                        }
+
+                                                        FileWriter fw = new FileWriter(path);
+                                                        fw.write(totalStr);
+                                                        fw.close();
+
+                                                    }
+                                                }
+
+                                                i_inner++;
+                                            }
+                                        }
+                                    }
+
+                                } else {
+                                    NavigationView navView = findViewById(R.id.nav_view_notification);
+                                    Menu menu = navView.getMenu();
+                                    MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                    notification_header.setTitle("There are currently no notifications.");
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+
+                            // Delete
+                            String path = getFilesDir() + "/sb_notifications.txt";
+                            try {
+                                try {
+
+
+                                } catch (Exception e) {
+                                    Log.d("Testshow", e.getMessage());
+                                }
+                            } catch (Exception e) {
+                                Log.d("Testshow", e.getMessage());
+                            }
+
+
+
+
+
+
+
+
+
                         }
                     }
 
@@ -662,13 +750,21 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "• " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                 isUnread = false;
+                                isInsertMenu = true;
                             } else {
                                 menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
                                 isUnread = false;
+                                isInsertMenu = true;
                             }
                         } else {
                             isHide = false;
+                        }
+
+                        if(!isInsertMenu){
+                            MenuItem notification_header = menu.findItem(R.id.notification_header);
+                            notification_header.setTitle("There are currently no notifications.");
+                            isInsertMenu = false;
                         }
 
                         displayRightNavigation();
@@ -736,6 +832,55 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void UpdateID_Delete(String edited_id){
+        try {
+            final File file = new File(getFilesDir() + "/sb_notifications.txt");
+
+            if (file.exists()) {
+                String path = getFilesDir() + "/sb_notifications.txt";
+                FileReader fr=new FileReader(path);
+                BufferedReader br=new BufferedReader(fr);
+                String s;
+
+                int count_line = 0;
+                List<String> tmp = new ArrayList<>();
+                do{
+                    count_line++;
+                    s = br.readLine();
+                    tmp.add(s);
+                }while(s!=null);
+
+                for(int i=count_line-1;i>=0;i--) {
+                    if(tmp.get(i) != null){
+                        String line = tmp.get(i);
+                        String id = "";
+
+                        String[] values = line.split("\\*\\|\\*");
+
+                        int i_inner = 1;
+                        for(String str : values){
+                            if(i_inner == 1){
+                                id = str;
+                                if(id.contains(edited_id)){
+                                    get_id_delete.add(line);
+                                }
+                            }
+
+                            i_inner++;
+                        }
+                    }
+                }
+            } else {
+                NavigationView navView = findViewById(R.id.nav_view_notification);
+                Menu menu = navView.getMenu();
+                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                notification_header.setTitle("There are currently no notifications.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void UpdateNotifications_EditedId(){
         try {
             final File file = new File(getFilesDir() + "/sb_notifications.txt");
@@ -765,9 +910,16 @@ public class MainActivity extends AppCompatActivity
                         for(String str : values){
                             if(i_inner == 7){
                                 if(!str.contains("null")){
-                                    edited_id = str;
-                                    Log.d("test", edited_id);
-                                    UpdateID(edited_id);
+                                    List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+//                                String[] get_delete_id_lists = get_deleted_id.split(",");
+                                    for(String get_delete_id_list : get_delete_id_lists){
+                                        if(get_delete_id_list != ""){
+                                            if(!edited_id.contains(get_delete_id_list)){
+                                                edited_id = str;
+                                                UpdateID(edited_id);
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -796,21 +948,6 @@ public class MainActivity extends AppCompatActivity
                 BufferedReader br = new BufferedReader(fr);
 
                 for(String ids : get_id){
-                    while ((s = br.readLine()) != null) {
-                        if(s.contains(ids)) {
-                            s = s.substring(0, s.length() - 1) + "X";
-                        }
-
-
-                        totalStr += s + "\n";
-                    }
-
-                    FileWriter fw = new FileWriter(path);
-                    fw.write(totalStr);
-                    fw.close();
-                }
-
-                for(String ids : get_id_delete){
                     while ((s = br.readLine()) != null) {
                         if(s.contains(ids)) {
                             s = s.substring(0, s.length() - 1) + "X";
