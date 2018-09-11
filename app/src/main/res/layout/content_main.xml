@@ -11,6 +11,111 @@
     tools:showIn="@layout/app_bar_main">
 
     <RelativeLayout
+        android:id="@+id/relativeLayout_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <WebView
+                android:id="@+id/webView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.22"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.189"></WebView>
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout_loader"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textView_loader"
+            android:layout_width="wrap_content"
+            android:layout_height="142dp"
+            android:layout_centerInParent="true"
+            android:gravity="bottom"
+            android:text="loading..."
+            android:textColor="#535353"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.512"
+            app:layout_constraintVertical_bias="0.551" />
+
+        <com.drake.safetybrowser.GifImageView
+            android:id="@+id/gifImageView_loader"
+            android:layout_width="51dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:gravity="center"
+            app:layout_constraintBottom_toBottomOf="@+id/relativeLayout_helpandsupport"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.501"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/webView"
+            app:layout_constraintVertical_bias="0.51"
+            tools:ignore="NotSibling" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout_connection"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.drake.safetybrowser.GifImageView
+            android:id="@+id/gifImageView_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.512"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.427" />
+
+        <TextView
+            android:id="@+id/textView_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="176dp"
+            android:layout_centerInParent="true"
+            android:gravity="bottom"
+            android:text="check your internet connection"
+            android:textColor="#535353"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.512"
+            app:layout_constraintVertical_bias="0.551" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/relativeLayout2"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -27,83 +132,10 @@
             android:layout_alignParentTop="true"
             android:layout_marginEnd="92dp"
             android:layout_marginTop="82dp"
-            android:visibility="invisible" />
+            android:visibility="invisible"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="92dp" />
     </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/relativeLayout_connection"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.drake.safetybrowser.GifImageView
-            android:id="@+id/gifImageView_connection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="168dp"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.512"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.427" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="235dp"
-            android:text="Check your Internet connection"
-            android:textColor="#535353"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.512"
-            app:layout_constraintStart_toStartOf="@+id/webView"
-            app:layout_constraintTop_toTopOf="@+id/webView"
-            app:layout_constraintVertical_bias="0.551" />
-
-    </RelativeLayout>
-
-    <com.drake.safetybrowser.GifImageView
-        android:id="@+id/gifImageView_loader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="216dp"
-        android:gravity="center"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <LinearLayout
-            android:layout_width="368dp"
-            android:layout_height="495dp"
-            android:orientation="horizontal"
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="8dp"></LinearLayout>
-
-    </WebView>
 
     <RelativeLayout
         android:id="@+id/relativeLayout_helpandsupport"
@@ -130,7 +162,9 @@
             android:layout_marginStart="-3dp"
             android:layout_marginTop="-7dp"
             android:layout_toEndOf="@+id/textView_helpandsupport"
-            app:srcCompat="@drawable/ic_notification_3" />
+            app:srcCompat="@drawable/ic_notification_3"
+            android:layout_marginLeft="-3dp"
+            android:layout_toRightOf="@+id/textView_helpandsupport" />
 
         <ImageView
             android:id="@+id/imageView_help_notification_1"
@@ -139,7 +173,9 @@
             android:layout_alignEnd="@+id/textView_chatus_1"
             android:layout_below="@+id/imageView_help_notification_2"
             android:layout_marginEnd="-9dp"
-            app:srcCompat="@drawable/ic_notification_1" />
+            app:srcCompat="@drawable/ic_notification_1"
+            android:layout_alignRight="@+id/textView_chatus_1"
+            android:layout_marginRight="-9dp" />
 
         <ImageView
             android:id="@+id/imageView_help_back"
@@ -171,7 +207,9 @@
             android:layout_alignTop="@+id/textView_emailus"
             android:layout_marginEnd="73dp"
             android:scaleType="centerInside"
-            app:srcCompat="@drawable/ic_notification_2" />
+            app:srcCompat="@drawable/ic_notification_2"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="73dp" />
 
         <TextView
             android:id="@+id/textView_chatus"
@@ -181,7 +219,8 @@
             android:layout_alignStart="@+id/imageView_help_back"
             android:layout_marginTop="71dp"
             android:text="Chat Us"
-            android:textColor="#fff" />
+            android:textColor="#fff"
+            android:layout_alignLeft="@+id/imageView_help_back" />
 
         <TextView
             android:id="@+id/textView_emailus"
@@ -191,7 +230,8 @@
             android:layout_alignStart="@+id/imageView_help_back"
             android:layout_marginTop="138dp"
             android:text="Email Us"
-            android:textColor="#fff" />
+            android:textColor="#fff"
+            android:layout_alignLeft="@+id/imageView_help_back" />
 
         <TextView
             android:id="@+id/textView_clearcache"
@@ -225,7 +265,8 @@
             android:layout_alignStart="@+id/imageView_help_back"
             android:layout_centerVertical="true"
             android:text="Social"
-            android:textColor="#fff" />
+            android:textColor="#fff"
+            android:layout_alignLeft="@+id/imageView_help_back" />
 
         <TextView
             android:id="@+id/textView_chatus_1"
@@ -247,7 +288,8 @@
             android:clickable="true"
             android:text="cs@yb188.com"
             android:textColor="#EB6306"
-            android:textSize="9sp" />
+            android:textSize="9sp"
+            android:layout_alignLeft="@+id/imageView_help_back" />
 
         <TextView
             android:id="@+id/textView_social_2"
@@ -258,7 +300,8 @@
             android:clickable="true"
             android:text="• QQ: 2715693882"
             android:textColor="#fff"
-            android:textSize="9sp" />
+            android:textSize="9sp"
+            android:layout_alignLeft="@+id/imageView_help_back" />
 
         <TextView
             android:id="@+id/textView_social_3"
@@ -290,7 +333,8 @@
             android:layout_height="89dp"
             android:layout_alignStart="@+id/textView_chatus_1"
             android:layout_below="@+id/textView_social_3"
-            app:srcCompat="@drawable/ic_qr" />
+            app:srcCompat="@drawable/ic_qr"
+            android:layout_alignLeft="@+id/textView_chatus_1" />
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

@@ -10,7 +10,7 @@
     <item
         android:checkable="false"
         android:id="@+id/notification_header"
-        android:title="Notifications" />
+        android:title="There are currently no notifications." />
     <!--<group-->
         <!--android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content"-->
