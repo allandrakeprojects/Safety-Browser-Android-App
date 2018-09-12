@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
@@ -62,12 +63,14 @@ import java.io.InputStreamReader;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -116,6 +119,8 @@ public class MainActivity extends AppCompatActivity
     ImageView imageView_help_back;
     DrawerLayout drawer;
     NavigationView nav_view;
+    NavigationView nav_view_notification;
+    Menu menu_notification;
     private Context mContext;
     private ImageView mAvatarImage;
     private ImageView mCoverImage;
@@ -144,6 +149,9 @@ public class MainActivity extends AppCompatActivity
         drawer = findViewById(R.id.drawer_layout);
         nav_view = findViewById(R.id.nav_view);
         nav_view.setNavigationItemSelectedListener(this);
+        nav_view_notification = findViewById(R.id.nav_view_notification);
+        nav_view_notification.setNavigationItemSelectedListener(this);
+        menu_notification = nav_view_notification.getMenu();
         gifImageView_loader = findViewById(R.id.gifImageView_loader);
         relativeLayout_loader = findViewById(R.id.relativeLayout_loader);
         gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
@@ -252,7 +260,7 @@ public class MainActivity extends AppCompatActivity
                     // Load URL
                     if(domain_count_max != domain_count_current){
                         WebSettings webSettings = webView.getSettings();
-                        webSettings.setPluginState(WebSettings.PluginState.ON);
+                        webSettings.setPluginState(WebSettings.PluginState.OFF);
                         webSettings.setMediaPlaybackRequiresUserGesture(true);
                         webSettings.setJavaScriptEnabled(true);
                         webSettings.setAllowFileAccess(true);
@@ -273,7 +281,9 @@ public class MainActivity extends AppCompatActivity
                         webSettings.setDisplayZoomControls(true);
                         webSettings.setLightTouchEnabled(true);
                         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+                        webSettings.supportMultipleWindows();
                         webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
+                        Log.i("WebViewActivity", "UA: " + webView.getSettings().getUserAgentString());
                         webView.setScrollbarFadingEnabled(false);
                         webView.setInitialScale(1);
                         webView.loadUrl(domain_list.get(domain_count_current));
@@ -641,19 +651,8 @@ public class MainActivity extends AppCompatActivity
         queue.add(putRequest);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-    // Notification --------------
+    // Notification
+    // --------------
 
     // Get Notifications
     public void GETNOTIFICAITON_V(final VolleyCallback callback) {
@@ -674,6 +673,32 @@ public class MainActivity extends AppCompatActivity
                 MyData.put("macid", GETMACADDRESS());
                 MyData.put("brand_code", BRAND_CODE);
                 MyData.put("api_key", API_KEY);
+                return MyData;
+            }
+        };
+
+        MyRequestQueue.add(MyStringRequest);
+    }
+    // Get Deleted Notification
+    public void GETDELETEDNOTIFICATION_V(final VolleyCallback callback) {
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, notifications_delete_service[0], new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                callback.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //This code is executed if there is an error.
+            }
+        }) {
+            protected Map<String, String> getParams() {
+                Map<String, String> MyData = new HashMap<>();
+                MyData.put("api_key", API_KEY);
+                MyData.put("brand_code", BRAND_CODE);
+                MyData.put("macid", GETMACADDRESS());
                 return MyData;
             }
         };
@@ -757,11 +782,11 @@ public class MainActivity extends AppCompatActivity
                                 isUnread = true;
                                 notifications_count++;
                                 Menu menu = navView.getMenu();
-                                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                MenuItem notification_header = menu.findItem(99999);
                                 notification_header.setTitle("Notifications (" + notifications_count + ")");
                             } else {
                                 Menu menu = navView.getMenu();
-                                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                                MenuItem notification_header = menu.findItem(99999);
                                 if(notifications_count == 0){
                                     notification_header.setTitle("Notifications");
                                 }
@@ -853,7 +878,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     if(!isInsertMenu){
-                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                        MenuItem notification_header = menu.findItem(99999);
                         notification_header.setTitle("There are currently no notifications.");
                         isInsertMenu = false;
                     }
@@ -864,7 +889,7 @@ public class MainActivity extends AppCompatActivity
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
-                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                MenuItem notification_header = menu.findItem(99999);
                 notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
@@ -1064,12 +1089,12 @@ public class MainActivity extends AppCompatActivity
                     if(0 < notifications_count){
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
-                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                        MenuItem notification_header = menu.findItem(99999);
                         notification_header.setTitle("Notifications (" + notifications_count + ")");
                     } else{
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
-                        MenuItem notification_header = menu.findItem(R.id.notification_header);
+                        MenuItem notification_header = menu.findItem(99999);
                         notification_header.setTitle("Notifications");
                     }
                 }
@@ -1082,9 +1107,6 @@ public class MainActivity extends AppCompatActivity
     }
     // Updated Notification
     private void UpdatedNotification(){
-        // loop get edited id that is not equal to null and insert id to array list
-        // loop again and get id to array list
-
         try {
             final File file = new File(getFilesDir() + "/sb_notifications.txt");
 
@@ -1116,7 +1138,7 @@ public class MainActivity extends AppCompatActivity
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
-                MenuItem notification_header = menu.findItem(R.id.notification_header);
+                MenuItem notification_header = menu.findItem(99999);
                 notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
@@ -1166,11 +1188,7 @@ public class MainActivity extends AppCompatActivity
                 FileWriter fw = new FileWriter(path);
                 fw.write(totalStr);
                 fw.close();
-
-//                Log.d("123", line + " 111");
             }
-
-//            DeleteUpdatedNotification();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1198,30 +1216,78 @@ public class MainActivity extends AppCompatActivity
         return s;
     }
 
-    // End of Notification --------------
+    // End of Notification
+    // --------------
 
 
+    private void test(){
+        menu_notification.clear();
+        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
+    }
 
+    private void TimerNotification(){
+        final Timer timer = new Timer();
+        //Set the schedule function
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Log.d("Handlers", "loaded");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//                // Get Deleted Notification
+//                GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+//                @Override
+//                public void onSuccess(String result){
+//                    String replace_responce = StringEscapeUtils.unescapeJava(result);
+//                    Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+//
+//                    while(m.find()){
+//                        get_deleted_id = m.group(1);
+//                    }
+//
+//                    if(result.contains("OK")){
+//                        get_deleted_id = get_deleted_id.replace("\"", "");
+//                        List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+//                        for(String get_delete_id_list : get_delete_id_lists){
+//                            Log.d("deleted", get_delete_id_list);
+//                            GetUpdateNotification(get_delete_id_list);
+//                        }
+//                    } else{
+//                        Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+//                    }
+//                }});
+//
+//                // Get Notification
+//                GETNOTIFICAITON_V(new VolleyCallback(){
+//                @Override
+//                public void onSuccess(String result){
+//                    try {
+//                        JSONObject obj = new JSONObject(result);
+//                        JSONArray array = obj.getJSONArray("data");
+//
+//                        for(int i=0;i<array.length();i++){
+//                            JSONObject student = array.getJSONObject(i);
+//
+//                            String id = student.getString("id");
+//                            String message_date = student.getString("message_date");
+//                            String message_title = student.getString("message_title");
+//                            String message_content = student.getString("message_content");
+//                            String status = student.getString("status");
+//                            String message_type = student.getString("message_type");
+//                            String edited_id = student.getString("edited_id");
+//
+//                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+//                            writeToFile(notification, "sb_notifications.txt");
+//                        }
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    // Preview Notification
+//                    UpdatedNotification();
+//                }});
+            }
+        },0, 60000);
+    }
 
 
 
@@ -1364,6 +1430,9 @@ public class MainActivity extends AppCompatActivity
                 if(isFirstOpened){
                     // Functions --------------
 
+                    test();
+//                    TimerNotification();
+
                     // Get API
                     GETAPI(text_to_search_service[0]);
                     // Get Public IP
@@ -1377,6 +1446,30 @@ public class MainActivity extends AppCompatActivity
                             GETIPINFO();
                         }
                     });
+                    // Get Deleted Notification
+                    GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                        @Override
+                        public void onSuccess(String result){
+                            String replace_responce = StringEscapeUtils.unescapeJava(result);
+                            Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                            while(m.find()){
+                                get_deleted_id = m.group(1);
+                            }
+
+                            if(result.contains("OK")){
+                                get_deleted_id = get_deleted_id.replace("\"", "");
+                                List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                for(String get_delete_id_list : get_delete_id_lists){
+                                    Log.d("deleted", get_delete_id_list);
+                                    GetUpdateNotification(get_delete_id_list);
+                                }
+                            } else{
+                                Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+
                     // Get Notification
                     GETNOTIFICAITON_V(new VolleyCallback(){
                         @Override
