@@ -388,6 +388,12 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         nav_view(true);
+
+                        if(isClearCache){
+                            isClearCache = false;
+                            textView_clearcache.setText("CLEAR CACHE");
+                            Toast.makeText(getApplicationContext(), "Cache has been cleared", Toast.LENGTH_LONG).show();
+                        }
                     }
 
 //                    if(!isLoadingFinished){
