@@ -1295,7 +1295,6 @@ public class MainActivity extends AppCompatActivity
                 if(pinMenuItem_parent.getTitle().toString().contains("⍣")){
                     while ((s = br.readLine()) != null) {
                         if(s.contains(without_replace)) {
-                            Log.d("deleted", s);
                             s = s.substring(0, s.length() - 1) + "R";
                         }
 
