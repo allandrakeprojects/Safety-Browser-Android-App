@@ -537,6 +537,7 @@ public class MainActivity extends AppCompatActivity
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1000", Toast.LENGTH_LONG).show();
         }
+
         return "02:00:00:00:00:00";
     }
 
@@ -1015,8 +1016,6 @@ public class MainActivity extends AppCompatActivity
                                 if(isDisplay){
                                     if(str.contains("U")){
                                         isUnread = true;
-                                        notifications_count++;
-                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
                                     } else {
                                         if(notifications_count == 0){
                                             notification_header.setTitle("Notifications");
@@ -1030,6 +1029,8 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if(isDisplay){
+                            notifications_count++;
+                            notification_header.setTitle("Notifications (" + notifications_count + ")");
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
