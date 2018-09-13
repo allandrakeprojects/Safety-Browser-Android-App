@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -33,17 +34,21 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.error.ServerError;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.request.StringRequest;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -58,6 +63,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,8 +79,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ir.mahdi.mzip.zip.ZipArchive;
+
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        Response.ErrorListener, Response.Listener<String>{
 
     String[] text_to_search_service = { "http://www.ssicortex.com/GetTxt2Search", "http://www.ssitectonic.com/GetTxt2Search", "http://www.ssihedonic.com/GetTxt2Search" };
     String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
@@ -91,6 +100,8 @@ public class MainActivity extends AppCompatActivity
     int domain_count_max = -1;
     int domain_count_current = 0;
     int notifications_count = 0;
+    int notification_count = 1;
+    int notification_clear = 1;
     boolean loadingFinished = true;
     boolean redirect = false;
     boolean isConnected;
@@ -104,7 +115,14 @@ public class MainActivity extends AppCompatActivity
     boolean isRunning = false;
     boolean isOpened = false;
     boolean isFirstOpened = true;
+    boolean new_entry = false;
+    boolean detect_new_entry = false;
     private WebView webView;
+    Integer parent = 0;
+    Integer child = 0;
+    Integer detect_deleted_notification = 0;
+    Integer detect_added_notification = 0;
+    Integer detect_updated_notification = 0;
     ArrayList<String> domain_list = new ArrayList<>();
     List<String> get_id = new ArrayList<>();
     List<String> get_id_delete = new ArrayList<>();
@@ -123,7 +141,8 @@ public class MainActivity extends AppCompatActivity
     private ImageView mAvatarImage;
     private ImageView mCoverImage;
     Timer timer = new Timer();
-    SwipeRefreshLayout swipeContainer;
+//    SwipeRefreshLayout swipeContainer;
+    Button button_test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,11 +153,11 @@ public class MainActivity extends AppCompatActivity
 //                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         this.registerReceiver(this.mConnReceiver,
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
 //        Toast.makeText(getApplicationContext(), "Opened", Toast.LENGTH_LONG).show();
 
@@ -165,8 +184,9 @@ public class MainActivity extends AppCompatActivity
         textView_getdiagnostics = findViewById(R.id.textView_getdiagnostics);
         textView_loader = findViewById(R.id.textView_loader);
         imageView_help_back = findViewById(R.id.imageView_help_back);
-        swipeContainer = findViewById(R.id.swipeContainer);
+//        swipeContainer = findViewById(R.id.swipeContainer);
         mContext = getApplicationContext();
+        button_test = findViewById(R.id.button_test);
         // End of Find ID
 
         textView_chatus_2.setPaintFlags(textView_chatus_2.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
@@ -198,10 +218,27 @@ public class MainActivity extends AppCompatActivity
                     while ((i = reader.read(buffer)) > 0)
                         output.append(buffer, 0, i);
                     reader.close();
-                    // writeToFile(output + "", "sb_ping.txt");
+                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
+                     writeToFile(output + "", "sb_ping.txt");
+                    String target_path = getFilesDir() + "/sb_ping.txt";
+                    String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                    ZipArchive zipArchive = new ZipArchive();
+                    zipArchive.zip(target_path,destination_path,"");
+                    uploadData();
+                } catch (Exception e) {
+                    Log.d("deleted", e.getMessage());
+                }
+            }
+        });
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+        button_test.setOnClickListener( new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                try {
+                } catch(Exception e){
+                    Log.d("deleted", e.getMessage());
                 }
             }
         });
@@ -291,15 +328,41 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+    }
 
-        swipeContainer.setOnRefreshListener(
-            new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    webView.reload();
-                }
+    private void uploadData() {
+        try {
+            String path = getFilesDir() + "/sb_diagnostic.zip";
+            WebService.getInstance().updateProfile(MainActivity.this, API_KEY, BRAND_CODE, GETMACADDRESS(), path, this, this);
+        } catch(Exception e){
+            Log.d("deleted", e.getMessage());
+        }
+     }
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        Log.d("deleted", error.getMessage());
+        NetworkResponse response = error.networkResponse;
+        if (error instanceof ServerError && response != null) {
+            try {
+                String res = new String(response.data,
+                        HttpHeaderParser.parseCharset(response.headers, "utf-8"));
+                // Now you can use any deserializer to make sense of data
+                JSONObject obj = new JSONObject(res);
+            } catch (UnsupportedEncodingException e1) {
+                // Couldn't properly decode data to string
+                Log.d("deleted", e1.getMessage());
+            } catch (JSONException e2) {
+                // returned data is not JSONObject?
+                Log.d("deleted", e2.getMessage());
             }
-        );
+        }
+    }
+
+    @Override
+    public void onResponse(String response) {
+        //Your response here
+        Log.d("deleted", response);
     }
 
     // WebView --------------
@@ -323,7 +386,7 @@ public class MainActivity extends AppCompatActivity
             loadingFinished = false;
             if (isConnected) {
                 // Loading
-                swipeContainer.setRefreshing(false);
+//                swipeContainer.setRefreshing(false);
 //                swipeContainer.setEnabled(false);
                 textView_textchanged.setText("");
                 relativeLayout_loader.setVisibility(View.VISIBLE);
@@ -722,6 +785,9 @@ public class MainActivity extends AppCompatActivity
     }
     // Preview Notifications
     private void PreviewNotifications(){
+
+        UpdateAvailable();
+
         try {
 //            File fdelete = new File(getFilesDir() + "/sb_notifications.txt");
 //            if (fdelete.exists()) {
@@ -749,146 +815,298 @@ public class MainActivity extends AppCompatActivity
                     }
                 }while(s!=null);
 
-                int notification_count = 1;
+                int get_count_notification = 0;
+
                 for(int i=count_line-1;i>=0;i--) {
                     String line = tmp.get(i);
+                    get_count_notification++;
 
-                    NavigationView navView = findViewById(R.id.nav_view_notification);
-                    String id = "";
-                    String message_date = "";
-                    String message_title = "";
-                    String edited_id = "";
-                    String message_content = "";
+                    if(line.length() > 0){NavigationView navView = findViewById(R.id.nav_view_notification);
+                        String message_date = "";
+                        String message_title = "";
+                        String message_content = "";
+                        boolean isDisplay = true;
 
-                    String[] values = line.split("\\*\\|\\*");
+                        String[] values = line.split("\\*\\|\\*");
 
-                    int i_inner = 1;
-                    for(String str : values){
-                        if(i_inner == 1){
-                            id = str;
-                        } else if(i_inner == 2){
-                            message_date = str;
-                        }else if(i_inner == 3){
-                            message_title = str;
-                        }else if(i_inner == 4){
-                            String lineSep = System.getProperty("line.separator");
-                            message_content = str;
-                            message_content = message_content.replace("&lt;", "<");
-                            message_content = message_content.replace("&gt;", ">");
-                            message_content = message_content.replace("<br />", lineSep);
-                        }else if(i_inner == 7){
-                            if(!str.contains("null")){
-                                edited_id = str;
-//                                    Log.d("Test", edited_id);
-                            }
-                        }else if(i_inner == 8){
-                            if(str.contains("U")){
-                                isUnread = true;
-                                notifications_count++;
-                                Menu menu = navView.getMenu();
-                                MenuItem notification_header = menu.findItem(99999);
-                                notification_header.setTitle("Notifications (" + notifications_count + ")");
-                            } else {
-                                Menu menu = navView.getMenu();
-                                MenuItem notification_header = menu.findItem(99999);
-                                if(notifications_count == 0){
-                                    notification_header.setTitle("Notifications");
+                        int i_inner = 1;
+                        for(String str : values){
+                            if(i_inner == 2){
+                                message_date = str;
+                            }else if(i_inner == 3){
+                                message_title = str;
+                            }else if(i_inner == 4){
+                                String lineSep = System.getProperty("line.separator");
+                                message_content = str;
+                                message_content = message_content.replace("&lt;", "<");
+                                message_content = message_content.replace("&gt;", ">");
+                                message_content = message_content.replace("<br />", lineSep);
+                            }else if(i_inner == 6){
+                                if(str.equals("1")){
+                                    isDisplay = false;
+                                } else {
+                                    isDisplay = true;
+                                }
+                            }else if(i_inner == 8){
+                                if(str.contains("U")){
+                                    isUnread = true;
+                                } else {
+                                    Menu menu = navView.getMenu();
+                                    MenuItem notification_header = menu.findItem(99999);
+                                    if(notifications_count == 0){
+                                        notification_header.setTitle("Notifications");
+                                    }
                                 }
                             }
+
+                            i_inner++;
                         }
 
-                        i_inner++;
-                    }
+                        if(isDisplay){
+                            // Add Navigation View
+                            Menu menu = navView.getMenu();
+                            MenuItem notification_header = menu.findItem(99999);
 
-                    // Add Navigation View
-                    Menu menu = navView.getMenu();
+                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            String final_datetime = "";
+                            Date past = format.parse(message_date);
+                            Date now = new Date();
+                            long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+                            long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+                            long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+                            long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
 
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String final_datetime = "";
-                    Date past = format.parse(message_date);
-                    Date now = new Date();
-                    long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
-                    long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
-                    long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
-                    long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+                            if(seconds<60)
+                            {
 
-                    if(seconds<60)
-                    {
+                                final_datetime = "just now";
+                            }
+                            else if(minutes<60)
+                            {
+                                if(minutes == 1){
+                                    final_datetime = minutes+" min ago";
+                                } else{
+                                    final_datetime = minutes+" mins ago";
+                                }
+                            }
+                            else if(hours<24)
+                            {
+                                if(hours == 1){
+                                    final_datetime = hours+" hr ago";
+                                } else{
+                                    final_datetime = hours+" hrs ago";
+                                }
+                            }
+                            else if(hours<48)
+                            {
+                                final_datetime = days+" yesterday";
+                            }
+                            else if(days<30)
+                            {
+                                if(days == 1){
+                                    final_datetime = days+" day ago";
+                                } else{
+                                    final_datetime = days+" days ago";
+                                }
+                            }
+                            else
+                            {
+                                final_datetime = "older message";
+                            }
 
-                        final_datetime = "just now";
-                    }
-                    else if(minutes<60)
-                    {
-                        if(minutes == 1){
-                            final_datetime = minutes+" min ago";
-                        } else{
-                            final_datetime = minutes+" mins ago";
+                            int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
+
+                            // asd123
+                            if(isUnread){
+                                menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "⍣ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+
+                                isUnread = false;
+                                isInsertMenu = true;
+                            } else {
+                                menu.add(final_count, 120, Menu.NONE,getSafeSubstring( message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+
+                                isUnread = false;
+                                isInsertMenu = true;
+                            }
+
+                            if(!isInsertMenu){
+                                notification_header.setTitle("There are currently no notifications.");
+                                isInsertMenu = false;
+                            }
+
+                            ControlsInRightNavigation();
+                            notification_count++;
+                            notification_clear+=2;
                         }
                     }
-                    else if(hours<24)
-                    {
-                        if(hours == 1){
-                            final_datetime = hours+" hr ago";
-                        } else{
-                            final_datetime = hours+" hrs ago";
-                        }
-                    }
-                    else if(hours<48)
-                    {
-                        final_datetime = days+" yesterday";
-                    }
-                    else if(days<30)
-                    {
-                        if(days == 1){
-                            final_datetime = days+" day ago";
-                        } else{
-                            final_datetime = days+" days ago";
-                        }
-                    }
-                    else if(days>30)
-                    {
-                        long months = days / 30;
-                        if(months == 1){
-                            final_datetime = months+" month ago";
-                        } else{
-                            final_datetime = months+" months ago";
-                        }
-                    }
-                    else
-                    {
-                        long years = days / 365;
-                        if(years == 1){
-                            final_datetime = years+" year ago";
-                        } else{
-                            final_datetime = years+" years ago";
-                        }
-                    }
+                }
+            } else {
+                NavigationView navView = findViewById(R.id.nav_view_notification);
+                Menu menu = navView.getMenu();
+                MenuItem notification_header = menu.findItem(99999);
+                notification_header.setTitle("There are currently no notifications.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // Get Update Available
+    private void UpdateAvailable(){
+        try {
 
-                    // asd123
-                    if(!isHide){
-                        if(isUnread){
-                            menu.add(notification_count, 120, Menu.NONE, getSafeSubstring( "⍣ " + message_title, 18, "title") + " (" + final_datetime + ")");
-                            menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
-                            isUnread = false;
-                            isInsertMenu = true;
-                        } else {
-                            menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_title, 18, "title") + " (" + final_datetime + ")");
-                            menu.add(notification_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
-                            isUnread = false;
-                            isInsertMenu = true;
+            final File file = new File(getFilesDir() + "/sb_notifications.txt");
+
+            if (file.exists()) {
+                String path = getFilesDir() + "/sb_notifications.txt";
+                FileReader fr=new FileReader(path);
+                BufferedReader br=new BufferedReader(fr);
+                String s;
+                boolean isDisplay = true;
+
+                int count_line = 0;
+                List<String> tmp = new ArrayList<>();
+                do{
+                    s = br.readLine();
+                    if(s != null){
+                        if(s.length() > 0){
+                            count_line++;
+                            tmp.add(s);
                         }
-                    } else {
-                        isHide = false;
                     }
+                }while(s!=null);
 
-                    if(!isInsertMenu){
-                        MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("There are currently no notifications.");
-                        isInsertMenu = false;
+                int get_count_notification = 0;
+
+                for(int i=count_line-1;i>=0;i--) {
+                    String line = tmp.get(i);
+                    get_count_notification++;
+
+                    if(line.length() > 0){NavigationView navView = findViewById(R.id.nav_view_notification);
+                        String message_date = "";
+                        String message_title = "";
+                        String message_content = "";
+
+                        String[] values = line.split("\\*\\|\\*");
+
+                        int i_inner = 1;
+                        for(String str : values){
+                            if(i_inner == 2){
+                                message_date = str;
+                            }else if(i_inner == 3){
+                                message_title = str;
+                            }else if(i_inner == 4){
+                                String lineSep = System.getProperty("line.separator");
+                                message_content = str;
+                                message_content = message_content.replace("&lt;", "<");
+                                message_content = message_content.replace("&gt;", ">");
+                                message_content = message_content.replace("<br />", lineSep);
+                            }else if(i_inner == 6){
+                                if(str.equals("1")){
+                                    isDisplay = true;
+                                } else {
+                                    isDisplay = false;
+                                }
+                            }else if(i_inner == 8){
+                                if(isDisplay){
+                                    if(str.contains("U")){
+                                        isUnread = true;
+                                    } else {
+                                        Menu menu = navView.getMenu();
+                                        MenuItem notification_header = menu.findItem(99999);
+                                        if(notifications_count == 0){
+                                            notification_header.setTitle("Notifications");
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            i_inner++;
+                        }
+
+                        if(isDisplay){
+                            MenuItem notification_header = menu_notification.findItem(99999);
+
+                            // Add Navigation View
+                            Menu menu = navView.getMenu();
+
+                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            String final_datetime = "";
+                            Date past = format.parse(message_date);
+                            Date now = new Date();
+                            long seconds= TimeUnit.MILLISECONDS.toSeconds(now.getTime() - past.getTime());
+                            long minutes=TimeUnit.MILLISECONDS.toMinutes(now.getTime() - past.getTime());
+                            long hours=TimeUnit.MILLISECONDS.toHours(now.getTime() - past.getTime());
+                            long days=TimeUnit.MILLISECONDS.toDays(now.getTime() - past.getTime());
+
+                            if(seconds<60)
+                            {
+                                final_datetime = "just now";
+                            }
+                            else if(minutes<60)
+                            {
+                                if(minutes == 1){
+                                    final_datetime = minutes+" min ago";
+                                } else{
+                                    final_datetime = minutes+" mins ago";
+                                }
+                            }
+                            else if(hours<24)
+                            {
+                                if(hours == 1){
+                                    final_datetime = hours+" hr ago";
+                                } else{
+                                    final_datetime = hours+" hrs ago";
+                                }
+                            }
+                            else if(hours<48)
+                            {
+                                final_datetime = days+" yesterday";
+                            }
+                            else if(days<30)
+                            {
+                                if(days == 1){
+                                    final_datetime = days+" day ago";
+                                } else{
+                                    final_datetime = days+" days ago";
+                                }
+                            }
+                            else
+                            {
+                                final_datetime = "older message";
+                            }
+
+                            int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
+
+                            // asd123
+                            if(isUnread){
+                                notifications_count++;
+                                notification_header.setTitle("Notifications (" + notifications_count + ")");
+                                menu.add(final_count, 120, Menu.NONE,"⍣ " + message_title + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE, message_content);
+
+                                isUnread = false;
+                                isInsertMenu = true;
+                            } else {
+                                menu.add(final_count, 120, Menu.NONE,message_title + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE, message_content);
+
+                                isUnread = false;
+                                isInsertMenu = true;
+                            }
+
+                            if(!isInsertMenu){
+                                notification_header.setTitle("There are currently no notifications.");
+                                isInsertMenu = false;
+                            }
+
+                            ControlsInRightNavigation();
+                            notification_count++;
+                            notification_clear+=2;
+                        }
                     }
-
-                    ControlsInRightNavigation();
-                    notification_count++;
                 }
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
@@ -910,13 +1128,23 @@ public class MainActivity extends AppCompatActivity
                 // Handle navigation view item clicks here.
                 int id = item.getItemId();
                 Integer get_group_id = item.getGroupId();
+                String group_id = String.valueOf(item.getGroupId());
 
                 // asd123
                 if (id == 120) {
-
                     try {
-                        String group_id = String.valueOf(item.getGroupId());
-                        String id_get = String.valueOf(item.getItemId());
+
+                        String str_get = String.valueOf(get_group_id);
+                        List<String> elephantList = Arrays.asList(str_get.split("120012"));
+                        int inner_count = 0;
+                        for(String str : elephantList){
+                            inner_count++;
+                            if(inner_count == 1){
+                                group_id = str;
+                            } else if(inner_count == 2){
+                                get_group_id = Integer.parseInt(str);
+                            }
+                        }
 
                         String path = getFilesDir() + "/sb_notifications.txt";
                         FileReader fr=new FileReader(path);
@@ -1008,35 +1236,27 @@ public class MainActivity extends AppCompatActivity
                                             final_datetime = days+" days ago";
                                         }
                                     }
-                                    else if(days>30)
-                                    {
-                                        long months = days / 30;
-                                        if(months == 1){
-                                            final_datetime = months+" month ago";
-                                        } else{
-                                            final_datetime = months+" months ago";
-                                        }
-                                    }
                                     else
                                     {
-                                        long years = days / 365;
-                                        if(years == 1){
-                                            final_datetime = years+" year ago";
-                                        } else{
-                                            final_datetime = years+" years ago";
-                                        }
+                                        final_datetime = "older message";
                                     }
 
                                     ReadNotification(message_title + " (" + final_datetime + ")", message_title, get_group_id, final_datetime);
 
                                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                             context);
+                                    alertDialogBuilder.setTitle(message_title);
                                     alertDialogBuilder.setMessage(message_content);
-                                    alertDialogBuilder.setTitle(message_title + " (" + final_datetime + ")");
                                     alertDialogBuilder
                                             .setCancelable(false)
                                             .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog,int id) {
+                                                    NavigationView navView_delete = findViewById(R.id.nav_view_notification);
+                                                    Menu menu_delete = navView_delete.getMenu();
+                                                    MenuItem pinMenuItem_parent = menu_delete.getItem(parent);
+                                                    MenuItem pinMenuItem_child = menu_delete.getItem(child);
+                                                    pinMenuItem_parent.setChecked(false);
+                                                    pinMenuItem_child.setChecked(false);
                                                     dialog.cancel();
                                                 }
                                             });
@@ -1058,11 +1278,9 @@ public class MainActivity extends AppCompatActivity
     }
     // Read Notification
     private void ReadNotification(String title, String without_replace, Integer group_id, String date){
-
-
-        Integer get_final_id = (group_id*2)-1;
-        String path = getFilesDir() + "/sb_notifications.txt";
         try {
+            Integer get_final_id = (group_id*2)-1;
+            String path = getFilesDir() + "/sb_notifications.txt";
             FileReader fr = new FileReader(path);
             String s;
             String totalStr = "";
@@ -1070,11 +1288,17 @@ public class MainActivity extends AppCompatActivity
                 BufferedReader br = new BufferedReader(fr);
                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                 Menu menu_delete = navView_delete.getMenu();
-                MenuItem pinMenuItem_asd = menu_delete.getItem(get_final_id);
+                MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
+                parent = get_final_id;
+                child = get_final_id+1;
+                MenuItem pinMenuItem_child = menu_delete.getItem(child);
+                pinMenuItem_parent.setChecked(true);
+                pinMenuItem_child.setChecked(true);
 
-                if(pinMenuItem_asd.getTitle().toString().contains("⍣")){
+                if(pinMenuItem_parent.getTitle().toString().contains("⍣")){
                     while ((s = br.readLine()) != null) {
                         if(s.contains(without_replace)) {
+                            Log.d("deleted", s);
                             s = s.substring(0, s.length() - 1) + "R";
                         }
 
@@ -1089,19 +1313,25 @@ public class MainActivity extends AppCompatActivity
                     String final_replace = title.substring(1);
                     pinMenuItem.setTitle(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
 
+                    TextView textview_notification = findViewById(R.id.textview_notification);
                     notifications_count--;
                     if(0 < notifications_count){
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
                         notification_header.setTitle("Notifications (" + notifications_count + ")");
+                        textview_notification.setText(notifications_count + "");
+                        textview_notification.setVisibility(View.VISIBLE);
                     } else{
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
                         notification_header.setTitle("Notifications");
+                        textview_notification.setVisibility(View.INVISIBLE);
                     }
                 }
+
+
             } catch (Exception e) {
                 System.out.println("Problem reading file.");
             }
@@ -1123,22 +1353,32 @@ public class MainActivity extends AppCompatActivity
                 do{
                     s = br.readLine();
                     if(s != null){
-                        String[] values = s.split("\\*\\|\\*");
-                        int i_inner = 1;
-                        for(String str : values){
-                            if(i_inner == 7){
-                                if(!str.contains("null")){
-                                    GetUpdateNotification(str);
+                        if(s.length() > 0){
+                            String[] values = s.split("\\*\\|\\*");
+                            int i_inner = 1;
+                            for(String str : values){
+                                if(i_inner == 7){
+                                    if(!str.contains("null")){
+                                        GetUpdateNotification(str);
+                                    }
                                 }
-                            }
 
-                            i_inner++;
+                                i_inner++;
+                            }
                         }
                     }
                 }while(s!=null);
 
                 Log.d("123", "Preview notification");
                 PreviewNotifications();
+
+                TextView textview_notification = findViewById(R.id.textview_notification);
+                if(0 < notifications_count){
+                    textview_notification.setText(notifications_count + "");
+                    textview_notification.setVisibility(View.VISIBLE);
+                } else{
+                    textview_notification.setVisibility(View.INVISIBLE);
+                }
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
@@ -1161,16 +1401,19 @@ public class MainActivity extends AppCompatActivity
             do{
                 s = br.readLine();
                 if(s != null){
-                    String[] values = s.split("\\*\\|\\*");
-                    int i_inner = 1;
-                    for(String str : values){
-                        if(i_inner == 1){
-                            if(str.equals(id_to_delete)){
-                                updated_line.add(s);
-                            }
-                        }
+                    if(s.length() > 0){
+                        String[] values = s.split("\\*\\|\\*");
+                        int i_inner = 1;
+                        for(String str : values){
+                            if(i_inner == 1){
+                                if(str.equals(id_to_delete)){
 
-                        i_inner++;
+                                    updated_line.add(s);
+                                }
+                            }
+
+                            i_inner++;
+                        }
                     }
                 }
             }while(s!=null);
@@ -1219,87 +1462,222 @@ public class MainActivity extends AppCompatActivity
         }
         return s;
     }
-
-    // End of Notification
-    // --------------
-
-
-    private void test(){
-        menu_notification.clear();
+    // Add Menu Header
+    private void AddMenuHeader(){
         menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
     }
-
+    // Timer Notification
     private void TimerNotification(){
         final Timer timer = new Timer();
         //Set the schedule function
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                Log.d("Handlers", "loaded");
+                if(new_entry){
+                    Log.d("Handlers", "loaded");
 
-//                // Get Deleted Notification
-//                GETDELETEDNOTIFICATION_V(new VolleyCallback(){
-//                @Override
-//                public void onSuccess(String result){
-//                    String replace_responce = StringEscapeUtils.unescapeJava(result);
-//                    Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
-//
-//                    while(m.find()){
-//                        get_deleted_id = m.group(1);
-//                    }
-//
-//                    if(result.contains("OK")){
-//                        get_deleted_id = get_deleted_id.replace("\"", "");
-//                        List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
-//                        for(String get_delete_id_list : get_delete_id_lists){
-//                            Log.d("deleted", get_delete_id_list);
-//                            GetUpdateNotification(get_delete_id_list);
-//                        }
-//                    } else{
-//                        Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
-//                    }
-//                }});
-//
-//                // Get Notification
-//                GETNOTIFICAITON_V(new VolleyCallback(){
-//                @Override
-//                public void onSuccess(String result){
-//                    try {
-//                        JSONObject obj = new JSONObject(result);
-//                        JSONArray array = obj.getJSONArray("data");
-//
-//                        for(int i=0;i<array.length();i++){
-//                            JSONObject student = array.getJSONObject(i);
-//
-//                            String id = student.getString("id");
-//                            String message_date = student.getString("message_date");
-//                            String message_title = student.getString("message_title");
-//                            String message_content = student.getString("message_content");
-//                            String status = student.getString("status");
-//                            String message_type = student.getString("message_type");
-//                            String edited_id = student.getString("edited_id");
-//
-//                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-//                            writeToFile(notification, "sb_notifications.txt");
-//                        }
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    // Preview Notification
-//                    UpdatedNotification();
-//                }});
+                    notification_count = 1;
+                    notification_clear = 1;
+                    notifications_count = 0;
+
+                    // Get Deleted Notification
+                    GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                        @Override
+                        public void onSuccess(String result){
+                            String replace_responce = StringEscapeUtils.unescapeJava(result);
+                            Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                            while(m.find()){
+                                get_deleted_id = m.group(1);
+                            }
+
+                            if(result.contains("OK")){
+                                get_deleted_id = get_deleted_id.replace("\"", "");
+                                List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                for(String get_delete_id_list : get_delete_id_lists){
+                                    GetUpdateNotification(get_delete_id_list);
+                                }
+                            } else{
+                                Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+
+                    // Get Notification
+                    GETNOTIFICAITON_V(new VolleyCallback(){
+                        @Override
+                        public void onSuccess(String result){
+                            try {
+                                JSONObject obj = new JSONObject(result);
+                                JSONArray array = obj.getJSONArray("data");
+
+                                for(int i=0;i<array.length();i++){
+                                    JSONObject data = array.getJSONObject(i);
+
+                                    String id = data.getString("id");
+                                    String message_date = data.getString("message_date");
+                                    String message_title = data.getString("message_title");
+                                    String message_content = data.getString("message_content");
+                                    String status = data.getString("status");
+                                    String message_type = data.getString("message_type");
+                                    String edited_id = data.getString("edited_id");
+
+                                    String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                    writeToFile(notification, "sb_notifications.txt");
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                            // Preview Notification
+                            UpdatedNotification();
+                        }
+                    });
+
+                    new_entry = false;
+                }
             }
         },0, 60000);
     }
+    // Timer Notification Clear
+    private void TimerNotificationClear(){
+        final Timer timer = new Timer();
+        //Set the schedule function
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
 
+                    @Override
+                    public void run() {
+                        if(new_entry){
+                            for(int l=0; l<=notification_clear; l++){
+                                menu_notification.removeItem(120);
+                            }
+                        }
+                    }
+                });
+            }
+        },0, 59000);
+    }
+    // Timer Notification New Entry
+    private void TimerNotificationNewEntry(){
+        final Timer timer = new Timer();
+        //Set the schedule function
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
 
+                    @Override
+                    public void run() {
+                        // Get Deleted Notification
+                        GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                            @Override
+                            public void onSuccess(String result){
+                                String replace_responce = StringEscapeUtils.unescapeJava(result);
+                                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
 
+                                while(m.find()){
+                                    get_deleted_id = m.group(1);
+                                }
 
+                                if(result.contains("OK")){
+                                    Integer count = 0;
+                                    get_deleted_id = get_deleted_id.replace("\"", "");
+                                    List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                    for(String get_delete_id_list : get_delete_id_lists){
+                                        count++;
+                                    }
 
+                                    if(detect_deleted_notification != count){
+                                        Log.d("deleted", "deleted new entry");
+                                        new_entry = true;
+                                        detect_deleted_notification = count;
+                                    } else{
+                                        Log.d("deleted", "deleted no entry");
+                                    }
+                                } else{
+                                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
+                        // Get Notification
+                        GETNOTIFICAITON_V(new VolleyCallback(){
+                            @Override
+                            public void onSuccess(String result){
+                                try {
+                                    JSONObject obj = new JSONObject(result);
+                                    JSONArray array = obj.getJSONArray("data");
 
+                                    for(int i=0;i<array.length();i++){
+                                        Log.d("deleted", "add new entry");
+                                        new_entry = true;
+                                        JSONObject data = array.getJSONObject(i);
+                                        String id = data.getString("id");
+                                        String message_date = data.getString("message_date");
+                                        String message_title = data.getString("message_title");
+                                        String message_content = data.getString("message_content");
+                                        String status = data.getString("status");
+                                        String message_type = data.getString("message_type");
+                                        String edited_id = data.getString("edited_id");
 
+                                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                        writeToFile(notification, "sb_notifications.txt");
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        },0, 10000);
+    }
 
+    // --------------
+    // End of Notification
+
+    // Send Diagnostics
+    private void SENDDIAGNOSTICS(){
+//        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, "", new Response.Listener<NetworkResponse>() {
+//            @Override
+//            public void onResponse(NetworkResponse response) {
+//                String resultResponse = new String(response.data);
+//                // parse success output
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                error.printStackTrace();
+//            }
+//        }) {
+//            @Override
+//            protected Map<String, String> getParams() {
+//                Map<String, String> params = new HashMap<>();
+//                params.put("api_token", "gh659gjhvdyudo973823tt9gvjf7i6ric75r76");
+//                params.put("name", "Angga");
+//                params.put("location", "Indonesia");
+//                params.put("about", "UI/UX Designer");
+//                params.put("contact", "angga@email.com");
+//                return params;
+//            }
+//
+//            @Override
+//            protected Map<String, DataPart> getByteData() {
+//                Map<String, DataPart> params = new HashMap<>();
+//                // file name could found file base or direct access from real path
+//                // for now just get bitmap data from ImageView
+//                params.put("avatar", new DataPart("file_avatar.jpg", AppHelper.getFileDataFromDrawable(getBaseContext(), mAvatarImage.getDrawable()), "image/jpeg"));
+//                params.put("cover", new DataPart("file_cover.jpg", AppHelper.getFileDataFromDrawable(getBaseContext(), mCoverImage.getDrawable()), "image/jpeg"));
+//
+//                return params;
+//            }
+//        };
+//
+//        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
+    }
 
     // Back for WebBrowser --------------
     @Override
@@ -1334,10 +1712,20 @@ public class MainActivity extends AppCompatActivity
 
     // Create Navigation Menu --------------
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        final Menu m = menu;
+        final MenuItem item1 = menu.findItem(R.id.item_notification);
+        MenuItemCompat.setActionView(item1, R.layout.notification_update_count_layout);
 
+        MenuItemCompat.getActionView(item1).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                drawer.openDrawer(GravityCompat.END);
+            }
+        });
         return true;
     }
 
@@ -1434,8 +1822,10 @@ public class MainActivity extends AppCompatActivity
                 if(isFirstOpened){
                     // Functions --------------
 
-                    test();
-//                    TimerNotification();
+                    AddMenuHeader();
+                    TimerNotificationClear();
+                    TimerNotification();
+                    TimerNotificationNewEntry();
 
                     // Get API
                     GETAPI(text_to_search_service[0]);
@@ -1465,7 +1855,7 @@ public class MainActivity extends AppCompatActivity
                                 get_deleted_id = get_deleted_id.replace("\"", "");
                                 List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
                                 for(String get_delete_id_list : get_delete_id_lists){
-                                    Log.d("deleted", get_delete_id_list);
+                                    detect_deleted_notification++;
                                     GetUpdateNotification(get_delete_id_list);
                                 }
                             } else{
@@ -1473,7 +1863,6 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                     });
-
                     // Get Notification
                     GETNOTIFICAITON_V(new VolleyCallback(){
                         @Override
@@ -1483,15 +1872,14 @@ public class MainActivity extends AppCompatActivity
                                 JSONArray array = obj.getJSONArray("data");
 
                                 for(int i=0;i<array.length();i++){
-                                    JSONObject student = array.getJSONObject(i);
-
-                                    String id = student.getString("id");
-                                    String message_date = student.getString("message_date");
-                                    String message_title = student.getString("message_title");
-                                    String message_content = student.getString("message_content");
-                                    String status = student.getString("status");
-                                    String message_type = student.getString("message_type");
-                                    String edited_id = student.getString("edited_id");
+                                    JSONObject data = array.getJSONObject(i);
+                                    String id = data.getString("id");
+                                    String message_date = data.getString("message_date");
+                                    String message_title = data.getString("message_title");
+                                    String message_content = data.getString("message_content");
+                                    String status = data.getString("status");
+                                    String message_type = data.getString("message_type");
+                                    String edited_id = data.getString("edited_id");
 
                                     String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
                                     writeToFile(notification, "sb_notifications.txt");
