@@ -829,6 +829,9 @@ public class MainActivity extends AppCompatActivity
 
                         String[] values = line.split("\\*\\|\\*");
 
+                        Menu menu = navView.getMenu();
+                        MenuItem notification_header = menu.findItem(99999);
+
                         int i_inner = 1;
                         for(String str : values){
                             if(i_inner == 2){
@@ -850,9 +853,9 @@ public class MainActivity extends AppCompatActivity
                             }else if(i_inner == 8){
                                 if(str.contains("U")){
                                     isUnread = true;
+                                    notifications_count++;
+                                    notification_header.setTitle("Notifications (" + notifications_count + ")");
                                 } else {
-                                    Menu menu = navView.getMenu();
-                                    MenuItem notification_header = menu.findItem(99999);
                                     if(notifications_count == 0){
                                         notification_header.setTitle("Notifications");
                                     }
@@ -863,10 +866,6 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if(isDisplay){
-                            // Add Navigation View
-                            Menu menu = navView.getMenu();
-                            MenuItem notification_header = menu.findItem(99999);
-
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -917,6 +916,7 @@ public class MainActivity extends AppCompatActivity
                             int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
 
                             // asd123
+                            // Add Navigation View
                             if(isUnread){
                                 menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "⍣ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
@@ -990,6 +990,9 @@ public class MainActivity extends AppCompatActivity
 
                         String[] values = line.split("\\*\\|\\*");
 
+                        Menu menu = navView.getMenu();
+                        MenuItem notification_header = menu.findItem(99999);
+
                         int i_inner = 1;
                         for(String str : values){
                             if(i_inner == 2){
@@ -1012,9 +1015,9 @@ public class MainActivity extends AppCompatActivity
                                 if(isDisplay){
                                     if(str.contains("U")){
                                         isUnread = true;
+                                        notifications_count++;
+                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
                                     } else {
-                                        Menu menu = navView.getMenu();
-                                        MenuItem notification_header = menu.findItem(99999);
                                         if(notifications_count == 0){
                                             notification_header.setTitle("Notifications");
                                         }
@@ -1027,11 +1030,6 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if(isDisplay){
-                            MenuItem notification_header = menu_notification.findItem(99999);
-
-                            // Add Navigation View
-                            Menu menu = navView.getMenu();
-
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -1081,9 +1079,8 @@ public class MainActivity extends AppCompatActivity
                             int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
 
                             // asd123
+                            // Add Navigation View
                             if(isUnread){
-                                notifications_count++;
-                                notification_header.setTitle("Notifications (" + notifications_count + ")");
                                 menu.add(final_count, 120, Menu.NONE,"⍣ " + message_title + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, message_content);
 
