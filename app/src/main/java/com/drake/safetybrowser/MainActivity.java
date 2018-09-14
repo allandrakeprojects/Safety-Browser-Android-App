@@ -6,19 +6,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -31,11 +32,14 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,7 +65,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
@@ -102,6 +105,7 @@ public class MainActivity extends AppCompatActivity
     int notifications_count = 0;
     int notification_count = 1;
     int notification_clear = 1;
+    int timer_loader = 1;
     boolean loadingFinished = true;
     boolean redirect = false;
     boolean isConnected;
@@ -117,6 +121,7 @@ public class MainActivity extends AppCompatActivity
     boolean isFirstOpened = true;
     boolean new_entry = false;
     boolean detect_new_entry = false;
+    boolean isTimerLoaderRunning = true;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -128,10 +133,11 @@ public class MainActivity extends AppCompatActivity
     List<String> get_id_delete = new ArrayList<>();
     final Context context = this;
     GifImageView gifImageView_loader;
-    RelativeLayout relativeLayout_connection, relativeLayout_webview;
+    LinearLayout relativeLayout_loader, relativeLayout_connection;
+    RelativeLayout relativeLayout_webview;
     GifImageView gifImageView_connection;
     TextView textView_textchanged, textView_chatus_2, textView_emailus_1, textView_clearcache, textView_getdiagnostics, textView_loader;
-    RelativeLayout relativeLayout_helpandsupport, relativeLayout_loader;
+    RelativeLayout relativeLayout_helpandsupport;
     ImageView imageView_help_back;
     DrawerLayout drawer;
     NavigationView nav_view;
@@ -147,19 +153,37 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // remove title
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
+
+//        Toast.makeText(getApplicationContext(), "Opened", Toast.LENGTH_LONG).show();
 
         this.registerReceiver(this.mConnReceiver,
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                boolean isFirstStart = sharedPreferences.getBoolean("firstStart", true);
+
+                if(isFirstStart){
+                    startActivity(new Intent(MainActivity.this, MyAppIntro.class));
+                    SharedPreferences.Editor e = sharedPreferences.edit();
+                    e.putBoolean("firstStart", false);
+                    e.apply();
+                }
+            }
+        });
+
+        thread.start();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-//        Toast.makeText(getApplicationContext(), "Opened", Toast.LENGTH_LONG).show();
 
         // Find ID
         webView = findViewById(R.id.webView);
@@ -170,9 +194,9 @@ public class MainActivity extends AppCompatActivity
         nav_view_notification.setNavigationItemSelectedListener(this);
         menu_notification = nav_view_notification.getMenu();
         gifImageView_loader = findViewById(R.id.gifImageView_loader);
-        relativeLayout_loader = findViewById(R.id.relativeLayout_loader);
+        relativeLayout_loader = findViewById(R.id.linearLayout_loader);
         gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
-        relativeLayout_connection = findViewById(R.id.relativeLayout_connection);
+        relativeLayout_connection = findViewById(R.id.linearLayout_connection);
         gifImageView_connection = findViewById(R.id.gifImageView_connection);
         gifImageView_connection.setGifImageResource(R.drawable.ic_connection);
         textView_textchanged = findViewById(R.id.textView_textchanged);
@@ -388,6 +412,9 @@ public class MainActivity extends AppCompatActivity
                 // Loading
 //                swipeContainer.setRefreshing(false);
 //                swipeContainer.setEnabled(false);
+                timer_loader = 1;
+                isTimerLoaderRunning = true;
+                TimerLoader();
                 textView_textchanged.setText("");
                 relativeLayout_loader.setVisibility(View.VISIBLE);
                 relativeLayout_webview.setVisibility(View.INVISIBLE);
@@ -405,6 +432,8 @@ public class MainActivity extends AppCompatActivity
                 if (isConnected) {
                     // Loaded
 //                    swipeContainer.setEnabled(false);
+                    timer_loader = 1;
+                    isTimerLoaderRunning = false;
                     NavigationView navView = findViewById(R.id.nav_view);
                     Menu menu = navView.getMenu();
                     MenuItem nav_back = menu.findItem(R.id.nav_back);
@@ -852,13 +881,15 @@ public class MainActivity extends AppCompatActivity
                                     isDisplay = true;
                                 }
                             }else if(i_inner == 8){
-                                if(str.contains("U")){
-                                    isUnread = true;
-                                    notifications_count++;
-                                    notification_header.setTitle("Notifications (" + notifications_count + ")");
-                                } else {
-                                    if(notifications_count == 0){
-                                        notification_header.setTitle("Notifications");
+                                if(isDisplay){
+                                    if(str.contains("U")){
+                                        isUnread = true;
+                                        notifications_count++;
+                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
+                                    } else {
+                                        if(notifications_count == 0){
+                                            notification_header.setTitle("Notifications");
+                                        }
                                     }
                                 }
                             }
@@ -1459,10 +1490,6 @@ public class MainActivity extends AppCompatActivity
         }
         return s;
     }
-    // Add Menu Header
-    private void AddMenuHeader(){
-        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
-    }
     // Timer Notification
     private void TimerNotification(){
         final Timer timer = new Timer();
@@ -1470,6 +1497,7 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
+            if(isConnected){
                 if(new_entry){
                     Log.d("Handlers", "loaded");
 
@@ -1534,6 +1562,7 @@ public class MainActivity extends AppCompatActivity
                     new_entry = false;
                 }
             }
+            }
         },0, 60000);
     }
     // Timer Notification Clear
@@ -1543,17 +1572,19 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
+            runOnUiThread(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        if(new_entry){
-                            for(int l=0; l<=notification_clear; l++){
-                                menu_notification.removeItem(120);
-                            }
+                @Override
+                public void run() {
+                if(isConnected){
+                    if(new_entry){
+                        for(int l=0; l<=notification_clear; l++){
+                            menu_notification.removeItem(120);
                         }
                     }
-                });
+                }
+                }
+            });
             }
         },0, 59000);
     }
@@ -1564,10 +1595,10 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if(isConnected){
                         // Get Deleted Notification
                         GETDELETEDNOTIFICATION_V(new VolleyCallback(){
                             @Override
@@ -1628,7 +1659,8 @@ public class MainActivity extends AppCompatActivity
                             }
                         });
                     }
-                });
+                }
+            });
             }
         },0, 10000);
     }
@@ -1674,6 +1706,34 @@ public class MainActivity extends AppCompatActivity
 //        };
 //
 //        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
+    }
+
+    private void TimerLoader(){
+        final Timer timer = new Timer();
+        //Set the schedule function
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if(isConnected){
+                        if(isTimerLoaderRunning){
+                            timer_loader++;
+                            Log.d("deleted", timer_loader+"");
+                            if(timer_loader < 8){
+                                textView_loader.setText("loading...");
+                            } else if(timer_loader < 39) {
+                                textView_loader.setText("getting data to the server...");
+                            } else if(timer_loader > 40) {
+                                textView_loader.setText("getting ready...");
+                            }
+                        }
+                    }
+                }
+            });
+            }
+        },0, 1000);
     }
 
     // Back for WebBrowser --------------
@@ -1818,8 +1878,8 @@ public class MainActivity extends AppCompatActivity
 
                 if(isFirstOpened){
                     // Functions --------------
-
-                    AddMenuHeader();
+                    menu_notification.clear();
+                    menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
                     TimerNotificationClear();
                     TimerNotification();
                     TimerNotificationNewEntry();
@@ -1902,6 +1962,10 @@ public class MainActivity extends AppCompatActivity
                 detect_no_internet_connection = 1;
                 relativeLayout_loader.setVisibility(View.INVISIBLE);
                 relativeLayout_connection.setVisibility(View.VISIBLE);
+
+                if(isFirstOpened){
+                    menu_notification.add(0, 99999, Menu.NONE, "Check your internet connection.");
+                }
             }
         }
     };

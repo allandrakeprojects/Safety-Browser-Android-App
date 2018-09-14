@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "0.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -44,4 +45,5 @@ dependencies {
 //    implementation 'com.google.android.gms:play-services-maps:8.1.0'
 //    implementation 'com.google.android.gms:play-services-plus:8.1.0'
     implementation 'com.github.ghost1372:Mzip-Android:0.4.0'
+    implementation 'com.github.apl-devs:appintro:v4.2.3'
 }

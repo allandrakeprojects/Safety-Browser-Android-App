@@ -20,7 +20,7 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <!--<style name="MyActionButtonOverflow" parent="android:style/Widget.Holo.Light.ActionButton.Overflow">-->
-        <!--<item name="android:src">@drawable/access</item>-->
+    <!--<item name="android:src">@drawable/access</item>-->
     <!--</style>-->
 
     <style name="MyActionButtonOverflow" parent="android:style/Widget.Holo.Light.ActionButton.Overflow">
@@ -30,7 +30,8 @@
     </style>
 
     <style name="NavigationTheme" parent="AppTheme">
-        <item name="listPreferredItemHeightSmall">39dp</item><!-- menu item height- vary as u need -->
+        <item name="listPreferredItemHeightSmall">39dp
+        </item><!-- menu item height- vary as u need -->
     </style>
 
 </resources>
