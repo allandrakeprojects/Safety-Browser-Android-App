@@ -44,15 +44,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.error.ServerError;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.request.StringRequest;
-import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -66,7 +63,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,8 +81,7 @@ import java.util.regex.Pattern;
 import ir.mahdi.mzip.zip.ZipArchive;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        Response.ErrorListener, Response.Listener<String>{
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     String[] text_to_search_service = { "http://www.ssicortex.com/GetTxt2Search", "http://www.ssitectonic.com/GetTxt2Search", "http://www.ssihedonic.com/GetTxt2Search" };
     String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
@@ -248,7 +243,7 @@ public class MainActivity extends AppCompatActivity
                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
                     ZipArchive zipArchive = new ZipArchive();
                     zipArchive.zip(target_path,destination_path,"");
-                    uploadData();
+                    //asdasdasd
                 } catch (Exception e) {
                     Log.d("deleted", e.getMessage());
                 }
@@ -354,41 +349,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void uploadData() {
-        try {
-            String path = getFilesDir() + "/sb_diagnostic.zip";
-            WebService.getInstance().updateProfile(MainActivity.this, API_KEY, BRAND_CODE, GETMACADDRESS(), path, this, this);
-        } catch(Exception e){
-            Log.d("deleted", e.getMessage());
-        }
-     }
-
-    @Override
-    public void onErrorResponse(VolleyError error) {
-        Log.d("deleted", error.getMessage());
-        NetworkResponse response = error.networkResponse;
-        if (error instanceof ServerError && response != null) {
-            try {
-                String res = new String(response.data,
-                        HttpHeaderParser.parseCharset(response.headers, "utf-8"));
-                // Now you can use any deserializer to make sense of data
-                JSONObject obj = new JSONObject(res);
-            } catch (UnsupportedEncodingException e1) {
-                // Couldn't properly decode data to string
-                Log.d("deleted", e1.getMessage());
-            } catch (JSONException e2) {
-                // returned data is not JSONObject?
-                Log.d("deleted", e2.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public void onResponse(String response) {
-        //Your response here
-        Log.d("deleted", response);
-    }
-
     // WebView --------------
     private class MyBrowser extends WebViewClient {
         @Override
@@ -412,7 +372,6 @@ public class MainActivity extends AppCompatActivity
                 // Loading
 //                swipeContainer.setRefreshing(false);
 //                swipeContainer.setEnabled(false);
-                timer_loader = 1;
                 isTimerLoaderRunning = true;
                 TimerLoader();
                 textView_textchanged.setText("");
@@ -432,8 +391,6 @@ public class MainActivity extends AppCompatActivity
                 if (isConnected) {
                     // Loaded
 //                    swipeContainer.setEnabled(false);
-                    timer_loader = 1;
-                    isTimerLoaderRunning = false;
                     NavigationView navView = findViewById(R.id.nav_view);
                     Menu menu = navView.getMenu();
                     MenuItem nav_back = menu.findItem(R.id.nav_back);
@@ -469,6 +426,9 @@ public class MainActivity extends AppCompatActivity
                             isLoadingFinished = true;
 
                             nav_view(true);
+
+                            timer_loader = 1;
+                            isTimerLoaderRunning = false;
                         }
                     } else{
                         relativeLayout_loader.setVisibility(View.INVISIBLE);
@@ -484,6 +444,9 @@ public class MainActivity extends AppCompatActivity
                             textView_clearcache.setText("CLEAR CACHE");
                             Toast.makeText(getApplicationContext(), "Cache has been cleared", Toast.LENGTH_LONG).show();
                         }
+
+                        timer_loader = 1;
+                        isTimerLoaderRunning = false;
                     }
 
 //                    if(!isLoadingFinished){
@@ -762,7 +725,7 @@ public class MainActivity extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1009", Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1009", Toast.LENGTH_LONG).show();
             }
         }) {
             protected Map<String, String> getParams() {
@@ -950,7 +913,7 @@ public class MainActivity extends AppCompatActivity
                             // asd123
                             // Add Navigation View
                             if(isUnread){
-                                menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "⍣ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
 
                                 isUnread = false;
@@ -1113,7 +1076,7 @@ public class MainActivity extends AppCompatActivity
                             // asd123
                             // Add Navigation View
                             if(isUnread){
-                                menu.add(final_count, 120, Menu.NONE,"⍣ " + message_title + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE,"★ " + message_title + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, message_content);
 
                                 isUnread = false;
@@ -1324,7 +1287,7 @@ public class MainActivity extends AppCompatActivity
                 pinMenuItem_parent.setChecked(true);
                 pinMenuItem_child.setChecked(true);
 
-                if(pinMenuItem_parent.getTitle().toString().contains("⍣")){
+                if(pinMenuItem_parent.getTitle().toString().contains("★")){
                     while ((s = br.readLine()) != null) {
                         if(s.contains(without_replace)) {
                             s = s.substring(0, s.length() - 1) + "R";
@@ -1578,6 +1541,8 @@ public class MainActivity extends AppCompatActivity
                 public void run() {
                 if(isConnected){
                     if(new_entry){
+                        MenuItem notification_header = menu_notification.findItem(99999);
+                        notification_header.setTitle("Loading...");
                         for(int l=0; l<=notification_clear; l++){
                             menu_notification.removeItem(120);
                         }
@@ -1708,6 +1673,59 @@ public class MainActivity extends AppCompatActivity
 //        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private void TimerLoader(){
         final Timer timer = new Timer();
         //Set the schedule function
@@ -1721,7 +1739,7 @@ public class MainActivity extends AppCompatActivity
                         if(isTimerLoaderRunning){
                             timer_loader++;
                             Log.d("deleted", timer_loader+"");
-                            if(timer_loader < 8){
+                            if(timer_loader < 15){
                                 textView_loader.setText("loading...");
                             } else if(timer_loader < 39) {
                                 textView_loader.setText("getting data to the server...");
