@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.net.ConnectivityManager;
@@ -28,6 +29,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -117,6 +119,7 @@ public class MainActivity extends AppCompatActivity
     boolean new_entry = false;
     boolean detect_new_entry = false;
     boolean isTimerLoaderRunning = true;
+    boolean isPortrait = true;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -131,9 +134,9 @@ public class MainActivity extends AppCompatActivity
     LinearLayout relativeLayout_loader, relativeLayout_connection;
     RelativeLayout relativeLayout_webview;
     GifImageView gifImageView_connection;
-    TextView textView_textchanged, textView_chatus_2, textView_emailus_1, textView_clearcache, textView_getdiagnostics, textView_loader;
-    RelativeLayout relativeLayout_helpandsupport;
-    ImageView imageView_help_back;
+    TextView textView_textchanged, textView_chatus_2, textView_emailus_1, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
+    RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape;
+    ImageView imageView_help_back_landscape, imageView_help_back_portrait;
     DrawerLayout drawer;
     NavigationView nav_view;
     NavigationView nav_view_notification;
@@ -155,10 +158,10 @@ public class MainActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_main);
 
-//        Toast.makeText(getApplicationContext(), "Opened", Toast.LENGTH_LONG).show();
-
         this.registerReceiver(this.mConnReceiver,
                 new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+//        Toast.makeText(getApplicationContext(), "Opened", Toast.LENGTH_LONG).show();
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -195,14 +198,18 @@ public class MainActivity extends AppCompatActivity
         gifImageView_connection = findViewById(R.id.gifImageView_connection);
         gifImageView_connection.setGifImageResource(R.drawable.ic_connection);
         textView_textchanged = findViewById(R.id.textView_textchanged);
-        relativeLayout_helpandsupport = findViewById(R.id.relativeLayout_helpandsupport);
+        relativeLayout_helpandsupport_portrait = findViewById(R.id.relativeLayout_helpandsupport_portrait);
+        relativeLayout_helpandsupport_landscape = findViewById(R.id.relativeLayout_helpandsupport_landscape);
         relativeLayout_webview = findViewById(R.id.relativeLayout_webview);
         textView_chatus_2 = findViewById(R.id.textView_chatus_3);
         textView_emailus_1 = findViewById(R.id.textView_emailus_1);
-        textView_clearcache = findViewById(R.id.textView_clearcache);
-        textView_getdiagnostics = findViewById(R.id.textView_getdiagnostics);
+        textView_clearcache_portrait = findViewById(R.id.textView_clearcache_portrait);
+        textView_clearcache_landscape = findViewById(R.id.textView_clearcache_landscape);
+        textView_getdiagnostics_portrait = findViewById(R.id.textView_getdiagnostics_portrait);
+        textView_getdiagnostics_landscape = findViewById(R.id.textView_getdiagnostics_landscape);
         textView_loader = findViewById(R.id.textView_loader);
-        imageView_help_back = findViewById(R.id.imageView_help_back);
+        imageView_help_back_landscape = findViewById(R.id.imageView_help_back_landscape);
+        imageView_help_back_portrait = findViewById(R.id.imageView_help_back_portrait);
 //        swipeContainer = findViewById(R.id.swipeContainer);
         mContext = getApplicationContext();
         button_test = findViewById(R.id.button_test);
@@ -211,11 +218,11 @@ public class MainActivity extends AppCompatActivity
         textView_chatus_2.setPaintFlags(textView_chatus_2.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
         textView_emailus_1.setPaintFlags(textView_emailus_1.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
 
-        textView_clearcache.setOnClickListener(new View.OnClickListener() {
+        textView_clearcache_portrait.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                textView_clearcache.setText("CLEARING...");
+                textView_clearcache_portrait.setText("CLEARING...");
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
                 webView.clearCache(true);
@@ -224,7 +231,20 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        textView_getdiagnostics.setOnClickListener(new View.OnClickListener() {
+        textView_clearcache_landscape.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onClick(View v) {
+                textView_clearcache_landscape.setText("CLEARING...");
+                isClearCache = true;
+                webView.getSettings().setAppCacheEnabled(false);
+                webView.clearCache(true);
+                webView.loadUrl("about:blank");
+                webView.reload();
+            }
+        });
+
+        textView_getdiagnostics_portrait.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
@@ -238,7 +258,33 @@ public class MainActivity extends AppCompatActivity
                         output.append(buffer, 0, i);
                     reader.close();
                     Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-                     writeToFile(output + "", "sb_ping.txt");
+                    writeToFile(output + "", "sb_ping.txt");
+                    String target_path = getFilesDir() + "/sb_ping.txt";
+                    String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                    ZipArchive zipArchive = new ZipArchive();
+                    zipArchive.zip(target_path,destination_path,"");
+                    //asdasdasd
+                } catch (Exception e) {
+                    Log.d("deleted", e.getMessage());
+                }
+            }
+        });
+
+        textView_getdiagnostics_landscape.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    int i;
+                    char[] buffer = new char[4096];
+                    StringBuilder output = new StringBuilder();
+                    while ((i = reader.read(buffer)) > 0)
+                        output.append(buffer, 0, i);
+                    reader.close();
+                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
+                    writeToFile(output + "", "sb_ping.txt");
                     String target_path = getFilesDir() + "/sb_ping.txt";
                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
                     ZipArchive zipArchive = new ZipArchive();
@@ -262,17 +308,55 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        imageView_help_back.setOnClickListener(new View.OnClickListener() {
+        imageView_help_back_portrait.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(isHelpAndSupportVisible){
-                    relativeLayout_helpandsupport.setVisibility(View.INVISIBLE);
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                    }
+
                     relativeLayout_webview.setVisibility(View.VISIBLE);
                     isHelpAndSupportVisible = false;
                 } else{
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_portrait.bringToFront();
+                    } else {
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_landscape.bringToFront();
+                    }
+
                     relativeLayout_webview.setVisibility(View.INVISIBLE);
-                    relativeLayout_helpandsupport.setVisibility(View.VISIBLE);
-                    relativeLayout_helpandsupport.bringToFront();
+                    isHelpAndSupportVisible = true;
+                }
+            }
+        });
+
+        imageView_help_back_landscape.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isHelpAndSupportVisible){
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                    }
+
+                    relativeLayout_webview.setVisibility(View.VISIBLE);
+                    isHelpAndSupportVisible = false;
+                } else{
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_portrait.bringToFront();
+                    } else {
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_landscape.bringToFront();
+                    }
+
+                    relativeLayout_webview.setVisibility(View.INVISIBLE);
                     isHelpAndSupportVisible = true;
                 }
             }
@@ -347,6 +431,57 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        WindowManager wm = getWindowManager();
+        Display display = wm.getDefaultDisplay();
+
+        if(display.getWidth() > display.getHeight()) {
+            isPortrait = false;
+        } else {
+            isPortrait = true;
+        }
+    }
+
+    // Orientation
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            isPortrait = false;
+            if(isHelpAndSupportVisible){
+                if(relativeLayout_helpandsupport_portrait.getVisibility() == View.VISIBLE){
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                } else{
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport_portrait.bringToFront();
+                }
+
+                if(relativeLayout_helpandsupport_landscape.getVisibility() == View.VISIBLE){
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                } else{
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport_landscape.bringToFront();
+                }
+            }
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            isPortrait = true;
+            if(isHelpAndSupportVisible){
+                if(relativeLayout_helpandsupport_portrait.getVisibility() == View.VISIBLE){
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                } else{
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport_portrait.bringToFront();
+                }
+
+                if(relativeLayout_helpandsupport_landscape.getVisibility() == View.VISIBLE){
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                } else{
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport_landscape.bringToFront();
+                }
+            }
+        }
     }
 
     // WebView --------------
@@ -441,7 +576,8 @@ public class MainActivity extends AppCompatActivity
 
                         if(isClearCache){
                             isClearCache = false;
-                            textView_clearcache.setText("CLEAR CACHE");
+                            textView_clearcache_portrait.setText("CLEAR CACHE");
+                            textView_clearcache_landscape.setText("CLEAR CACHE");
                             Toast.makeText(getApplicationContext(), "Cache has been cleared", Toast.LENGTH_LONG).show();
                         }
 
@@ -1862,15 +1998,27 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.item_help) {
             if(isHelpAndSupportVisible){
-                relativeLayout_helpandsupport.setVisibility(View.INVISIBLE);
+
+                if(isPortrait){
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                } else{
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                }
+
                 if(isLoadingFinished){
                     relativeLayout_webview.setVisibility(View.VISIBLE);
                 }
                 isHelpAndSupportVisible = false;
             } else{
+                if(isPortrait){
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport_portrait.bringToFront();
+                } else{
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                    relativeLayout_helpandsupport_landscape.bringToFront();
+                }
+
                 relativeLayout_webview.setVisibility(View.INVISIBLE);
-                relativeLayout_helpandsupport.setVisibility(View.VISIBLE);
-                relativeLayout_helpandsupport.bringToFront();
                 isHelpAndSupportVisible = true;
             }
         } else if (id == R.id.item_notification) {
