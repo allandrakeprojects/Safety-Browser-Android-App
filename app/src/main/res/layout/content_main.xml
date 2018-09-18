@@ -11,190 +11,6 @@
     tools:showIn="@layout/app_bar_main">
 
     <RelativeLayout
-        android:id="@+id/relativeLayout_helpandsupport_landscape"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="20dp"
-        android:layout_marginLeft="70dp"
-        android:layout_marginRight="70dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/relative_layout_background"
-        android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
-
-        <ImageView
-            android:id="@+id/imageView_help_qr"
-            android:layout_width="55dp"
-            android:layout_height="55dp"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_social_2"
-            app:srcCompat="@drawable/ic_qr" />
-
-        <TextView
-            android:id="@+id/textView_emailus_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/imageView_help_back_landscape"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_emailus"
-            android:clickable="true"
-            android:text="cs@yb188188.com"
-            android:textColor="#EB6306"
-            android:textSize="9sp" />
-
-        <TextView
-            android:id="@+id/textView_social"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_emailus_1"
-            android:layout_marginTop="10dp"
-            android:text="Social"
-            android:textColor="#fff" />
-
-        <TextView
-            android:id="@+id/textView_social_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_social"
-            android:clickable="true"
-            android:text="• QQ: 2715693882"
-            android:textColor="#fff"
-            android:textSize="9sp" />
-
-        <TextView
-            android:id="@+id/textView_social_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_social_1"
-            android:clickable="true"
-            android:text="• WeChat: yb188yb"
-            android:textColor="#fff"
-            android:textSize="9sp" />
-
-        <TextView
-            android:id="@+id/textView_emailus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_chatus_2"
-            android:layout_centerVertical="true"
-            android:layout_marginTop="10dp"
-            android:text="Email Us"
-            android:textColor="#fff" />
-
-        <ImageView
-            android:id="@+id/imageView_help_notification_4"
-            android:layout_width="47dp"
-            android:layout_height="45dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignTop="@+id/imageView_help_back_landscape"
-            android:layout_marginEnd="42dp"
-            app:srcCompat="@drawable/ic_notification_3" />
-
-        <ImageView
-            android:id="@+id/imageView_help_notification_"
-            android:layout_width="110dp"
-            android:layout_height="103dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="68dp"
-            app:srcCompat="@drawable/ic_notification_1" />
-
-        <TextView
-            android:id="@+id/textView_clearcache_landscape"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="170dp"
-            android:enabled="false"
-            android:text="CLEAR CACHE"
-            android:textColor="#A8A8A8" />
-
-        <ImageView
-            android:id="@+id/imageView_help_back_landscape"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginStart="22dp"
-            android:layout_marginTop="15dp"
-            app:srcCompat="@drawable/ic_help_back" />
-
-        <TextView
-            android:id="@+id/textView_helpandsupport"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignTop="@+id/imageView_help_back_landscape"
-            android:layout_marginStart="63dp"
-            android:text="Help and Support"
-            android:textColor="#ffffff"
-            android:textSize="24sp" />
-
-        <ImageView
-            android:id="@+id/imageView_help_notification_2"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_above="@+id/imageView_help_notification_"
-            android:layout_alignParentEnd="true"
-            android:layout_marginBottom="-72dp"
-            android:layout_marginEnd="98dp"
-            android:scaleType="centerInside"
-            app:srcCompat="@drawable/ic_notification_2" />
-
-        <TextView
-            android:id="@+id/textView_chatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/imageView_help_notification_4"
-            android:text="Chat Us"
-            android:textColor="#fff" />
-
-        <TextView
-            android:id="@+id/textView_getdiagnostics_landscape"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_notification_2"
-            android:layout_alignTop="@+id/textView_clearcache_landscape"
-            android:enabled="false"
-            android:text="GET DIAGNOSTICS"
-            android:textColor="#A8A8A8" />
-
-        <TextView
-            android:id="@+id/textView_chatus_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_chatus"
-            android:text="Have questions? Get 24/7 live chat, real-time help with chat support."
-            android:textColor="#fff"
-            android:textSize="9sp" />
-
-        <TextView
-            android:id="@+id/textView_chatus_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_chatus_1"
-            android:clickable="true"
-            android:text="Chat now"
-            android:textColor="#EB6306"
-            android:textSize="9sp" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
         android:id="@+id/relativeLayout_helpandsupport_portrait"
         android:layout_width="315dp"
         android:layout_height="401dp"
@@ -338,7 +154,7 @@
             android:textSize="9sp" />
 
         <TextView
-            android:id="@+id/textView_emailus_1"
+            android:id="@+id/textView_emailus_portrait"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/imageView_help_back_portrait"
@@ -374,7 +190,7 @@
             android:textSize="9sp" />
 
         <TextView
-            android:id="@+id/textView_chatus_2"
+            android:id="@+id/textView_chatus_portrait"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/imageView_help_back_portrait"
@@ -393,6 +209,190 @@
             android:layout_alignStart="@+id/textView_chatus_1"
             android:layout_below="@+id/textView_social_3"
             app:srcCompat="@drawable/ic_qr" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout_helpandsupport_landscape"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginRight="70dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/relative_layout_background"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <ImageView
+            android:id="@+id/imageView_help_qr"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_social_2"
+            app:srcCompat="@drawable/ic_qr" />
+
+        <TextView
+            android:id="@+id/textView_emailus_landscape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/imageView_help_back_landscape"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_emailus"
+            android:clickable="true"
+            android:text="cs@yb188188.com"
+            android:textColor="#EB6306"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_social"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_emailus_landscape"
+            android:layout_marginTop="10dp"
+            android:text="Social"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_social_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_social"
+            android:clickable="true"
+            android:text="• QQ: 2715693882"
+            android:textColor="#fff"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_social_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_social_1"
+            android:clickable="true"
+            android:text="• WeChat: yb188yb"
+            android:textColor="#fff"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_emailus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_chatus_landscape"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="10dp"
+            android:text="Email Us"
+            android:textColor="#fff" />
+
+        <ImageView
+            android:id="@+id/imageView_help_notification_4"
+            android:layout_width="47dp"
+            android:layout_height="45dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/imageView_help_back_landscape"
+            android:layout_marginEnd="42dp"
+            app:srcCompat="@drawable/ic_notification_3" />
+
+        <ImageView
+            android:id="@+id/imageView_help_notification_"
+            android:layout_width="110dp"
+            android:layout_height="103dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="68dp"
+            app:srcCompat="@drawable/ic_notification_1" />
+
+        <TextView
+            android:id="@+id/textView_clearcache_landscape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="170dp"
+            android:enabled="false"
+            android:text="CLEAR CACHE"
+            android:textColor="#A8A8A8" />
+
+        <ImageView
+            android:id="@+id/imageView_help_back_landscape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="15dp"
+            app:srcCompat="@drawable/ic_help_back" />
+
+        <TextView
+            android:id="@+id/textView_helpandsupport"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/imageView_help_back_landscape"
+            android:layout_marginStart="63dp"
+            android:text="Help and Support"
+            android:textColor="#ffffff"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/imageView_help_notification_2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_above="@+id/imageView_help_notification_"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="-72dp"
+            android:layout_marginEnd="98dp"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/ic_notification_2" />
+
+        <TextView
+            android:id="@+id/textView_chatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/imageView_help_notification_4"
+            android:text="Chat Us"
+            android:textColor="#fff" />
+
+        <TextView
+            android:id="@+id/textView_getdiagnostics_landscape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_notification_2"
+            android:layout_alignTop="@+id/textView_clearcache_landscape"
+            android:enabled="false"
+            android:text="GET DIAGNOSTICS"
+            android:textColor="#A8A8A8" />
+
+        <TextView
+            android:id="@+id/textView_chatus_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_chatus"
+            android:text="Have questions? Get 24/7 live chat, real-time help with chat support."
+            android:textColor="#fff"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/textView_chatus_landscape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_below="@+id/textView_chatus_1"
+            android:clickable="true"
+            android:text="Chat now"
+            android:textColor="#EB6306"
+            android:textSize="9sp" />
+
     </RelativeLayout>
 
     <LinearLayout

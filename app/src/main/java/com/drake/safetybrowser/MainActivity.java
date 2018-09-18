@@ -1,6 +1,8 @@
 package com.drake.safetybrowser;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.ConnectivityManager;
@@ -18,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
@@ -53,6 +57,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -63,6 +68,17 @@ import com.android.volley.request.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,6 +89,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -86,6 +104,7 @@ import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,6 +118,8 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -112,6 +133,7 @@ public class MainActivity extends AppCompatActivity
     String[] send_service = { "http://www.ssicortex.com/SendDetails", "http://www.ssitectonic.com/SendDetails", "http://www.ssihedonic.com/SendDetails" };
     String[] notifications_service = { "http://www.ssicortex.com/GetNotifications", "http://www.ssitectonic.com/GetNotifications", "http://www.ssihedonic.com/GetNotifications" };
     String[] notifications_delete_service = { "http://www.ssicortex.com/GetMessageX", "http://www.ssitectonic.com/GetMessageX", "http://www.ssihedonic.com/GetMessageX" };
+    String[] diagnostics_service = { "http://www.ssicortex.com/SendDiagnostic", "http://www.ssitectonic.com/SendDiagnostic", "http://www.ssihedonic.com/SendDiagnostic" };
     String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
     String BRAND_CODE = "YB";
     String domain = "";
@@ -168,7 +190,7 @@ public class MainActivity extends AppCompatActivity
     LinearLayout relativeLayout_loader, relativeLayout_connection;
     RelativeLayout relativeLayout_webview;
     GifImageView gifImageView_connection;
-    TextView textView_textchanged, textView_chatus_2, textView_emailus_1, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
+    TextView textView_textchanged, textView_chatus_portrait, textView_emailus_portrait, textView_chatus_landscape, textView_emailus_landscape, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
     RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape;
     ImageView imageView_help_back_landscape, imageView_help_back_portrait;
     DrawerLayout drawer;
@@ -181,6 +203,8 @@ public class MainActivity extends AppCompatActivity
     Timer timer = new Timer();
 //    SwipeRefreshLayout swipeContainer;
     Button button_test;
+    ProgressDialog dialog_diagnostics;
+    ProgressDialog dialog_cache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -235,8 +259,10 @@ public class MainActivity extends AppCompatActivity
         relativeLayout_helpandsupport_portrait = findViewById(R.id.relativeLayout_helpandsupport_portrait);
         relativeLayout_helpandsupport_landscape = findViewById(R.id.relativeLayout_helpandsupport_landscape);
         relativeLayout_webview = findViewById(R.id.relativeLayout_webview);
-        textView_chatus_2 = findViewById(R.id.textView_chatus_2);
-        textView_emailus_1 = findViewById(R.id.textView_emailus_1);
+        textView_chatus_portrait = findViewById(R.id.textView_chatus_portrait);
+        textView_emailus_portrait = findViewById(R.id.textView_emailus_portrait);
+        textView_chatus_landscape = findViewById(R.id.textView_chatus_landscape);
+        textView_emailus_landscape = findViewById(R.id.textView_emailus_landscape);
         textView_clearcache_portrait = findViewById(R.id.textView_clearcache_portrait);
         textView_clearcache_landscape = findViewById(R.id.textView_clearcache_landscape);
         textView_getdiagnostics_portrait = findViewById(R.id.textView_getdiagnostics_portrait);
@@ -249,14 +275,23 @@ public class MainActivity extends AppCompatActivity
         button_test = findViewById(R.id.button_test);
         // End of Find ID
 
-        textView_chatus_2.setPaintFlags(textView_chatus_2.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
-        textView_emailus_1.setPaintFlags(textView_emailus_1.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        dialog_diagnostics = new ProgressDialog(MainActivity.this);
+        dialog_cache = new ProgressDialog(MainActivity.this);
+
+        textView_chatus_portrait.setPaintFlags(textView_chatus_portrait.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        textView_emailus_portrait.setPaintFlags(textView_emailus_portrait.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        textView_chatus_landscape.setPaintFlags(textView_chatus_landscape.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        textView_emailus_landscape.setPaintFlags(textView_emailus_landscape.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
 
         textView_clearcache_portrait.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                textView_clearcache_portrait.setText("PLEASE WAIT...");
+                textView_clearcache_portrait.setEnabled(false);
+                dialog_cache.setCanceledOnTouchOutside(false);
+                dialog_cache.setCancelable(false);
+                dialog_cache.setMessage("Clearing cache, please wait...");
+                dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
                 webView.clearCache(true);
@@ -269,7 +304,11 @@ public class MainActivity extends AppCompatActivity
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                textView_clearcache_landscape.setText("PLEASE WAIT...");
+                textView_clearcache_landscape.setEnabled(false);
+                dialog_cache.setCanceledOnTouchOutside(false);
+                dialog_cache.setCancelable(false);
+                dialog_cache.setMessage("Clearing cache, please wait...");
+                dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
                 webView.clearCache(true);
@@ -282,8 +321,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
+                    textView_getdiagnostics_portrait.setEnabled(false);
+                    dialog_diagnostics.setCanceledOnTouchOutside(false);
+                    dialog_diagnostics.setCancelable(false);
+                    dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                    dialog_diagnostics.show();
                     Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
-
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     int i;
                     char[] buffer = new char[4096];
@@ -291,15 +334,22 @@ public class MainActivity extends AppCompatActivity
                     while ((i = reader.read(buffer)) > 0)
                         output.append(buffer, 0, i);
                     reader.close();
-                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-                    writeToFile(output + "", "sb_ping.txt");
-                    String target_path = getFilesDir() + "/sb_ping.txt";
+
+                    String[] lines = output.toString().split(System.getProperty("line.separator"));
+                    for(String line : lines){
+                        writeToFile(line + "\r\n", "ping.txt");
+                        Log.d("deleted", line);
+                    }
+
+                    String target_path = getFilesDir() + "/ping.txt";
                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
                     ZipArchive zipArchive = new ZipArchive();
                     zipArchive.zip(target_path,destination_path,"");
+
                     //asdasdasd
+                    SENDDIAGNOSTICS();
                 } catch (Exception e) {
-                    Log.d("deleted", e.getMessage());
+                    Log.d("deleted", "Error: " + e.getMessage());
                 }
             }
         });
@@ -308,8 +358,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
+                    textView_getdiagnostics_landscape.setEnabled(false);
+                    dialog_diagnostics.setCanceledOnTouchOutside(false);
+                    dialog_diagnostics.setCancelable(false);
+                    dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                    dialog_diagnostics.show();
                     Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
-
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     int i;
                     char[] buffer = new char[4096];
@@ -318,12 +372,15 @@ public class MainActivity extends AppCompatActivity
                         output.append(buffer, 0, i);
                     reader.close();
                     Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-                    writeToFile(output + "", "sb_ping.txt");
-                    String target_path = getFilesDir() + "/sb_ping.txt";
+                    writeToFile(output + "", "ping.txt");
+
+                    String target_path = getFilesDir() + "/ping.txt";
                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
                     ZipArchive zipArchive = new ZipArchive();
                     zipArchive.zip(target_path,destination_path,"");
+
                     //asdasdasd
+                    SENDDIAGNOSTICS();
                 } catch (Exception e) {
                     Log.d("deleted", e.getMessage());
                 }
@@ -766,6 +823,7 @@ public class MainActivity extends AppCompatActivity
 
                             relativeLayout_loader.setVisibility(View.INVISIBLE);
 
+
                             if(!isHelpAndSupportVisible){
                                 relativeLayout_webview.setVisibility(View.VISIBLE);
                             }
@@ -853,9 +911,14 @@ public class MainActivity extends AppCompatActivity
 
                         if(isClearCache){
                             isClearCache = false;
-                            textView_clearcache_portrait.setText("CLEAR CACHE");
-                            textView_clearcache_landscape.setText("CLEAR CACHE");
-                            Toast.makeText(getApplicationContext(), "Cache has been cleared", Toast.LENGTH_LONG).show();
+
+                            if (dialog_cache.isShowing()) {
+                                dialog_cache.dismiss();
+                            }
+
+                            textView_clearcache_portrait.setEnabled(true);
+                            textView_clearcache_landscape.setEnabled(true);
+                            Toast.makeText(getApplicationContext(), "Cache has been cleared.", Toast.LENGTH_LONG).show();
                         }
 
                         timer_loader = 1;
@@ -869,7 +932,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+    // Get Result
     private String GetResult() {
         String path = getFilesDir() + "/result.txt";
         File file = new File(path);
@@ -882,61 +945,6 @@ public class MainActivity extends AppCompatActivity
             // Leave blank
         }
         return line;
-    }
-
-    public String executePost(String targetURL,String urlParameters) {
-        int timeout=5000;
-        URL url;
-        HttpURLConnection connection = null;
-        try {
-            // Create connection
-
-            url = new URL(targetURL);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type",
-                    "application/json");
-
-            connection.setRequestProperty("Content-Length",
-                    "" + Integer.toString(urlParameters.getBytes().length));
-            connection.setRequestProperty("Content-Language", "en-US");
-
-            connection.setUseCaches(false);
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
-            connection.setConnectTimeout(timeout);
-            connection.setReadTimeout(timeout);
-
-            // Send request
-            DataOutputStream wr = new DataOutputStream(
-                    connection.getOutputStream());
-            wr.writeBytes(urlParameters);
-            wr.flush();
-            wr.close();
-
-            // Get Response
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            String line;
-            StringBuffer response = new StringBuffer();
-            while ((line = rd.readLine()) != null) {
-                response.append(line);
-                response.append('\r');
-            }
-            rd.close();
-            return response.toString();
-
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "asdd " + e.getMessage(), Toast.LENGTH_LONG).show();
-            Log.d("deleted123", "asdd " +e.getMessage());
-
-        } finally {
-
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-        return null;
     }
 
     // nav_view Nagivation View
@@ -1936,73 +1944,73 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-            if(isConnected){
-                if(new_entry){
-                    Log.d("Handlers", "loaded");
+                if(isLoadingFinished){
+                    if(new_entry){
+                        Log.d("Handlers", "loaded");
 
-                    notification_count = 1;
-                    notification_clear = 1;
-                    notifications_count = 0;
+                        notification_count = 1;
+                        notification_clear = 1;
+                        notifications_count = 0;
 
-                    // Get Deleted Notification
-                    GETDELETEDNOTIFICATION_V(new VolleyCallback(){
-                        @Override
-                        public void onSuccess(String result){
-                            String replace_responce = StringEscapeUtils.unescapeJava(result);
-                            Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+                        // Get Deleted Notification
+                        GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                            @Override
+                            public void onSuccess(String result){
+                                String replace_responce = StringEscapeUtils.unescapeJava(result);
+                                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
 
-                            while(m.find()){
-                                get_deleted_id = m.group(1);
-                            }
-
-                            if(result.contains("OK")){
-                                get_deleted_id = get_deleted_id.replace("\"", "");
-                                List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
-                                for(String get_delete_id_list : get_delete_id_lists){
-                                    GetUpdateNotification(get_delete_id_list);
+                                while(m.find()){
+                                    get_deleted_id = m.group(1);
                                 }
-                            } else{
-                                Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
 
-                    // Get Notification
-                    GETNOTIFICAITON_V(new VolleyCallback(){
-                        @Override
-                        public void onSuccess(String result){
-                            try {
-                                JSONObject obj = new JSONObject(result);
-                                JSONArray array = obj.getJSONArray("data");
-
-                                for(int i=0;i<array.length();i++){
-                                    JSONObject data = array.getJSONObject(i);
-
-                                    String id = data.getString("id");
-                                    String message_date = data.getString("message_date");
-                                    String message_title = data.getString("message_title");
-                                    String message_content = data.getString("message_content");
-                                    String status = data.getString("status");
-                                    String message_type = data.getString("message_type");
-                                    String edited_id = data.getString("edited_id");
-
-                                    String notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                    writeToFile(notification, "sb_notifications.txt");
+                                if(result.contains("OK")){
+                                    get_deleted_id = get_deleted_id.replace("\"", "");
+                                    List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                    for(String get_delete_id_list : get_delete_id_lists){
+                                        GetUpdateNotification(get_delete_id_list);
+                                    }
+                                } else{
+                                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                                 }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
                             }
+                        });
 
-                            // Preview Notification
-                            UpdatedNotification();
-                        }
-                    });
+                        // Get Notification
+                        GETNOTIFICAITON_V(new VolleyCallback(){
+                            @Override
+                            public void onSuccess(String result){
+                                try {
+                                    JSONObject obj = new JSONObject(result);
+                                    JSONArray array = obj.getJSONArray("data");
 
-                    new_entry = false;
+                                    for(int i=0;i<array.length();i++){
+                                        JSONObject data = array.getJSONObject(i);
+
+                                        String id = data.getString("id");
+                                        String message_date = data.getString("message_date");
+                                        String message_title = data.getString("message_title");
+                                        String message_content = data.getString("message_content");
+                                        String status = data.getString("status");
+                                        String message_type = data.getString("message_type");
+                                        String edited_id = data.getString("edited_id");
+
+                                        String notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                        writeToFile(notification, "sb_notifications.txt");
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                // Preview Notification
+                                UpdatedNotification();
+                            }
+                        });
+
+                        new_entry = false;
+                    }
                 }
             }
-            }
-        },0, 60000);
+        },0, 30000);
     }
     // Timer Notification Clear
     private void TimerNotificationClear(){
@@ -2015,7 +2023,7 @@ public class MainActivity extends AppCompatActivity
 
                 @Override
                 public void run() {
-                if(isConnected){
+                if(isLoadingFinished){
                     if(new_entry){
                         MenuItem notification_header = menu_notification.findItem(99999);
                         notification_header.setTitle("Loading...");
@@ -2039,7 +2047,7 @@ public class MainActivity extends AppCompatActivity
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(isConnected){
+                    if(isLoadingFinished){
                         // Get Deleted Notification
                         GETDELETEDNOTIFICATION_V(new VolleyCallback(){
                             @Override
@@ -2111,45 +2119,53 @@ public class MainActivity extends AppCompatActivity
 
     // Send Diagnostics
     private void SENDDIAGNOSTICS(){
-//        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, "", new Response.Listener<NetworkResponse>() {
-//            @Override
-//            public void onResponse(NetworkResponse response) {
-//                String resultResponse = new String(response.data);
-//                // parse success output
-//            }
-//        }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                error.printStackTrace();
-//            }
-//        }) {
-//            @Override
-//            protected Map<String, String> getParams() {
-//                Map<String, String> params = new HashMap<>();
-//                params.put("api_token", "gh659gjhvdyudo973823tt9gvjf7i6ric75r76");
-//                params.put("name", "Angga");
-//                params.put("location", "Indonesia");
-//                params.put("about", "UI/UX Designer");
-//                params.put("contact", "angga@email.com");
-//                return params;
-//            }
-//
-//            @Override
-//            protected Map<String, DataPart> getByteData() {
-//                Map<String, DataPart> params = new HashMap<>();
-//                // file name could found file base or direct access from real path
-//                // for now just get bitmap data from ImageView
-//                params.put("avatar", new DataPart("file_avatar.jpg", AppHelper.getFileDataFromDrawable(getBaseContext(), mAvatarImage.getDrawable()), "image/jpeg"));
-//                params.put("cover", new DataPart("file_cover.jpg", AppHelper.getFileDataFromDrawable(getBaseContext(), mCoverImage.getDrawable()), "image/jpeg"));
-//
-//                return params;
-//            }
-//        };
-//
-//        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
+        try{
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().build();
+            StrictMode.setThreadPolicy(policy);
+            String path_get = getFilesDir() + "/sb_diagnostic.zip";
+            String postReceiverUrl = diagnostics_service[0];
+
+            File image = new File(path_get);
+            FileBody fileBody = new FileBody(image);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .addTextBody("api_key", API_KEY)
+                    .addTextBody("brand_code", BRAND_CODE)
+                    .addTextBody("macid", GETMACADDRESS())
+                    .addPart("zipfile", fileBody);
+            HttpEntity multiPartEntity = builder.build();
+
+            HttpPost httpPost = new HttpPost(postReceiverUrl);
+            httpPost.setEntity(multiPartEntity);
+
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpResponse response = httpClient.execute(httpPost);
+            HttpEntity resEntity = response.getEntity();
+
+            if (resEntity != null) {
+//                String responseStr = EntityUtils.toString(resEntity).trim();
+//                Log.d("deleted", responseStr);
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (dialog_diagnostics.isShowing()) {
+                            dialog_diagnostics.dismiss();
+                        }
+
+                        textView_getdiagnostics_portrait.setEnabled(true);
+                        textView_getdiagnostics_landscape.setEnabled(true);
+                        Toast.makeText(getApplicationContext(), "Diagnostics has been sent.", Toast.LENGTH_LONG).show();
+                    }
+                }, 2000);
+            }
+        } catch (NullPointerException e) {
+            Log.d("deleted", e.getMessage() + " 2");
+        } catch (Exception e) {
+            Log.d("deleted", e.getMessage() + " 3");
+        }
     }
-
-
 
 
 
@@ -2211,7 +2227,7 @@ public class MainActivity extends AppCompatActivity
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(isConnected){
+                    if(isLoadingFinished){
                         if(isTimerLoaderRunning){
                             timer_loader++;
                             Log.d("deleted", timer_loader+"");
@@ -2230,35 +2246,47 @@ public class MainActivity extends AppCompatActivity
         },0, 1000);
     }
 
+    // For Navigation View --------------
     // Back for WebBrowser --------------
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_BACK:
-                    if (webView.canGoBack()) {
-                        webView.goBack();
-                    } else {
-                        finish();
-                    }
-                    return true;
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if(isHelpAndSupportVisible){
+            if(isPortrait){
+                relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+            } else{
+                relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
             }
 
-        }
-        return super.onKeyDown(keyCode, event);
-    }
+            if(isLoadingFinished){
+                relativeLayout_webview.setVisibility(View.VISIBLE);
+            }
 
-    // For Navigation View --------------
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            isHelpAndSupportVisible = false;
+        } else if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if(drawer.isDrawerOpen(GravityCompat.END)){
             drawer.closeDrawer(GravityCompat.END);
-        } else {
-            super.onBackPressed();
+        } else{
+            if(isLoadingFinished){
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_BACK:
+                        if (webView.canGoBack()) {
+                            webView.goBack();
+                        } else {
+                            moveTaskToBack(true);
+                        }
+                        return true;
+                }
+            }
         }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+
     }
 
     // Create Navigation Menu --------------
@@ -2342,7 +2370,6 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.item_help) {
             if(isHelpAndSupportVisible){
-
                 if(isPortrait){
                     relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
                 } else{
@@ -2352,6 +2379,7 @@ public class MainActivity extends AppCompatActivity
                 if(isLoadingFinished){
                     relativeLayout_webview.setVisibility(View.VISIBLE);
                 }
+
                 isHelpAndSupportVisible = false;
             } else{
                 if(isPortrait){
@@ -2389,7 +2417,7 @@ public class MainActivity extends AppCompatActivity
                 if(isFirstOpened){
                     // Functions --------------
 
-                    File fdelete = new File(getFilesDir() + "/result.txt");
+                    File fdelete = new File(getFilesDir() + "/ping.txt");
                     if (fdelete.exists()) {
                         fdelete.delete();
                     }

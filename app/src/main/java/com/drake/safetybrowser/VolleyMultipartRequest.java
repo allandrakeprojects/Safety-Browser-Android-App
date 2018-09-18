@@ -1,5 +1,7 @@
 package com.drake.safetybrowser;
 
+import android.graphics.Bitmap;
+
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -218,15 +220,18 @@ public class VolleyMultipartRequest extends Request<NetworkResponse> {
     /**
      * Simple data container use for passing byte file
      */
-    public class DataPart {
+    public static class DataPart {
         private String fileName;
         private byte[] content;
         private String type;
 
         /**
          * Default data part
+         * @param name
+         * @param s
+         * @param mimeType
          */
-        public DataPart() {
+        public DataPart(String name, Bitmap s, String mimeType) {
         }
 
         /**

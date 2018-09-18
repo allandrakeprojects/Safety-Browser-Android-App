@@ -55,6 +55,12 @@ dependencies {
     implementation 'com.github.ghost1372:Mzip-Android:0.4.0'
     implementation 'com.github.apl-devs:appintro:v4.2.3'
 
+    dependencies {
+        compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
+        compile('org.apache.httpcomponents:httpmime:4.3') {
+            exclude module: "httpclient"
+        }
+    }
 
 //    implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    //noinspection GradleCompatible
