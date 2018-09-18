@@ -16,6 +16,8 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
@@ -122,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     String isp;
     String province;
     String country;
+    String get_inaccessible_list;
     int detect_no_internet_connection = 0;
     int domain_count_max = -1;
     int domain_count_current = 0;
@@ -130,9 +133,11 @@ public class MainActivity extends AppCompatActivity
     int notification_clear = 1;
     int timer_loader = 1;
     boolean loadingFinished = true;
+    boolean isTimeout = false;
     boolean redirect = false;
     boolean isConnected;
     boolean isHijacked;
+    boolean isInacessible;
     boolean isLoadingFinished = false;
     boolean isHelpAndSupportVisible = false;
     boolean isClearCache = false;
@@ -147,6 +152,8 @@ public class MainActivity extends AppCompatActivity
     boolean isTimerLoaderRunning = true;
     boolean isPortrait = true;
     boolean isHeaderInsert = true;
+    boolean isBracketInserted = false;
+    boolean isBack = false;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -513,6 +520,8 @@ public class MainActivity extends AppCompatActivity
 
     // WebView --------------
     private class MyBrowser extends WebViewClient {
+        boolean timeout_detect = true;
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (!loadingFinished) {
@@ -527,7 +536,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onPageStarted(
-                WebView view, String url, Bitmap favicon) {
+            WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
             loadingFinished = false;
             if (isConnected) {
@@ -544,6 +553,19 @@ public class MainActivity extends AppCompatActivity
                 SimpleDateFormat start_load_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 start_load = start_load_format.format(new Date());
             }
+
+            Runnable run = new Runnable() {
+                public void run() {
+                    if(timeout_detect) {
+                        // do what you want
+                        Toast.makeText(getApplicationContext(), "Timeout" , Toast.LENGTH_LONG).show();
+                        isTimeout = true;
+                        webView.stopLoading();
+                    }
+                }
+            };
+            Handler myHandler = new Handler(Looper.myLooper());
+            myHandler.postDelayed(run, 60000);
         }
 
         @SuppressLint("SetTextI18n")
@@ -557,13 +579,16 @@ public class MainActivity extends AppCompatActivity
                 if (isConnected) {
                     // Loaded
 //                    swipeContainer.setEnabled(false);
+                    timeout_detect = false;
                     NavigationView navView = findViewById(R.id.nav_view);
                     Menu menu = navView.getMenu();
                     MenuItem nav_back = menu.findItem(R.id.nav_back);
                     MenuItem nav_forward = menu.findItem(R.id.nav_forward);
 
-                    nav_back.setEnabled(webView.canGoBack());
-                    nav_forward.setEnabled(webView.canGoForward());
+                    if(isBack){
+                        nav_back.setEnabled(webView.canGoBack());
+                        nav_forward.setEnabled(webView.canGoForward());
+                    }
 
                     if(!isLoadingFinished){
                         String webtitle = webView.getTitle();
@@ -580,54 +605,163 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if(isHijacked){
+                            // Insert to Text File ------
                             isHeaderInsert = false;
 
                             // End load
                             SimpleDateFormat end_load_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             end_load = end_load_format.format(new Date());
 
+                            SimpleDateFormat get_hour_format = new SimpleDateFormat("HH");
+                            String get_hour = get_hour_format.format(new Date());
 
-                            SimpleDateFormat datetime_created_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            String datetime_created = datetime_created_format.format(new Date());
+                            String datetime_created = "";
+
+                            if((Integer.parseInt(get_hour) % 2) == 0){
+                                char firstDigit = get_hour.charAt(0);
+
+                                if(firstDigit == 0){
+                                    SimpleDateFormat datetime_created_format = new SimpleDateFormat("yyyy-MM-dd 0" + get_hour + ":00:00");
+                                    datetime_created = datetime_created_format.format(new Date());
+                                } else{
+                                    SimpleDateFormat datetime_created_format = new SimpleDateFormat("yyyy-MM-dd " + get_hour + ":00:00");
+                                    datetime_created = datetime_created_format.format(new Date());
+                                }
+
+                            } else{
+                                char firstDigit = get_hour.charAt(0);
+
+                                if(firstDigit == '0'){
+                                    int final_get_hour = Integer.parseInt(get_hour)-1;
+                                    SimpleDateFormat datetime_created_format = new SimpleDateFormat("yyyy-MM-dd 0" + final_get_hour + ":00:00");
+                                    datetime_created = datetime_created_format.format(new Date());
+                                } else{
+                                    int final_get_hour = Integer.parseInt(get_hour)-1;
+                                    SimpleDateFormat datetime_created_format = new SimpleDateFormat("yyyy-MM-dd " + final_get_hour + ":00:00");
+                                    datetime_created = datetime_created_format.format(new Date());
+                                }
+                            }
 
                             webtitle = webtitle.replace(",", "");
                             webtitle = webtitle.replace("，", "");
+                            // End of Insert to Text File ------
 
-//                            Toast.makeText(getApplicationContext(), "Domain name: " + domain_list.get(domain_count_current) + "\nStatus: H \nBrand: 5" + "\nStart load: " + start_load + "\nEnd load: " + end_load + "\nText to search: " + webtitle + "\nUrl hijacked: " + url, Toast.LENGTH_LONG).show();
-
-                            try{
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("id", "");
-                                jsonObject.put("domain_name", domain_list.get(domain_count_current));
-                                jsonObject.put("status", "H");
-                                jsonObject.put("brand", "5");
-                                jsonObject.put("start_load", start_load);
-                                jsonObject.put("end_load", end_load);
-                                jsonObject.put("text_search", webtitle);
-                                jsonObject.put("url_hijacker", url);
-                                jsonObject.put("hijacker", "-");
-                                jsonObject.put("remarks", "-");
-                                jsonObject.put("printscreen", "-");
-                                jsonObject.put("isp", isp);
-                                jsonObject.put("city", city);
-                                jsonObject.put("t_id", "-");
-                                jsonObject.put("datetime_created", datetime_created);
-                                jsonObject.put("action_by", "");
-                                jsonObject.put("type", "S");
-
-//                                Toast.makeText(getApplicationContext(), jsonObject.toString(), Toast.LENGTH_LONG).show();
-                                writeToFile(jsonObject.toString(), "result.txt");
-
-                            } catch(Exception e){
-
+                            // Inaccessible
+                            List<String> get_inaccesible = Arrays.asList(get_inaccessible_list.split(","));
+                            for(String get : get_inaccesible){
+                                if(get.contains(webtitle)){
+                                    isInacessible = true;
+                                    break;
+                                } else {
+                                    isInacessible = false;
+                                }
                             }
 
-//                            String result = ", asdasdas.com, H, 5, " + start_load + ", " + end_load + ", " +  webtitle + ", " + url + ", , , , isp, city, , " +  datetime_created + ", , S";
-//                            String result = ", " + domain_list.get(domain_count_current) + ", H, 5, " + start_load + ", " + end_load + ", " + webtitle + ", url, -, -, -, " + isp + ", " + city + ", -, " + datetime_created + ", , S";
+                            if(webtitle.equals("")){
+                                webtitle = "-";
+                            }
+
+                            if(isTimeout){
+                                try{
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("id", "");
+                                    jsonObject.put("domain_name", domain_list.get(domain_count_current));
+                                    jsonObject.put("status", "T");
+                                    jsonObject.put("brand", "5");
+                                    jsonObject.put("start_load", start_load);
+                                    jsonObject.put("end_load", end_load);
+                                    jsonObject.put("text_search", webtitle);
+                                    jsonObject.put("url_hijacker", url);
+                                    jsonObject.put("hijacker", "-");
+                                    jsonObject.put("remarks", "-");
+                                    jsonObject.put("printscreen", "-");
+                                    jsonObject.put("isp", isp);
+                                    jsonObject.put("city", city);
+                                    jsonObject.put("t_id", "-");
+                                    jsonObject.put("datetime_created", datetime_created);
+                                    jsonObject.put("action_by", "");
+                                    jsonObject.put("type", "S");
+
+                                    if(!isBracketInserted){
+                                        writeToFile("[", "result.txt");
+
+                                        isBracketInserted = true;
+                                    }
+
+                                    writeToFile(jsonObject.toString() + ",", "result.txt");
+                                } catch(Exception e){
+                                    // Leave blank
+                                }
+
+                                isTimeout = false;
+                            } else if(isInacessible){
+                                try{
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("id", "");
+                                    jsonObject.put("domain_name", domain_list.get(domain_count_current));
+                                    jsonObject.put("status", "I");
+                                    jsonObject.put("brand", "5");
+                                    jsonObject.put("start_load", start_load);
+                                    jsonObject.put("end_load", end_load);
+                                    jsonObject.put("text_search", webtitle);
+                                    jsonObject.put("url_hijacker", url);
+                                    jsonObject.put("hijacker", "-");
+                                    jsonObject.put("remarks", "-");
+                                    jsonObject.put("printscreen", "-");
+                                    jsonObject.put("isp", isp);
+                                    jsonObject.put("city", city);
+                                    jsonObject.put("t_id", "-");
+                                    jsonObject.put("datetime_created", datetime_created);
+                                    jsonObject.put("action_by", "");
+                                    jsonObject.put("type", "S");
+
+                                    if(!isBracketInserted){
+                                        writeToFile("[", "result.txt");
+
+                                        isBracketInserted = true;
+                                    }
+
+                                    writeToFile(jsonObject.toString() + ",", "result.txt");
+                                } catch(Exception e){
+                                    // Leave blank
+                                }
+                            } else{
+                                try{
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("id", "");
+                                    jsonObject.put("domain_name", domain_list.get(domain_count_current));
+                                    jsonObject.put("status", "H");
+                                    jsonObject.put("brand", "5");
+                                    jsonObject.put("start_load", start_load);
+                                    jsonObject.put("end_load", end_load);
+                                    jsonObject.put("text_search", webtitle);
+                                    jsonObject.put("url_hijacker", url);
+                                    jsonObject.put("hijacker", "-");
+                                    jsonObject.put("remarks", "-");
+                                    jsonObject.put("printscreen", "-");
+                                    jsonObject.put("isp", isp);
+                                    jsonObject.put("city", city);
+                                    jsonObject.put("t_id", "-");
+                                    jsonObject.put("datetime_created", datetime_created);
+                                    jsonObject.put("action_by", "");
+                                    jsonObject.put("type", "S");
+
+                                    if(!isBracketInserted){
+                                        writeToFile("[", "result.txt");
+
+                                        isBracketInserted = true;
+                                    }
+
+                                    writeToFile(jsonObject.toString() + ",", "result.txt");
+                                } catch(Exception e){
+                                    // Leave blank
+                                }
+                            }
 
                             domain_count_current++;
                             textView_textchanged.setText("0");
                         } else{
+                            isBack = true;
                             webView.clearHistory();
 
                             relativeLayout_loader.setVisibility(View.INVISIBLE);
@@ -654,39 +788,58 @@ public class MainActivity extends AppCompatActivity
 
                             // Send Result
                             if(!isHeaderInsert){
-//                                Toast.makeText(getApplicationContext(), GetResult(), Toast.LENGTH_LONG).show();
+                                // Remove comma
+                                try{
+                                    String path = getFilesDir() + "/result.txt";
+                                    FileReader fr = new FileReader(path);
+                                    String s;
+                                    String get_s = "";
+                                    BufferedReader br = new BufferedReader(fr);
 
-//                                try {
-//                                    final String auth = "r@inCh3ckd234b70";
-//                                    final String type = "reports_normal";
-//                                    final String request = "http://raincheck.ssitex.com/api/api.php";
-//
-//                                    RequestQueue MyRequestQueue = Volley.newRequestQueue(getApplicationContext());
-//                                    StringRequest MyStringRequest = new StringRequest(Request.Method.POST, request, new Response.Listener<String>() {
-//                                        @Override
-//                                        public void onResponse(String response) {
-////                                            Toast.makeText(getApplicationContext(), "Response : " + response, Toast.LENGTH_LONG).show();
-//
-//                                        }
-//                                    }, new Response.ErrorListener() {
-//                                        @Override
-//                                        public void onErrorResponse(VolleyError error) {
-//                                            Toast.makeText(getApplicationContext(), "Error: " + error.getMessage(), Toast.LENGTH_LONG).show();
-//                                        }
-//                                    }) {
-//                                        protected Map<String, String> getParams() {
-//                                            Map<String, String> MyData = new HashMap<>();
-//                                            MyData.put("auth", auth);
-//                                            MyData.put("type", type);
-//                                            MyData.put("reports", GetResult());
-//                                            return MyData;
-//                                        }
-//                                    };
-//
-//                                    MyRequestQueue.add(MyStringRequest);
-//                                } catch(Exception e) {
-//                                    Toast.makeText(getApplicationContext(),"Error: " +  e.getMessage(), Toast.LENGTH_LONG).show();
-//                                }
+                                    while ((s = br.readLine()) != null) {
+                                        s = s.substring(0, s.length() - 1) + "";
+                                        get_s = s;
+                                    }
+
+                                    FileWriter fw = new FileWriter(path);
+                                    fw.write(get_s);
+                                    fw.close();
+                                } catch(Exception e){
+                                    // Leave blank
+                                }
+
+                                writeToFile("]", "result.txt");
+
+                                try {
+                                    final String auth = "r@inCh3ckd234b70";
+                                    final String type = "reports_normal";
+                                    final String request = "http://raincheck.ssitex.com/api/api.php";
+
+                                    RequestQueue MyRequestQueue = Volley.newRequestQueue(getApplicationContext());
+                                    StringRequest MyStringRequest = new StringRequest(Request.Method.POST, request, new Response.Listener<String>() {
+                                        @Override
+                                        public void onResponse(String response) {
+                                            // Leave blank
+                                        }
+                                    }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            Toast.makeText(getApplicationContext(), "Error: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                                        }
+                                    }) {
+                                        protected Map<String, String> getParams() {
+                                            Map<String, String> MyData = new HashMap<>();
+                                            MyData.put("auth", auth);
+                                            MyData.put("type", type);
+                                            MyData.put("reports", GetResult());
+                                            return MyData;
+                                        }
+                                    };
+
+                                    MyRequestQueue.add(MyStringRequest);
+                                } catch(Exception e) {
+                                    Toast.makeText(getApplicationContext(),"Error: " +  e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
                             }
                         }
                     } else{
@@ -1038,7 +1191,6 @@ public class MainActivity extends AppCompatActivity
     // Get Deleted Notification
     public void GETDELETEDNOTIFICATION_V(final VolleyCallback callback) {
         RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
-
         StringRequest MyStringRequest = new StringRequest(Request.Method.POST, notifications_delete_service[0], new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -1055,6 +1207,34 @@ public class MainActivity extends AppCompatActivity
                 MyData.put("api_key", API_KEY);
                 MyData.put("brand_code", BRAND_CODE);
                 MyData.put("macid", GETMACADDRESS());
+                return MyData;
+            }
+        };
+
+        MyRequestQueue.add(MyStringRequest);
+    }
+    // Get Inaccessible List
+    public void GETINACCESSIBLELIST_V(final VolleyCallback callback) {
+        final String auth = "r@inCh3ckd234b70";
+        final String type = "category";
+        String request = "http://raincheck.ssitex.com/api/api.php";
+
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, request, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                callback.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //This code is executed if there is an error.
+            }
+        }) {
+            protected Map<String, String> getParams() {
+                Map<String, String> MyData = new HashMap<>();
+                MyData.put("auth", auth);
+                MyData.put("type", type);
                 return MyData;
             }
         };
@@ -2283,6 +2463,13 @@ public class MainActivity extends AppCompatActivity
 
                             // Preview Notification
                             UpdatedNotification();
+                        }
+                    });
+                    // Get Inaccessible List
+                    GETINACCESSIBLELIST_V(new VolleyCallback(){
+                        @Override
+                        public void onSuccess(String result){
+                            get_inaccessible_list = result;
                         }
                     });
 
