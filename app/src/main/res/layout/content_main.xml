@@ -458,7 +458,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_marginTop="12dp"
-            android:text="check your internet connection"
+            android:text="No Internet Connection"
             android:textColor="#535353"
             android:textSize="14sp"
             android:textStyle="bold"

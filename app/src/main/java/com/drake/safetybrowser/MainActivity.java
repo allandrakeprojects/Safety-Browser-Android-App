@@ -35,8 +35,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -176,6 +178,7 @@ public class MainActivity extends AppCompatActivity
     boolean isHeaderInsert = true;
     boolean isBracketInserted = false;
     boolean isBack = false;
+    boolean isNoInternetConnection;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -321,6 +324,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
+                    boolean isNewLine = true;
                     textView_getdiagnostics_portrait.setEnabled(false);
                     dialog_diagnostics.setCanceledOnTouchOutside(false);
                     dialog_diagnostics.setCancelable(false);
@@ -337,8 +341,12 @@ public class MainActivity extends AppCompatActivity
 
                     String[] lines = output.toString().split(System.getProperty("line.separator"));
                     for(String line : lines){
+                        if(isNewLine){
+                            writeToFile("\r\n", "ping.txt");
+                            isNewLine = false;
+                        }
+
                         writeToFile(line + "\r\n", "ping.txt");
-                        Log.d("deleted", line);
                     }
 
                     String target_path = getFilesDir() + "/ping.txt";
@@ -358,7 +366,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
-                    textView_getdiagnostics_landscape.setEnabled(false);
+                    boolean isNewLine = true;
+                    textView_getdiagnostics_portrait.setEnabled(false);
                     dialog_diagnostics.setCanceledOnTouchOutside(false);
                     dialog_diagnostics.setCancelable(false);
                     dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
@@ -371,8 +380,16 @@ public class MainActivity extends AppCompatActivity
                     while ((i = reader.read(buffer)) > 0)
                         output.append(buffer, 0, i);
                     reader.close();
-                    Toast.makeText(getApplicationContext(), output, Toast.LENGTH_LONG).show();
-                    writeToFile(output + "", "ping.txt");
+
+                    String[] lines = output.toString().split(System.getProperty("line.separator"));
+                    for(String line : lines){
+                        if(isNewLine){
+                            writeToFile("\r\n", "ping.txt");
+                            isNewLine = false;
+                        }
+
+                        writeToFile(line + "\r\n", "ping.txt");
+                    }
 
                     String target_path = getFilesDir() + "/ping.txt";
                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
@@ -382,7 +399,7 @@ public class MainActivity extends AppCompatActivity
                     //asdasdasd
                     SENDDIAGNOSTICS();
                 } catch (Exception e) {
-                    Log.d("deleted", e.getMessage());
+                    Log.d("deleted", "Error: " + e.getMessage());
                 }
             }
         });
@@ -614,8 +631,7 @@ public class MainActivity extends AppCompatActivity
             Runnable run = new Runnable() {
                 public void run() {
                     if(timeout_detect) {
-                        // do what you want
-                        Toast.makeText(getApplicationContext(), "Timeout" , Toast.LENGTH_LONG).show();
+//                        Toast.makeText(getApplicationContext(), "Timeout" , Toast.LENGTH_LONG).show();
                         isTimeout = true;
                         webView.stopLoading();
                     }
@@ -923,6 +939,15 @@ public class MainActivity extends AppCompatActivity
 
                         timer_loader = 1;
                         isTimerLoaderRunning = false;
+
+                        textView_clearcache_portrait.setEnabled(true);
+                        textView_clearcache_portrait.setTextColor(Color.parseColor("#FFFFFF"));
+                        textView_clearcache_landscape.setEnabled(true);
+                        textView_clearcache_landscape.setTextColor(Color.parseColor("#FFFFFF"));
+                        textView_getdiagnostics_portrait.setEnabled(true);
+                        textView_getdiagnostics_portrait.setTextColor(Color.parseColor("#FFFFFF"));
+                        textView_getdiagnostics_landscape.setEnabled(true);
+                        textView_getdiagnostics_landscape.setTextColor(Color.parseColor("#FFFFFF"));
                     }
                 }
             } else {
@@ -1400,11 +1425,41 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
 
+                                Integer get_final_id = (get_count_notification*2)-1;
+
+                                NavigationView navView_delete = findViewById(R.id.nav_view_notification);
+                                Menu menu_delete = navView_delete.getMenu();
+                                MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
+                                MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
+
+                                SpannableString parent = new SpannableString(getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                pinMenuItem_parent.setTitle(parent);
+
+                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                pinMenuItem_child.setTitle(child);
+
                                 isUnread = false;
                                 isInsertMenu = true;
                             } else {
                                 menu.add(final_count, 120, Menu.NONE,getSafeSubstring( message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
+
+                                Integer get_final_id = (get_count_notification*2)-1;
+
+                                NavigationView navView_delete = findViewById(R.id.nav_view_notification);
+                                Menu menu_delete = navView_delete.getMenu();
+                                MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
+                                MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
+
+                                SpannableString parent = new SpannableString(getSafeSubstring( message_title, 18, "title") + " (" + final_datetime + ")");
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                pinMenuItem_parent.setTitle(parent);
+
+                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
                                 isInsertMenu = true;
@@ -1420,6 +1475,14 @@ public class MainActivity extends AppCompatActivity
                             notification_clear+=2;
                         }
                     }
+                }
+
+                TextView textview_notification = findViewById(R.id.textview_notification);
+                if(0 < notifications_count){
+                    textview_notification.setText(notifications_count + "");
+                    textview_notification.setVisibility(View.VISIBLE);
+                } else{
+                    textview_notification.setVisibility(View.INVISIBLE);
                 }
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
@@ -1563,11 +1626,41 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(final_count, 120, Menu.NONE,"★ " + message_title + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, message_content);
 
+                                Integer get_final_id = (get_count_notification*2)-1;
+
+                                NavigationView navView_delete = findViewById(R.id.nav_view_notification);
+                                Menu menu_delete = navView_delete.getMenu();
+                                MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
+                                MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
+
+                                SpannableString parent = new SpannableString(getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                pinMenuItem_parent.setTitle(parent);
+
+                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                pinMenuItem_child.setTitle(child);
+
                                 isUnread = false;
                                 isInsertMenu = true;
                             } else {
                                 menu.add(final_count, 120, Menu.NONE,message_title + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, message_content);
+
+                                Integer get_final_id = (get_count_notification*2)-1;
+
+                                NavigationView navView_delete = findViewById(R.id.nav_view_notification);
+                                Menu menu_delete = navView_delete.getMenu();
+                                MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
+                                MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
+
+                                SpannableString parent = new SpannableString(getSafeSubstring( message_title, 18, "title") + " (" + final_datetime + ")");
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                pinMenuItem_parent.setTitle(parent);
+
+                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
                                 isInsertMenu = true;
@@ -1727,12 +1820,6 @@ public class MainActivity extends AppCompatActivity
                                             .setCancelable(false)
                                             .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog,int id) {
-                                                    NavigationView navView_delete = findViewById(R.id.nav_view_notification);
-                                                    Menu menu_delete = navView_delete.getMenu();
-                                                    MenuItem pinMenuItem_parent = menu_delete.getItem(parent);
-                                                    MenuItem pinMenuItem_child = menu_delete.getItem(child);
-                                                    pinMenuItem_parent.setChecked(false);
-                                                    pinMenuItem_child.setChecked(false);
                                                     dialog.cancel();
                                                 }
                                             });
@@ -1765,11 +1852,6 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                 Menu menu_delete = navView_delete.getMenu();
                 MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
-                parent = get_final_id;
-                child = get_final_id+1;
-                MenuItem pinMenuItem_child = menu_delete.getItem(child);
-                pinMenuItem_parent.setChecked(true);
-                pinMenuItem_child.setChecked(true);
 
                 if(pinMenuItem_parent.getTitle().toString().contains("★")){
                     while ((s = br.readLine()) != null) {
@@ -1785,7 +1867,6 @@ public class MainActivity extends AppCompatActivity
                     fw.close();
 
                     MenuItem pinMenuItem = menu_delete.getItem(get_final_id);
-                    String final_replace = title.substring(1);
                     pinMenuItem.setTitle(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
 
                     TextView textview_notification = findViewById(R.id.textview_notification);
@@ -1805,8 +1886,6 @@ public class MainActivity extends AppCompatActivity
                         textview_notification.setVisibility(View.INVISIBLE);
                     }
                 }
-
-
             } catch (Exception e) {
                 System.out.println("Problem reading file.");
             }
@@ -1846,14 +1925,6 @@ public class MainActivity extends AppCompatActivity
 
                 Log.d("123", "Preview notification");
                 PreviewNotifications();
-
-                TextView textview_notification = findViewById(R.id.textview_notification);
-                if(0 < notifications_count){
-                    textview_notification.setText(notifications_count + "");
-                    textview_notification.setVisibility(View.VISIBLE);
-                } else{
-                    textview_notification.setVisibility(View.INVISIBLE);
-                }
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
@@ -2010,7 +2081,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }
-        },0, 30000);
+        },0, 60000);
     }
     // Timer Notification Clear
     private void TimerNotificationClear(){
@@ -2258,8 +2329,12 @@ public class MainActivity extends AppCompatActivity
                 relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
             }
 
-            if(isLoadingFinished){
-                relativeLayout_webview.setVisibility(View.VISIBLE);
+            if(isConnected){
+                if(isLoadingFinished){
+                    relativeLayout_webview.setVisibility(View.VISIBLE);
+                }
+            } else{
+                relativeLayout_connection.setVisibility(View.VISIBLE);
             }
 
             isHelpAndSupportVisible = false;
@@ -2267,6 +2342,8 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else if(drawer.isDrawerOpen(GravityCompat.END)){
             drawer.closeDrawer(GravityCompat.END);
+        } else if(!isConnected){
+            moveTaskToBack(true);
         } else{
             if(isLoadingFinished){
                 switch (keyCode) {
@@ -2292,14 +2369,12 @@ public class MainActivity extends AppCompatActivity
     // Create Navigation Menu --------------
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         final Menu m = menu;
         final MenuItem item1 = menu.findItem(R.id.item_notification);
         MenuItemCompat.setActionView(item1, R.layout.notification_update_count_layout);
 
         MenuItemCompat.getActionView(item1).setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 drawer.openDrawer(GravityCompat.END);
@@ -2376,8 +2451,12 @@ public class MainActivity extends AppCompatActivity
                     relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
                 }
 
-                if(isLoadingFinished){
-                    relativeLayout_webview.setVisibility(View.VISIBLE);
+                if(isConnected){
+                    if(isLoadingFinished){
+                        relativeLayout_webview.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    relativeLayout_connection.setVisibility(View.VISIBLE);
                 }
 
                 isHelpAndSupportVisible = false;
@@ -2390,7 +2469,12 @@ public class MainActivity extends AppCompatActivity
                     relativeLayout_helpandsupport_landscape.bringToFront();
                 }
 
-                relativeLayout_webview.setVisibility(View.INVISIBLE);
+                if(isConnected){
+                    relativeLayout_webview.setVisibility(View.INVISIBLE);
+                } else {
+                    relativeLayout_connection.setVisibility(View.INVISIBLE);
+                }
+
                 isHelpAndSupportVisible = true;
             }
         } else if (id == R.id.item_notification) {
@@ -2422,8 +2506,17 @@ public class MainActivity extends AppCompatActivity
                         fdelete.delete();
                     }
 
+                    notification_count = 1;
+                    notification_clear = 1;
+                    notifications_count = 0;
+
                     menu_notification.clear();
-                    menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
+                    if(isNoInternetConnection){
+                        menu_notification.add(0, 99999, Menu.NONE, "Loading...");
+                        isNoInternetConnection = false;
+                    } else {
+                        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
+                    }
                     TimerNotificationClear();
                     TimerNotification();
                     TimerNotificationNewEntry();
@@ -2516,6 +2609,33 @@ public class MainActivity extends AppCompatActivity
 
                 if(isFirstOpened){
                     menu_notification.add(0, 99999, Menu.NONE, "Check your internet connection.");
+                }
+
+                NavigationView navView = findViewById(R.id.nav_view);
+                Menu menu = navView.getMenu();
+                MenuItem nav_forward = menu.findItem(R.id.nav_forward);
+                MenuItem nav_back = menu.findItem(R.id.nav_back);
+                MenuItem nav_home = menu.findItem(R.id.nav_home);
+                MenuItem nav_reload = menu.findItem(R.id.nav_reload);
+                MenuItem nav_hard_reload = menu.findItem(R.id.nav_hard_reload);
+                nav_forward.setEnabled(false);
+                nav_back.setEnabled(false);
+                nav_home.setEnabled(false);
+                nav_reload.setEnabled(false);
+                nav_hard_reload.setEnabled(false);
+
+                textView_clearcache_portrait.setEnabled(false);
+                textView_clearcache_portrait.setTextColor(Color.parseColor("#A8A8A8"));
+                textView_clearcache_landscape.setEnabled(false);
+                textView_clearcache_landscape.setTextColor(Color.parseColor("#A8A8A8"));
+                textView_getdiagnostics_portrait.setEnabled(false);
+                textView_getdiagnostics_portrait.setTextColor(Color.parseColor("#A8A8A8"));
+                textView_getdiagnostics_landscape.setEnabled(false);
+                textView_getdiagnostics_landscape.setTextColor(Color.parseColor("#A8A8A8"));
+
+                if(isFirstOpened){
+                    isNoInternetConnection = true;
+                    PreviewNotifications();
                 }
             }
         }
