@@ -10,6 +10,69 @@
     tools:layout_editor_absoluteY="81dp"
     tools:showIn="@layout/app_bar_main">
 
+    <LinearLayout
+        android:id="@+id/linearLayout_loader"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:layout_width="118dp"
+            android:layout_height="118dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_loader" />
+
+        <TextView
+            android:id="@+id/textView_loader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="loading..."
+            android:textColor="#535353"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+            <!--android:layout_marginTop="12dp"-->
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout_connection"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <pl.droidsonroids.gif.GifImageView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_connection" />
+
+        <TextView
+            android:id="@+id/textView_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="No Internet Connection"
+            android:textColor="#535353"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.512"
+            app:layout_constraintVertical_bias="0.551" />
+            <!--android:layout_marginTop="12dp"-->
+    </LinearLayout>
+
     <RelativeLayout
         android:id="@+id/relativeLayout_helpandsupport_portrait"
         android:layout_width="315dp"
@@ -161,8 +224,9 @@
             android:layout_alignStart="@+id/imageView_help_back_portrait"
             android:layout_below="@+id/textView_emailus"
             android:clickable="true"
+            android:enabled="false"
             android:text="cs@yb188188.com"
-            android:textColor="#EB6306"
+            android:textColor="#A8A8A8"
             android:textSize="9sp" />
 
         <TextView
@@ -190,15 +254,16 @@
             android:textSize="9sp" />
 
         <TextView
-            android:id="@+id/textView_chatus_portrait"
+            android:id="@+id/textView_chatnow_portrait"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/imageView_help_back_portrait"
             android:layout_alignStart="@+id/imageView_help_back_portrait"
             android:layout_below="@+id/textView_chatus_1"
             android:clickable="true"
+            android:enabled="false"
             android:text="Chat now"
-            android:textColor="#EB6306"
+            android:textColor="#A8A8A8"
             android:textSize="9sp" />
 
         <ImageView
@@ -231,7 +296,8 @@
             android:id="@+id/imageView_help_qr"
             android:layout_width="55dp"
             android:layout_height="55dp"
-            android:layout_alignStart="@+id/imageView_help_back_landscape"
+            android:layout_alignLeft="@+id/textView_social_2"
+            android:layout_alignStart="@+id/textView_social_2"
             android:layout_below="@+id/textView_social_2"
             app:srcCompat="@drawable/ic_qr" />
 
@@ -243,8 +309,9 @@
             android:layout_alignStart="@+id/imageView_help_back_landscape"
             android:layout_below="@+id/textView_emailus"
             android:clickable="true"
+            android:enabled="false"
             android:text="cs@yb188188.com"
-            android:textColor="#EB6306"
+            android:textColor="#A8A8A8"
             android:textSize="9sp" />
 
         <TextView
@@ -284,7 +351,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@+id/imageView_help_back_landscape"
-            android:layout_below="@+id/textView_chatus_landscape"
+            android:layout_below="@+id/textView_chatnow_landscape"
             android:layout_centerVertical="true"
             android:layout_marginTop="10dp"
             android:text="Email Us"
@@ -383,90 +450,18 @@
             android:textSize="9sp" />
 
         <TextView
-            android:id="@+id/textView_chatus_landscape"
+            android:id="@+id/textView_chatnow_landscape"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@+id/imageView_help_back_landscape"
             android:layout_below="@+id/textView_chatus_1"
             android:clickable="true"
+            android:enabled="false"
             android:text="Chat now"
-            android:textColor="#EB6306"
+            android:textColor="#A8A8A8"
             android:textSize="9sp" />
 
     </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout_loader"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.drake.safetybrowser.GifImageView
-            android:id="@+id/gifImageView_loader"
-            android:layout_width="match_parent"
-            android:layout_height="1000dp"
-            android:layout_gravity="center"
-            tools:layout_editor_absoluteX="163dp"
-            tools:layout_editor_absoluteY="256dp" />
-
-        <TextView
-            android:id="@+id/textView_loader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:text="loading..."
-            android:textColor="#535353"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout_connection"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.drake.safetybrowser.GifImageView
-            android:id="@+id/gifImageView_connection"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.512"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.427" />
-
-        <TextView
-            android:id="@+id/textView_connection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="12dp"
-            android:text="No Internet Connection"
-            android:textColor="#535353"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.512"
-            app:layout_constraintVertical_bias="0.551" />
-    </LinearLayout>
 
 
     <RelativeLayout

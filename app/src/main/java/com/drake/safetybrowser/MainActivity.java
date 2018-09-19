@@ -1,7 +1,9 @@
 package com.drake.safetybrowser;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,6 +22,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
@@ -27,6 +31,7 @@ import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -153,7 +158,7 @@ public class MainActivity extends AppCompatActivity
     int domain_count_max = -1;
     int domain_count_current = 0;
     int notifications_count = 0;
-    int notification_count = 1;
+    int notification_count = 0;
     int notification_clear = 1;
     int timer_loader = 1;
     boolean loadingFinished = true;
@@ -179,6 +184,9 @@ public class MainActivity extends AppCompatActivity
     boolean isBracketInserted = false;
     boolean isBack = false;
     boolean isNoInternetConnection;
+    boolean isNewLine = true;
+    boolean isHasUpdate = false;
+    boolean isVersion = true;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -189,11 +197,10 @@ public class MainActivity extends AppCompatActivity
     List<String> get_id = new ArrayList<>();
     List<String> get_id_delete = new ArrayList<>();
     final Context context = this;
-    GifImageView gifImageView_loader;
     LinearLayout relativeLayout_loader, relativeLayout_connection;
     RelativeLayout relativeLayout_webview;
-    GifImageView gifImageView_connection;
-    TextView textView_textchanged, textView_chatus_portrait, textView_emailus_portrait, textView_chatus_landscape, textView_emailus_landscape, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
+//    GifImageView gifImageView_loader, gifImageView_connection;
+    TextView textView_textchanged, textView_chatnow_portrait, textView_emailus_portrait, textView_chatnow_landscape, textView_emailus_landscape, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
     RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape;
     ImageView imageView_help_back_landscape, imageView_help_back_portrait;
     DrawerLayout drawer;
@@ -208,7 +215,9 @@ public class MainActivity extends AppCompatActivity
     Button button_test;
     ProgressDialog dialog_diagnostics;
     ProgressDialog dialog_cache;
+    ProgressDialog dialog_update;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -252,19 +261,19 @@ public class MainActivity extends AppCompatActivity
         nav_view_notification = findViewById(R.id.nav_view_notification);
         nav_view_notification.setNavigationItemSelectedListener(this);
         menu_notification = nav_view_notification.getMenu();
-        gifImageView_loader = findViewById(R.id.gifImageView_loader);
+//        gifImageView_loader = findViewById(R.id.gifImageView_loader);
+//        gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
+//        gifImageView_connection = findViewById(R.id.gifImageView_connection);
+//        gifImageView_connection.setGifImageResource(R.drawable.ic_connection);
         relativeLayout_loader = findViewById(R.id.linearLayout_loader);
-        gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
         relativeLayout_connection = findViewById(R.id.linearLayout_connection);
-        gifImageView_connection = findViewById(R.id.gifImageView_connection);
-        gifImageView_connection.setGifImageResource(R.drawable.ic_connection);
         textView_textchanged = findViewById(R.id.textView_textchanged);
         relativeLayout_helpandsupport_portrait = findViewById(R.id.relativeLayout_helpandsupport_portrait);
         relativeLayout_helpandsupport_landscape = findViewById(R.id.relativeLayout_helpandsupport_landscape);
         relativeLayout_webview = findViewById(R.id.relativeLayout_webview);
-        textView_chatus_portrait = findViewById(R.id.textView_chatus_portrait);
+        textView_chatnow_portrait = findViewById(R.id.textView_chatnow_portrait);
         textView_emailus_portrait = findViewById(R.id.textView_emailus_portrait);
-        textView_chatus_landscape = findViewById(R.id.textView_chatus_landscape);
+        textView_chatnow_landscape = findViewById(R.id.textView_chatnow_landscape);
         textView_emailus_landscape = findViewById(R.id.textView_emailus_landscape);
         textView_clearcache_portrait = findViewById(R.id.textView_clearcache_portrait);
         textView_clearcache_landscape = findViewById(R.id.textView_clearcache_landscape);
@@ -280,10 +289,11 @@ public class MainActivity extends AppCompatActivity
 
         dialog_diagnostics = new ProgressDialog(MainActivity.this);
         dialog_cache = new ProgressDialog(MainActivity.this);
+        dialog_update = new ProgressDialog(MainActivity.this);
 
-        textView_chatus_portrait.setPaintFlags(textView_chatus_portrait.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        textView_chatnow_portrait.setPaintFlags(textView_chatnow_portrait.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
         textView_emailus_portrait.setPaintFlags(textView_emailus_portrait.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
-        textView_chatus_landscape.setPaintFlags(textView_chatus_landscape.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
+        textView_chatnow_landscape.setPaintFlags(textView_chatnow_landscape.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
         textView_emailus_landscape.setPaintFlags(textView_emailus_landscape.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
 
         textView_clearcache_portrait.setOnClickListener(new View.OnClickListener() {
@@ -323,84 +333,126 @@ public class MainActivity extends AppCompatActivity
         textView_getdiagnostics_portrait.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    boolean isNewLine = true;
                     textView_getdiagnostics_portrait.setEnabled(false);
                     dialog_diagnostics.setCanceledOnTouchOutside(false);
                     dialog_diagnostics.setCancelable(false);
                     dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                     dialog_diagnostics.show();
-                    Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    int i;
-                    char[] buffer = new char[4096];
-                    StringBuilder output = new StringBuilder();
-                    while ((i = reader.read(buffer)) > 0)
-                        output.append(buffer, 0, i);
-                    reader.close();
 
-                    String[] lines = output.toString().split(System.getProperty("line.separator"));
-                    for(String line : lines){
-                        if(isNewLine){
-                            writeToFile("\r\n", "ping.txt");
-                            isNewLine = false;
+                    Runnable run = new Runnable() {
+                        public void run() {
+                            try {
+                                Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
+                                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                                int i;
+                                char[] buffer = new char[4096];
+                                StringBuilder output = new StringBuilder();
+                                while ((i = reader.read(buffer)) > 0)
+                                    output.append(buffer, 0, i);
+                                reader.close();
+
+                                String[] lines = output.toString().split(System.getProperty("line.separator"));
+                                for(String line : lines){
+                                    if(isNewLine){
+                                        writeToFile("\r\n", "ping.txt");
+                                        isNewLine = false;
+                                    }
+
+                                    writeToFile(line + "\r\n", "ping.txt");
+                                }
+
+                                String target_path = getFilesDir() + "/ping.txt";
+                                String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                                ZipArchive zipArchive = new ZipArchive();
+                                zipArchive.zip(target_path,destination_path,"");
+
+                                SENDDIAGNOSTICS();
+                            } catch (Exception e) {
+                                Log.d("deleted", "Error: " + e.getMessage());
+                            }
                         }
-
-                        writeToFile(line + "\r\n", "ping.txt");
-                    }
-
-                    String target_path = getFilesDir() + "/ping.txt";
-                    String destination_path = getFilesDir() + "/sb_diagnostic.zip";
-                    ZipArchive zipArchive = new ZipArchive();
-                    zipArchive.zip(target_path,destination_path,"");
-
-                    //asdasdasd
-                    SENDDIAGNOSTICS();
-                } catch (Exception e) {
-                    Log.d("deleted", "Error: " + e.getMessage());
-                }
+                    };
+                    Handler myHandler = new Handler(Looper.myLooper());
+                    myHandler.postDelayed(run, 2000);
             }
         });
 
         textView_getdiagnostics_landscape.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    boolean isNewLine = true;
-                    textView_getdiagnostics_portrait.setEnabled(false);
-                    dialog_diagnostics.setCanceledOnTouchOutside(false);
-                    dialog_diagnostics.setCancelable(false);
-                    dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
-                    dialog_diagnostics.show();
-                    Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                    int i;
-                    char[] buffer = new char[4096];
-                    StringBuilder output = new StringBuilder();
-                    while ((i = reader.read(buffer)) > 0)
-                        output.append(buffer, 0, i);
-                    reader.close();
+                textView_getdiagnostics_portrait.setEnabled(false);
+                dialog_diagnostics.setCanceledOnTouchOutside(false);
+                dialog_diagnostics.setCancelable(false);
+                dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                dialog_diagnostics.show();
 
-                    String[] lines = output.toString().split(System.getProperty("line.separator"));
-                    for(String line : lines){
-                        if(isNewLine){
-                            writeToFile("\r\n", "ping.txt");
-                            isNewLine = false;
+                Runnable run = new Runnable() {
+                    public void run() {
+                        try {
+                            Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                            int i;
+                            char[] buffer = new char[4096];
+                            StringBuilder output = new StringBuilder();
+                            while ((i = reader.read(buffer)) > 0)
+                                output.append(buffer, 0, i);
+                            reader.close();
+
+                            String[] lines = output.toString().split(System.getProperty("line.separator"));
+                            for(String line : lines){
+                                if(isNewLine){
+                                    writeToFile("\r\n", "ping.txt");
+                                    isNewLine = false;
+                                }
+
+                                writeToFile(line + "\r\n", "ping.txt");
+                            }
+
+                            String target_path = getFilesDir() + "/ping.txt";
+                            String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                            ZipArchive zipArchive = new ZipArchive();
+                            zipArchive.zip(target_path,destination_path,"");
+
+                            SENDDIAGNOSTICS();
+                        } catch (Exception e) {
+                            Log.d("deleted", "Error: " + e.getMessage());
                         }
-
-                        writeToFile(line + "\r\n", "ping.txt");
                     }
+                };
+                Handler myHandler = new Handler(Looper.myLooper());
+                myHandler.postDelayed(run, 2000);
+            }
+        });
 
-                    String target_path = getFilesDir() + "/ping.txt";
-                    String destination_path = getFilesDir() + "/sb_diagnostic.zip";
-                    ZipArchive zipArchive = new ZipArchive();
-                    zipArchive.zip(target_path,destination_path,"");
+        // Chat now
+        textView_chatnow_portrait.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                webView.loadUrl("https://static.meiqia.com/dist/standalone.html?_=t&eid=109551");
+                imageView_help_back_portrait.performClick();
+            }
+        });
 
-                    //asdasdasd
-                    SENDDIAGNOSTICS();
-                } catch (Exception e) {
-                    Log.d("deleted", "Error: " + e.getMessage());
-                }
+        textView_chatnow_landscape.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                webView.loadUrl("https://static.meiqia.com/dist/standalone.html?_=t&eid=109551");
+                imageView_help_back_landscape.performClick();
+            }
+        });
+
+        // Email us
+        textView_emailus_portrait.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:cs@yb188188.com")));
+            }
+        });
+
+        textView_emailus_landscape.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:cs@yb188188.com")));
             }
         });
 
@@ -422,22 +474,34 @@ public class MainActivity extends AppCompatActivity
                 if(isHelpAndSupportVisible){
                     if(isPortrait){
                         relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
-                    } else {
+                    } else{
                         relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
                     }
 
-                    relativeLayout_webview.setVisibility(View.VISIBLE);
+                    if(isConnected){
+                        if(isLoadingFinished){
+                            relativeLayout_webview.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        relativeLayout_connection.setVisibility(View.VISIBLE);
+                    }
+
                     isHelpAndSupportVisible = false;
                 } else{
                     if(isPortrait){
                         relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
                         relativeLayout_helpandsupport_portrait.bringToFront();
-                    } else {
+                    } else{
                         relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
                         relativeLayout_helpandsupport_landscape.bringToFront();
                     }
 
-                    relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    if(isConnected){
+                        relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_connection.setVisibility(View.INVISIBLE);
+                    }
+
                     isHelpAndSupportVisible = true;
                 }
             }
@@ -449,22 +513,34 @@ public class MainActivity extends AppCompatActivity
                 if(isHelpAndSupportVisible){
                     if(isPortrait){
                         relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
-                    } else {
+                    } else{
                         relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
                     }
 
-                    relativeLayout_webview.setVisibility(View.VISIBLE);
+                    if(isConnected){
+                        if(isLoadingFinished){
+                            relativeLayout_webview.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        relativeLayout_connection.setVisibility(View.VISIBLE);
+                    }
+
                     isHelpAndSupportVisible = false;
                 } else{
                     if(isPortrait){
                         relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
                         relativeLayout_helpandsupport_portrait.bringToFront();
-                    } else {
+                    } else{
                         relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
                         relativeLayout_helpandsupport_landscape.bringToFront();
                     }
 
-                    relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    if(isConnected){
+                        relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_connection.setVisibility(View.INVISIBLE);
+                    }
+
                     isHelpAndSupportVisible = true;
                 }
             }
@@ -550,6 +626,21 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public boolean isPermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.v("deleted", "Permission is granted");
+                return true;
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("deleted", "Permission is granted");
+            return true;
+        }
+    }
+
     // Orientation
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -631,14 +722,13 @@ public class MainActivity extends AppCompatActivity
             Runnable run = new Runnable() {
                 public void run() {
                     if(timeout_detect) {
-//                        Toast.makeText(getApplicationContext(), "Timeout" , Toast.LENGTH_LONG).show();
                         isTimeout = true;
                         webView.stopLoading();
                     }
                 }
             };
             Handler myHandler = new Handler(Looper.myLooper());
-            myHandler.postDelayed(run, 60000);
+            myHandler.postDelayed(run, 30000);
         }
 
         @SuppressLint("SetTextI18n")
@@ -860,6 +950,15 @@ public class MainActivity extends AppCompatActivity
                             textView_getdiagnostics_landscape.setEnabled(true);
                             textView_getdiagnostics_landscape.setTextColor(Color.parseColor("#FFFFFF"));
 
+                            textView_chatnow_portrait.setEnabled(true);
+                            textView_chatnow_portrait.setTextColor(Color.parseColor("#EB6306"));
+                            textView_chatnow_landscape.setEnabled(true);
+                            textView_chatnow_landscape.setTextColor(Color.parseColor("#EB6306"));
+                            textView_emailus_portrait.setEnabled(true);
+                            textView_emailus_portrait.setTextColor(Color.parseColor("#EB6306"));
+                            textView_emailus_landscape.setEnabled(true);
+                            textView_emailus_landscape.setTextColor(Color.parseColor("#EB6306"));
+
                             // Send Result
                             if(!isHeaderInsert){
                                 // Remove comma
@@ -948,6 +1047,15 @@ public class MainActivity extends AppCompatActivity
                         textView_getdiagnostics_portrait.setTextColor(Color.parseColor("#FFFFFF"));
                         textView_getdiagnostics_landscape.setEnabled(true);
                         textView_getdiagnostics_landscape.setTextColor(Color.parseColor("#FFFFFF"));
+
+                        textView_chatnow_portrait.setEnabled(true);
+                        textView_chatnow_portrait.setTextColor(Color.parseColor("#EB6306"));
+                        textView_chatnow_landscape.setEnabled(true);
+                        textView_chatnow_landscape.setTextColor(Color.parseColor("#EB6306"));
+                        textView_emailus_portrait.setEnabled(true);
+                        textView_emailus_portrait.setTextColor(Color.parseColor("#EB6306"));
+                        textView_emailus_landscape.setEnabled(true);
+                        textView_emailus_landscape.setTextColor(Color.parseColor("#EB6306"));
                     }
                 }
             } else {
@@ -1288,6 +1396,12 @@ public class MainActivity extends AppCompatActivity
     // Preview Notifications
     private void PreviewNotifications(){
 
+        if(isVersion){
+            Version();
+
+            isVersion = false;
+        }
+
         UpdateAvailable();
 
         try {
@@ -1370,6 +1484,7 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if(isDisplay){
+                            notification_count++;
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -1425,7 +1540,7 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
 
-                                Integer get_final_id = (get_count_notification*2)-1;
+                                Integer get_final_id = (notification_count*2)-1;
 
                                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                                 Menu menu_delete = navView_delete.getMenu();
@@ -1446,7 +1561,7 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(final_count, 120, Menu.NONE,getSafeSubstring( message_title, 18, "title") + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
 
-                                Integer get_final_id = (get_count_notification*2)-1;
+                                Integer get_final_id = (notification_count*2)-1;
 
                                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                                 Menu menu_delete = navView_delete.getMenu();
@@ -1471,18 +1586,33 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             ControlsInRightNavigation();
-                            notification_count++;
                             notification_clear+=2;
                         }
                     }
                 }
 
-                TextView textview_notification = findViewById(R.id.textview_notification);
-                if(0 < notifications_count){
-                    textview_notification.setText(notifications_count + "");
-                    textview_notification.setVisibility(View.VISIBLE);
+                if(!isConnected){
+                    Runnable run = new Runnable() {
+                        public void run() {
+                            TextView textview_notification = findViewById(R.id.textview_notification);
+                            if(0 < notifications_count){
+                                textview_notification.setText(notifications_count + "");
+                                textview_notification.setVisibility(View.VISIBLE);
+                            } else{
+                                textview_notification.setVisibility(View.INVISIBLE);
+                            }
+                        }
+                    };
+                    Handler myHandler = new Handler(Looper.myLooper());
+                    myHandler.postDelayed(run, 500);
                 } else{
-                    textview_notification.setVisibility(View.INVISIBLE);
+                    TextView textview_notification = findViewById(R.id.textview_notification);
+                    if(0 < notifications_count){
+                        textview_notification.setText(notifications_count + "");
+                        textview_notification.setVisibility(View.VISIBLE);
+                    } else{
+                        textview_notification.setVisibility(View.INVISIBLE);
+                    }
                 }
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
@@ -1550,6 +1680,7 @@ public class MainActivity extends AppCompatActivity
                             }else if(i_inner == 6){
                                 if(str.equals("1")){
                                     isDisplay = true;
+                                    isHasUpdate = true;
                                 } else {
                                     isDisplay = false;
                                 }
@@ -1570,6 +1701,7 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if(isDisplay){
+                            notification_count++;
                             notifications_count++;
                             notification_header.setTitle("Notifications (" + notifications_count + ")");
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -1626,18 +1758,18 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(final_count, 120, Menu.NONE,"★ " + message_title + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, message_content);
 
-                                Integer get_final_id = (get_count_notification*2)-1;
+                                Integer get_final_id = (notification_count*2)-1;
 
                                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                                 Menu menu_delete = navView_delete.getMenu();
                                 MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
-                                SpannableString parent = new SpannableString(getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                SpannableString parent = new SpannableString("★ " + message_title + " (" + final_datetime + ")");
                                 parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
-                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                                SpannableString child = new SpannableString(message_content);
                                 child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
@@ -1647,18 +1779,18 @@ public class MainActivity extends AppCompatActivity
                                 menu.add(final_count, 120, Menu.NONE,message_title + " (" + final_datetime + ")");
                                 menu.add(final_count, 120, Menu.NONE, message_content);
 
-                                Integer get_final_id = (get_count_notification*2)-1;
+                                Integer get_final_id = (notification_count*2)-1;
 
                                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                                 Menu menu_delete = navView_delete.getMenu();
                                 MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
-                                SpannableString parent = new SpannableString(getSafeSubstring( message_title, 18, "title") + " (" + final_datetime + ")");
+                                SpannableString parent = new SpannableString(message_title + " (" + final_datetime + ")");
                                 parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
-                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                                SpannableString child = new SpannableString(message_content);
                                 child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
@@ -1672,7 +1804,6 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             ControlsInRightNavigation();
-                            notification_count++;
                             notification_clear+=2;
                         }
                     }
@@ -1810,21 +1941,39 @@ public class MainActivity extends AppCompatActivity
                                         final_datetime = "older message";
                                     }
 
-                                    ReadNotification(message_title + " (" + final_datetime + ")", message_title, get_group_id, final_datetime);
+                                    if(isHasUpdate && get_group_id == 1){
+                                        String url = "http://raincheck.ssitex.com/download_sb/safetybrowser.apk";
+                                        if(isPermissionGranted()){
+                                            UpdateApp atualizaApp = new UpdateApp();
+                                            atualizaApp.setContext(getApplicationContext());
+                                            atualizaApp.execute(url);
 
-                                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                                            context);
-                                    alertDialogBuilder.setTitle(message_title);
-                                    alertDialogBuilder.setMessage(message_content);
-                                    alertDialogBuilder
-                                            .setCancelable(false)
-                                            .setPositiveButton("OK",new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog,int id) {
-                                                    dialog.cancel();
-                                                }
-                                            });
-                                    AlertDialog alertDialog = alertDialogBuilder.create();
-                                    alertDialog.show();
+                                            dialog_update.setCanceledOnTouchOutside(false);
+                                            dialog_update.setCancelable(false);
+                                            dialog_update.setMessage("Downloading updates.\nAutomatically restart the application, please wait...");
+                                            dialog_update.show();
+
+                                            drawer.closeDrawer(GravityCompat.END);
+                                        } else {
+                                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                                        }
+                                    } else {
+                                        ReadNotification(message_title + " (" + final_datetime + ")", message_title, get_group_id, final_datetime);
+
+                                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                                                context);
+                                        alertDialogBuilder.setTitle(message_title);
+                                        alertDialogBuilder.setMessage(message_content);
+                                        alertDialogBuilder
+                                                .setCancelable(false)
+                                                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog,int id) {
+                                                        dialog.cancel();
+                                                    }
+                                                });
+                                        AlertDialog alertDialog = alertDialogBuilder.create();
+                                        alertDialog.show();
+                                    }
                                 }
                             }
                         }
@@ -1839,8 +1988,161 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+    // Version
+    private void Version() {
+        NavigationView navView_delete = findViewById(R.id.nav_view);
+        Menu menu = navView_delete.getMenu();
+        MenuItem nav_version = menu.findItem(R.id.nav_version);
+
+        File path_version = new File(getFilesDir() + "/sb_version.txt");
+//        path_version.delete();
+        if (path_version.exists()) {
+            StringBuilder text = new StringBuilder();
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(path_version));
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    text.append(line);
+                }
+
+                if(nav_version.toString().contains(text.toString())) {
+                    Log.d("asdasdasd", "same ver");
+                } else {
+                    try {
+                        String path = getFilesDir() + "/sb_notifications.txt";
+                        FileReader fr=new FileReader(path);
+                        BufferedReader br_get=new BufferedReader(fr);
+                        String s;
+
+                        do{
+                            s = br_get.readLine();
+                            if(s != null){
+                                if(s.length() > 0){
+                                    String[] values = s.split("\\*\\|\\*");
+                                    int i_inner = 1;
+                                    String id = "";
+                                    for(String str : values){
+                                        if(i_inner == 1){
+                                            id = str;
+                                        }
+                                        if(i_inner == 6){
+                                            if(str.contains("1")){
+                                                GetUpdateNotification(id);
+                                            }
+                                        }
+
+                                        i_inner++;
+                                    }
+                                }
+                            }
+                        }while(s!=null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    path_version.delete();
+                    writeToFile(nav_version.toString(), "sb_version.txt");
+                }
+
+                br.close();
+            }
+            catch (Exception e) {
+                // Leave blank
+            }
+        } else {
+            writeToFile(nav_version.toString(), "sb_version.txt");
+        }
+    }
+
+
+
+
+
+
+    public void Update(String apkurl){
+        try {
+            String PATH = "/mnt/sdcard/Download/";
+            File destination = new File(PATH);
+            destination.mkdirs();
+            File outputFile = new File(destination, "update.apk");
+            final Uri uri = Uri.parse("file://" + destination);
+            if(outputFile.exists()){
+                outputFile.delete();
+            }
+
+            String url = apkurl;
+
+            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+            request.setDescription("Test Description");
+            request.setTitle(MainActivity.this.getString(R.string.app_name));
+
+            request.setDestinationUri(uri);
+
+            final DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            final long downloadId = manager.enqueue(request);
+
+            //set BroadcastReceiver to install app when .apk is downloaded
+            BroadcastReceiver onComplete = new BroadcastReceiver() {
+                public void onReceive(Context ctxt, Intent intent) {
+//                    Intent install = new Intent(Intent.ACTION_VIEW);
+//                    install.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                    install.setDataAndType(uri,
+//                            manager.getMimeTypeForDownloadedFile(downloadId));
+//                    startActivity(install);
+
+                    Intent install = new Intent(Intent.ACTION_VIEW);
+                    install.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/download/" + "safetybrowser.apk")), "application/vnd.android.package-archive");
+                    install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(install);
+
+                    unregisterReceiver(this);
+                    finish();
+                }
+            };
+
+            registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+
+            Log.d("deleted", "dasdsad detect");
+        } catch (Exception e) {
+            Log.d("deleted", e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Read Notification
     private void ReadNotification(String title, String without_replace, Integer group_id, String date){
+
         try {
             Integer get_final_id = (group_id*2)-1;
             String path = getFilesDir() + "/sb_notifications.txt";
@@ -1867,7 +2169,9 @@ public class MainActivity extends AppCompatActivity
                     fw.close();
 
                     MenuItem pinMenuItem = menu_delete.getItem(get_final_id);
-                    pinMenuItem.setTitle(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
+                    SpannableString parent = new SpannableString(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
+                    parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                    pinMenuItem.setTitle(parent);
 
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     notifications_count--;
@@ -2019,7 +2323,7 @@ public class MainActivity extends AppCompatActivity
                     if(new_entry){
                         Log.d("Handlers", "loaded");
 
-                        notification_count = 1;
+                        notification_count = 0;
                         notification_clear = 1;
                         notifications_count = 0;
 
@@ -2097,6 +2401,10 @@ public class MainActivity extends AppCompatActivity
                 if(isLoadingFinished){
                     if(new_entry){
                         MenuItem notification_header = menu_notification.findItem(99999);
+
+                        TextView textview_notification = findViewById(R.id.textview_notification);
+                        textview_notification.setVisibility(View.INVISIBLE);
+
                         notification_header.setTitle("Loading...");
                         for(int l=0; l<=notification_clear; l++){
                             menu_notification.removeItem(120);
@@ -2238,58 +2546,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void TimerLoader(){
+    // Timer Loader
+    private void TimerLoader() {
         final Timer timer = new Timer();
         //Set the schedule function
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -2298,17 +2556,15 @@ public class MainActivity extends AppCompatActivity
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(isLoadingFinished){
-                        if(isTimerLoaderRunning){
-                            timer_loader++;
-                            Log.d("deleted", timer_loader+"");
-                            if(timer_loader < 15){
-                                textView_loader.setText("loading...");
-                            } else if(timer_loader < 39) {
-                                textView_loader.setText("getting data to the server...");
-                            } else if(timer_loader > 40) {
-                                textView_loader.setText("getting ready...");
-                            }
+                    if(isTimerLoaderRunning){
+                        timer_loader++;
+                        Log.d("deleted", timer_loader+"");
+                        if(timer_loader < 15){
+                            textView_loader.setText("loading...");
+                        } else if(timer_loader < 39) {
+                            textView_loader.setText("getting data to the server...");
+                        } else if(timer_loader > 40) {
+                            textView_loader.setText("getting ready...");
                         }
                     }
                 }
@@ -2322,7 +2578,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if(isHelpAndSupportVisible){
+        if(drawer.isDrawerOpen(GravityCompat.START)){
+            drawer.closeDrawer(GravityCompat.START);
+        } else if(drawer.isDrawerOpen(GravityCompat.END)){
+            drawer.closeDrawer(GravityCompat.END);
+        } else if(isHelpAndSupportVisible){
             if(isPortrait){
                 relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
             } else{
@@ -2338,19 +2598,15 @@ public class MainActivity extends AppCompatActivity
             }
 
             isHelpAndSupportVisible = false;
-        } else if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else if(drawer.isDrawerOpen(GravityCompat.END)){
-            drawer.closeDrawer(GravityCompat.END);
         } else if(!isConnected){
             moveTaskToBack(true);
         } else{
             if(isLoadingFinished){
-                switch (keyCode) {
+                switch(keyCode){
                     case KeyEvent.KEYCODE_BACK:
-                        if (webView.canGoBack()) {
+                        if(webView.canGoBack()){
                             webView.goBack();
-                        } else {
+                        } else{
                             moveTaskToBack(true);
                         }
                         return true;
@@ -2506,7 +2762,7 @@ public class MainActivity extends AppCompatActivity
                         fdelete.delete();
                     }
 
-                    notification_count = 1;
+                    notification_count = 0;
                     notification_clear = 1;
                     notifications_count = 0;
 
@@ -2632,6 +2888,15 @@ public class MainActivity extends AppCompatActivity
                 textView_getdiagnostics_portrait.setTextColor(Color.parseColor("#A8A8A8"));
                 textView_getdiagnostics_landscape.setEnabled(false);
                 textView_getdiagnostics_landscape.setTextColor(Color.parseColor("#A8A8A8"));
+
+                textView_chatnow_portrait.setEnabled(false);
+                textView_chatnow_portrait.setTextColor(Color.parseColor("#A8A8A8"));
+                textView_chatnow_landscape.setEnabled(false);
+                textView_chatnow_landscape.setTextColor(Color.parseColor("#A8A8A8"));
+                textView_emailus_portrait.setEnabled(false);
+                textView_emailus_portrait.setTextColor(Color.parseColor("#A8A8A8"));
+                textView_emailus_landscape.setEnabled(false);
+                textView_emailus_landscape.setTextColor(Color.parseColor("#A8A8A8"));
 
                 if(isFirstOpened){
                     isNoInternetConnection = true;
