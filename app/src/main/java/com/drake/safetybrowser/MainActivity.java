@@ -191,15 +191,10 @@ public class MainActivity extends AppCompatActivity
     Integer parent = 0;
     Integer child = 0;
     Integer detect_deleted_notification = 0;
-    Integer detect_added_notification = 0;
-    Integer detect_updated_notification = 0;
     ArrayList<String> domain_list = new ArrayList<>();
-    List<String> get_id = new ArrayList<>();
-    List<String> get_id_delete = new ArrayList<>();
     final Context context = this;
     LinearLayout relativeLayout_loader, relativeLayout_connection;
     RelativeLayout relativeLayout_webview;
-//    GifImageView gifImageView_loader, gifImageView_connection;
     TextView textView_textchanged, textView_chatnow_portrait, textView_emailus_portrait, textView_chatnow_landscape, textView_emailus_landscape, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
     RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape;
     ImageView imageView_help_back_landscape, imageView_help_back_portrait;
@@ -208,9 +203,6 @@ public class MainActivity extends AppCompatActivity
     NavigationView nav_view_notification;
     Menu menu_notification;
     private Context mContext;
-    private ImageView mAvatarImage;
-    private ImageView mCoverImage;
-    Timer timer = new Timer();
 //    SwipeRefreshLayout swipeContainer;
     Button button_test;
     ProgressDialog dialog_diagnostics;
@@ -834,7 +826,7 @@ public class MainActivity extends AppCompatActivity
                                     jsonObject.put("start_load", start_load);
                                     jsonObject.put("end_load", end_load);
                                     jsonObject.put("text_search", webtitle);
-                                    jsonObject.put("url_hijacker", url);
+                                    jsonObject.put("url_hijacker", "-");
                                     jsonObject.put("hijacker", "-");
                                     jsonObject.put("remarks", "-");
                                     jsonObject.put("printscreen", "-");
@@ -867,9 +859,9 @@ public class MainActivity extends AppCompatActivity
                                     jsonObject.put("start_load", start_load);
                                     jsonObject.put("end_load", end_load);
                                     jsonObject.put("text_search", webtitle);
-                                    jsonObject.put("url_hijacker", url);
+                                    jsonObject.put("url_hijacker", "-");
                                     jsonObject.put("hijacker", "-");
-                                    jsonObject.put("remarks", "-");
+                                    jsonObject.put("remarks", webtitle);
                                     jsonObject.put("printscreen", "-");
                                     jsonObject.put("isp", isp);
                                     jsonObject.put("city", city);
@@ -1949,9 +1941,11 @@ public class MainActivity extends AppCompatActivity
                                             atualizaApp.execute(url);
 
                                             dialog_update.setCanceledOnTouchOutside(false);
-                                            dialog_update.setCancelable(false);
-                                            dialog_update.setMessage("Downloading updates.\nAutomatically restart the application, please wait...");
+//                                            dialog_update.setCancelable(false);
+                                            dialog_update.setMessage("Downloading Updates.\nAutomatically restart the application, please wait...");
                                             dialog_update.show();
+
+//                                            ProgressDialog dialog_update = DialogUtils.showProgressDialog(MainActivity.this,"Downloading Updates.\nAutomatically restart the application, please wait...");
 
                                             drawer.closeDrawer(GravityCompat.END);
                                         } else {
@@ -2055,91 +2049,6 @@ public class MainActivity extends AppCompatActivity
             writeToFile(nav_version.toString(), "sb_version.txt");
         }
     }
-
-
-
-
-
-
-    public void Update(String apkurl){
-        try {
-            String PATH = "/mnt/sdcard/Download/";
-            File destination = new File(PATH);
-            destination.mkdirs();
-            File outputFile = new File(destination, "update.apk");
-            final Uri uri = Uri.parse("file://" + destination);
-            if(outputFile.exists()){
-                outputFile.delete();
-            }
-
-            String url = apkurl;
-
-            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-            request.setDescription("Test Description");
-            request.setTitle(MainActivity.this.getString(R.string.app_name));
-
-            request.setDestinationUri(uri);
-
-            final DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-            final long downloadId = manager.enqueue(request);
-
-            //set BroadcastReceiver to install app when .apk is downloaded
-            BroadcastReceiver onComplete = new BroadcastReceiver() {
-                public void onReceive(Context ctxt, Intent intent) {
-//                    Intent install = new Intent(Intent.ACTION_VIEW);
-//                    install.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    install.setDataAndType(uri,
-//                            manager.getMimeTypeForDownloadedFile(downloadId));
-//                    startActivity(install);
-
-                    Intent install = new Intent(Intent.ACTION_VIEW);
-                    install.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory() + "/download/" + "safetybrowser.apk")), "application/vnd.android.package-archive");
-                    install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(install);
-
-                    unregisterReceiver(this);
-                    finish();
-                }
-            };
-
-            registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-
-            Log.d("deleted", "dasdsad detect");
-        } catch (Exception e) {
-            Log.d("deleted", e.getMessage());
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Read Notification
     private void ReadNotification(String title, String without_replace, Integer group_id, String date){
 
