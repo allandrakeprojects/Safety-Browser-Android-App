@@ -6,7 +6,10 @@
     android:background="#EB6306"
     android:id="@+id/menu2"
     android:layout_gravity="right">
-
+    <!--<item-->
+        <!--android:id="@+id/menu_refresh"-->
+        <!--android:title=""-->
+        <!--app:showAsAction="never" />-->
     <!--<group-->
         <!--android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content"-->

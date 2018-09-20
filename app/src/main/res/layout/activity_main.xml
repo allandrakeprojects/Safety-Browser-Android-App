@@ -30,7 +30,20 @@
         android:theme="@style/NavigationTheme"
         android:layout_gravity="end"
         android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/activity_notification_drawer" />
+        app:headerLayout="@layout/nav_header_main">
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeNotification"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/toolbar">
+            <RelativeLayout
+                android:id="@+id/relativeLayout_notification"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp"
+                app:menu="@menu/activity_notification_drawer">
+            </RelativeLayout>
+        </android.support.v4.widget.SwipeRefreshLayout>
+    </android.support.design.widget.NavigationView>
 
 </android.support.v4.widget.DrawerLayout>

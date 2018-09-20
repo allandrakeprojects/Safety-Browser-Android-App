@@ -30,14 +30,17 @@ import android.preference.PreferenceManager;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.internal.NavigationMenuView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -46,9 +49,11 @@ import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -133,7 +138,7 @@ import javax.net.ssl.HttpsURLConnection;
 import ir.mahdi.mzip.zip.ZipArchive;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnTouchListener {
 
     String[] text_to_search_service = { "http://www.ssicortex.com/GetTxt2Search", "http://www.ssitectonic.com/GetTxt2Search", "http://www.ssihedonic.com/GetTxt2Search" };
     String[] domain_service = { "http://www.ssicortex.com/GetDomains", "http://www.ssitectonic.com/GetDomains", "http://www.ssihedonic.com/GetDomains" };
@@ -187,6 +192,8 @@ public class MainActivity extends AppCompatActivity
     boolean isNewLine = true;
     boolean isHasUpdate = false;
     boolean isVersion = true;
+    boolean isTouch = false;
+    boolean isBottom = false;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -196,19 +203,22 @@ public class MainActivity extends AppCompatActivity
     LinearLayout relativeLayout_loader, relativeLayout_connection;
     RelativeLayout relativeLayout_webview;
     TextView textView_textchanged, textView_chatnow_portrait, textView_emailus_portrait, textView_chatnow_landscape, textView_emailus_landscape, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
-    RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape;
+    RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape, relativeLayout_notification;
     ImageView imageView_help_back_landscape, imageView_help_back_portrait;
     DrawerLayout drawer;
     NavigationView nav_view;
     NavigationView nav_view_notification;
+    Menu menu2;
     Menu menu_notification;
     private Context mContext;
-//    SwipeRefreshLayout swipeContainer;
+    SwipeRefreshLayout swipeNotification;
     Button button_test;
     ProgressDialog dialog_diagnostics;
     ProgressDialog dialog_cache;
     ProgressDialog dialog_update;
+    GestureDetector mDetector;
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -253,6 +263,7 @@ public class MainActivity extends AppCompatActivity
         nav_view_notification = findViewById(R.id.nav_view_notification);
         nav_view_notification.setNavigationItemSelectedListener(this);
         menu_notification = nav_view_notification.getMenu();
+        menu2 = findViewById(R.id.menu2);
 //        gifImageView_loader = findViewById(R.id.gifImageView_loader);
 //        gifImageView_loader.setGifImageResource(R.drawable.ic_loader);
 //        gifImageView_connection = findViewById(R.id.gifImageView_connection);
@@ -262,6 +273,7 @@ public class MainActivity extends AppCompatActivity
         textView_textchanged = findViewById(R.id.textView_textchanged);
         relativeLayout_helpandsupport_portrait = findViewById(R.id.relativeLayout_helpandsupport_portrait);
         relativeLayout_helpandsupport_landscape = findViewById(R.id.relativeLayout_helpandsupport_landscape);
+        relativeLayout_notification = findViewById(R.id.relativeLayout_notification);
         relativeLayout_webview = findViewById(R.id.relativeLayout_webview);
         textView_chatnow_portrait = findViewById(R.id.textView_chatnow_portrait);
         textView_emailus_portrait = findViewById(R.id.textView_emailus_portrait);
@@ -274,7 +286,7 @@ public class MainActivity extends AppCompatActivity
         textView_loader = findViewById(R.id.textView_loader);
         imageView_help_back_landscape = findViewById(R.id.imageView_help_back_landscape);
         imageView_help_back_portrait = findViewById(R.id.imageView_help_back_portrait);
-//        swipeContainer = findViewById(R.id.swipeContainer);
+        swipeNotification = findViewById(R.id.swipeNotification);
         mContext = getApplicationContext();
         button_test = findViewById(R.id.button_test);
         // End of Find ID
@@ -454,6 +466,8 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 // TODO Auto-generated method stub
                 try {
+                    Log.d("deleted", "asdsadasdasd");
+                    swipeNotification.setEnabled(false);
                 } catch(Exception e){
                     Log.d("deleted", e.getMessage());
                 }
@@ -616,7 +630,223 @@ public class MainActivity extends AppCompatActivity
         } else {
             isPortrait = true;
         }
+
+        swipeNotification.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener()
+        {
+            @Override
+            public void onRefresh()
+            {
+                if(new_entry){
+                    MenuItem notification_header = menu_notification.findItem(99999);
+
+                    TextView textview_notification = findViewById(R.id.textview_notification);
+                    textview_notification.setVisibility(View.INVISIBLE);
+
+                    swipeNotification.setEnabled(false);
+                    notification_header.setTitle("Loading...");
+                    for(int l=0; l<=notification_clear; l++){
+                        menu_notification.removeItem(120);
+                    }
+
+                    Runnable run = new Runnable() {
+                        public void run() {
+                            notification_count = 0;
+                            notification_clear = 1;
+                            notifications_count = 0;
+
+                            // Get Deleted Notification
+                            GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    String replace_responce = StringEscapeUtils.unescapeJava(result);
+                                    Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                                    while(m.find()){
+                                        get_deleted_id = m.group(1);
+                                    }
+
+                                    if(result.contains("OK")){
+                                        get_deleted_id = get_deleted_id.replace("\"", "");
+                                        List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                        for(String get_delete_id_list : get_delete_id_lists){
+                                            GetUpdateNotification(get_delete_id_list);
+                                        }
+                                    } else{
+                                        Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+
+                            // Get Notification
+                            GETNOTIFICAITON_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    try {
+                                        JSONObject obj = new JSONObject(result);
+                                        JSONArray array = obj.getJSONArray("data");
+
+                                        for(int i=0;i<array.length();i++){
+                                            JSONObject data = array.getJSONObject(i);
+
+                                            String id = data.getString("id");
+                                            String message_date = data.getString("message_date");
+                                            String message_title = data.getString("message_title");
+                                            String message_content = data.getString("message_content");
+                                            String status = data.getString("status");
+                                            String message_type = data.getString("message_type");
+                                            String edited_id = data.getString("edited_id");
+
+                                            String notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                            writeToFile(notification, "sb_notifications.txt");
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    // Preview Notification
+                                    UpdatedNotification();
+                                }
+                            });
+
+                            swipeNotification.setRefreshing(false);
+                            swipeNotification.setEnabled(true);
+                            new_entry = false;
+                            Toast.makeText(getApplicationContext(), "Notification Updated.", Toast.LENGTH_LONG).show();
+                        }
+                    };
+                    Handler myHandler = new Handler(Looper.myLooper());
+                    myHandler.postDelayed(run, 1000);
+                } else {
+                    swipeNotification.setRefreshing(false);
+                    Toast.makeText(getApplicationContext(), "No currently notification.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        swipeNotification.setColorSchemeColors(
+                Color.parseColor("#EB6306"),
+                Color.BLACK
+        );
+
+
+//        try {
+//            nav_view_notification.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
+//                public void onSwipeTop() {
+//                    Toast.makeText(MainActivity.this, "top", Toast.LENGTH_SHORT).show();
+//                }
+//                public void onSwipeBottom() {
+//                    Toast.makeText(getApplicationContext(), "bottom1", Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }catch (Exception e) {
+//            Log.d("deleted", e.getMessage());
+//        }
+
+//        mDetector = new GestureDetector(this, new MyGestureListener());
+//
+//        // Add a touch listener to the view
+//        // The touch listener passes all its events on to the gesture detector
+//        swipeNotification.setOnTouchListener(touchListener);
+
+//        TouchUpRedirectLayout layout = (TouchUpRedirectLayout) findViewById(R.id.constraintLayout);
+//        layout.setTargetViewId(R.id.relativeLayout_notification);
+//
+//        layout.findViewById(R.id.relativeLayout_notification).setOnTouchListener(this);
     }
+
+//    public boolean onTouch(View v, MotionEvent event) {
+//        Log.i("TAG", "Obscured touch "+event.getActionMasked());
+//        return true;
+//    }
+
+
+
+
+    View.OnTouchListener touchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            // pass the events to the gesture detector
+            // a return value of true means the detector is handling it
+            // a return value of false means the detector didn't
+            // recognize the event
+            return mDetector.onTouchEvent(event);
+
+        }
+    };
+
+    // In the SimpleOnGestureListener subclass you should override
+    // onDown and any other gesture that you want to detect.
+    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent event) {
+            Log.d("deleted","onDown: ");
+
+            // don't return false here or else none of the other
+            // gestures will work
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            Log.i("deleted", "onSingleTapConfirmed: ");
+            return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            Log.i("deleted", "onLongPress: ");
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            Log.i("deleted", "onDoubleTap: ");
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                                float distanceX, float distanceY) {
+            Log.i("deleted", "onScroll: ");
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2,
+                               float velocityX, float velocityY) {
+            Log.d("deleted", "onFling: ");
+            return true;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public boolean isPermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -673,6 +903,16 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        return false;
     }
 
     // WebView --------------
@@ -1540,11 +1780,11 @@ public class MainActivity extends AppCompatActivity
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
                                 SpannableString parent = new SpannableString(getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
-                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#000000")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
                                 SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
-                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#000000")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
@@ -1565,7 +1805,7 @@ public class MainActivity extends AppCompatActivity
                                 pinMenuItem_parent.setTitle(parent);
 
                                 SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
-                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
@@ -1758,11 +1998,11 @@ public class MainActivity extends AppCompatActivity
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
                                 SpannableString parent = new SpannableString("★ " + message_title + " (" + final_datetime + ")");
-                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#000000")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
                                 SpannableString child = new SpannableString(message_content);
-                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#000000")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
@@ -1783,7 +2023,7 @@ public class MainActivity extends AppCompatActivity
                                 pinMenuItem_parent.setTitle(parent);
 
                                 SpannableString child = new SpannableString(message_content);
-                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#938F90")), 0, child.length(), 0);
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
@@ -1952,7 +2192,7 @@ public class MainActivity extends AppCompatActivity
                                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                                         }
                                     } else {
-                                        ReadNotification(message_title + " (" + final_datetime + ")", message_title, get_group_id, final_datetime);
+                                        ReadNotification(message_title + " (" + final_datetime + ")", message_title, get_group_id, message_content, final_datetime);
 
                                         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                                                 context);
@@ -2050,7 +2290,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
     // Read Notification
-    private void ReadNotification(String title, String without_replace, Integer group_id, String date){
+    private void ReadNotification(String title, String without_replace, Integer group_id, String message_content, String date){
 
         try {
             Integer get_final_id = (group_id*2)-1;
@@ -2081,6 +2321,11 @@ public class MainActivity extends AppCompatActivity
                     SpannableString parent = new SpannableString(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
                     parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
                     pinMenuItem.setTitle(parent);
+
+                    MenuItem cinMenuItem = menu_delete.getItem(get_final_id+1);
+                    SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
+                    child.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, child.length(), 0);
+                    cinMenuItem.setTitle(child);
 
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     notifications_count--;
@@ -2230,8 +2475,6 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 if(isLoadingFinished){
                     if(new_entry){
-                        Log.d("Handlers", "loaded");
-
                         notification_count = 0;
                         notification_clear = 1;
                         notifications_count = 0;
@@ -2561,6 +2804,24 @@ public class MainActivity extends AppCompatActivity
             webView.goForward();
         } else if (id == R.id.nav_home) {
             webView.loadUrl(domain_list.get(domain_count_current));
+
+            if(isHelpAndSupportVisible) {
+                if (isPortrait) {
+                    relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                } else {
+                    relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                }
+
+                if (isConnected) {
+                    if (isLoadingFinished) {
+                        relativeLayout_webview.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    relativeLayout_connection.setVisibility(View.VISIBLE);
+                }
+
+                isHelpAndSupportVisible = false;
+            }
         } else if (id == R.id.nav_reload) {
             webView.reload();
         } else if (id == R.id.nav_hard_reload) {
@@ -2649,6 +2910,59 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void NotificationScrollUpdate() {
+       int asdsad = nav_view_notification.getChildAt(0).getScrollX();
+        Toast.makeText(getApplicationContext(), asdsad + "", Toast.LENGTH_LONG).show();
+    }
+
+
+
+
+
+
+
+
     // Network Handler --------------
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -2675,7 +2989,7 @@ public class MainActivity extends AppCompatActivity
                     notification_clear = 1;
                     notifications_count = 0;
 
-                    menu_notification.clear();
+//                    menu_notification.clear();
                     if(isNoInternetConnection){
                         menu_notification.add(0, 99999, Menu.NONE, "Loading...");
                         isNoInternetConnection = false;

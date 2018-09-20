@@ -69,7 +69,7 @@
                 <item
                     android:id="@+id/nav_version"
                     android:icon="@drawable/ic_version"
-                    android:title="0.0.1"
+                    android:title="0.0.5"
                     android:enabled="false"/>
             </menu>
         </item>
