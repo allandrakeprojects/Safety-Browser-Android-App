@@ -31,7 +31,9 @@ import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.internal.NavigationMenuView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -50,6 +52,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -200,10 +203,11 @@ public class MainActivity extends AppCompatActivity
     Integer detect_deleted_notification = 0;
     ArrayList<String> domain_list = new ArrayList<>();
     final Context context = this;
-    LinearLayout relativeLayout_loader, relativeLayout_connection;
+    LinearLayout relativeLayout_loader, relativeLayout_connection, linearLayout_notifiation;
     RelativeLayout relativeLayout_webview;
+    FloatingActionButton floating_notification;
     TextView textView_textchanged, textView_chatnow_portrait, textView_emailus_portrait, textView_chatnow_landscape, textView_emailus_landscape, textView_clearcache_portrait, textView_clearcache_landscape, textView_getdiagnostics_portrait, textView_getdiagnostics_landscape, textView_loader;
-    RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape, relativeLayout_notification;
+    RelativeLayout relativeLayout_helpandsupport_portrait, relativeLayout_helpandsupport_landscape;
     ImageView imageView_help_back_landscape, imageView_help_back_portrait;
     DrawerLayout drawer;
     NavigationView nav_view;
@@ -211,7 +215,6 @@ public class MainActivity extends AppCompatActivity
     Menu menu2;
     Menu menu_notification;
     private Context mContext;
-    SwipeRefreshLayout swipeNotification;
     Button button_test;
     ProgressDialog dialog_diagnostics;
     ProgressDialog dialog_cache;
@@ -273,8 +276,8 @@ public class MainActivity extends AppCompatActivity
         textView_textchanged = findViewById(R.id.textView_textchanged);
         relativeLayout_helpandsupport_portrait = findViewById(R.id.relativeLayout_helpandsupport_portrait);
         relativeLayout_helpandsupport_landscape = findViewById(R.id.relativeLayout_helpandsupport_landscape);
-        relativeLayout_notification = findViewById(R.id.relativeLayout_notification);
         relativeLayout_webview = findViewById(R.id.relativeLayout_webview);
+        floating_notification = findViewById(R.id.floating_notification);
         textView_chatnow_portrait = findViewById(R.id.textView_chatnow_portrait);
         textView_emailus_portrait = findViewById(R.id.textView_emailus_portrait);
         textView_chatnow_landscape = findViewById(R.id.textView_chatnow_landscape);
@@ -286,7 +289,6 @@ public class MainActivity extends AppCompatActivity
         textView_loader = findViewById(R.id.textView_loader);
         imageView_help_back_landscape = findViewById(R.id.imageView_help_back_landscape);
         imageView_help_back_portrait = findViewById(R.id.imageView_help_back_portrait);
-        swipeNotification = findViewById(R.id.swipeNotification);
         mContext = getApplicationContext();
         button_test = findViewById(R.id.button_test);
         // End of Find ID
@@ -466,8 +468,6 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 // TODO Auto-generated method stub
                 try {
-                    Log.d("deleted", "asdsadasdasd");
-                    swipeNotification.setEnabled(false);
                 } catch(Exception e){
                     Log.d("deleted", e.getMessage());
                 }
@@ -631,18 +631,15 @@ public class MainActivity extends AppCompatActivity
             isPortrait = true;
         }
 
-        swipeNotification.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener()
-        {
+        floating_notification.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onRefresh()
-            {
+            public void onClick(final View view) {
                 if(new_entry){
                     MenuItem notification_header = menu_notification.findItem(99999);
 
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     textview_notification.setVisibility(View.INVISIBLE);
 
-                    swipeNotification.setEnabled(false);
                     notification_header.setTitle("Loading...");
                     for(int l=0; l<=notification_clear; l++){
                         menu_notification.removeItem(120);
@@ -708,120 +705,20 @@ public class MainActivity extends AppCompatActivity
                                 }
                             });
 
-                            swipeNotification.setRefreshing(false);
-                            swipeNotification.setEnabled(true);
                             new_entry = false;
-                            Toast.makeText(getApplicationContext(), "Notification Updated.", Toast.LENGTH_LONG).show();
+                            Snackbar.make(view, "Notification Updated.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                         }
                     };
                     Handler myHandler = new Handler(Looper.myLooper());
                     myHandler.postDelayed(run, 1000);
+
                 } else {
-                    swipeNotification.setRefreshing(false);
-                    Toast.makeText(getApplicationContext(), "No currently notification.", Toast.LENGTH_LONG).show();
+                    Snackbar.make(view, "No currently notification.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                 }
+
             }
         });
-
-        swipeNotification.setColorSchemeColors(
-                Color.parseColor("#EB6306"),
-                Color.BLACK
-        );
-
-
-//        try {
-//            nav_view_notification.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
-//                public void onSwipeTop() {
-//                    Toast.makeText(MainActivity.this, "top", Toast.LENGTH_SHORT).show();
-//                }
-//                public void onSwipeBottom() {
-//                    Toast.makeText(getApplicationContext(), "bottom1", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        }catch (Exception e) {
-//            Log.d("deleted", e.getMessage());
-//        }
-
-//        mDetector = new GestureDetector(this, new MyGestureListener());
-//
-//        // Add a touch listener to the view
-//        // The touch listener passes all its events on to the gesture detector
-//        swipeNotification.setOnTouchListener(touchListener);
-
-//        TouchUpRedirectLayout layout = (TouchUpRedirectLayout) findViewById(R.id.constraintLayout);
-//        layout.setTargetViewId(R.id.relativeLayout_notification);
-//
-//        layout.findViewById(R.id.relativeLayout_notification).setOnTouchListener(this);
     }
-
-//    public boolean onTouch(View v, MotionEvent event) {
-//        Log.i("TAG", "Obscured touch "+event.getActionMasked());
-//        return true;
-//    }
-
-
-
-
-    View.OnTouchListener touchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            // pass the events to the gesture detector
-            // a return value of true means the detector is handling it
-            // a return value of false means the detector didn't
-            // recognize the event
-            return mDetector.onTouchEvent(event);
-
-        }
-    };
-
-    // In the SimpleOnGestureListener subclass you should override
-    // onDown and any other gesture that you want to detect.
-    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        @Override
-        public boolean onDown(MotionEvent event) {
-            Log.d("deleted","onDown: ");
-
-            // don't return false here or else none of the other
-            // gestures will work
-            return true;
-        }
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
-            Log.i("deleted", "onSingleTapConfirmed: ");
-            return true;
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-            Log.i("deleted", "onLongPress: ");
-        }
-
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            Log.i("deleted", "onDoubleTap: ");
-            return true;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2,
-                                float distanceX, float distanceY) {
-            Log.i("deleted", "onScroll: ");
-            return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent event1, MotionEvent event2,
-                               float velocityX, float velocityY) {
-            Log.d("deleted", "onFling: ");
-            return true;
-        }
-    }
-
-
-
-
 
 
 
@@ -1265,7 +1162,8 @@ public class MainActivity extends AppCompatActivity
 
                             textView_clearcache_portrait.setEnabled(true);
                             textView_clearcache_landscape.setEnabled(true);
-                            Toast.makeText(getApplicationContext(), "Cache has been cleared.", Toast.LENGTH_LONG).show();
+                            Snackbar.make(view, "Cache has been cleared.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+
                         }
 
                         timer_loader = 1;
@@ -2679,6 +2577,7 @@ public class MainActivity extends AppCompatActivity
 
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
+
                     @Override
                     public void run() {
                         if (dialog_diagnostics.isShowing()) {
@@ -2687,10 +2586,11 @@ public class MainActivity extends AppCompatActivity
 
                         textView_getdiagnostics_portrait.setEnabled(true);
                         textView_getdiagnostics_landscape.setEnabled(true);
-                        Toast.makeText(getApplicationContext(), "Diagnostics has been sent.", Toast.LENGTH_LONG).show();
+                        Snackbar.make(findViewById(android.R.id.content), "Diagnostics has been sent.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                     }
                 }, 2000);
             }
+
         } catch (NullPointerException e) {
             Log.d("deleted", e.getMessage() + " 2");
         } catch (Exception e) {
@@ -2786,6 +2686,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.openDrawer(GravityCompat.END);
+                linearLayout_notifiation.setVisibility(View.VISIBLE);
+                linearLayout_notifiation.bringToFront();
             }
         });
         return true;
