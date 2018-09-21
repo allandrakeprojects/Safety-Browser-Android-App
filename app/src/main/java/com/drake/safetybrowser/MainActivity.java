@@ -1749,7 +1749,7 @@ public class MainActivity extends AppCompatActivity
                             }
                             else if(hours<48)
                             {
-                                final_datetime = days+" yesterday";
+                                final_datetime = "yesterday";
                             }
                             else if(days<30)
                             {
@@ -1967,7 +1967,7 @@ public class MainActivity extends AppCompatActivity
                             }
                             else if(hours<48)
                             {
-                                final_datetime = days+" yesterday";
+                                final_datetime = "yesterday";
                             }
                             else if(days<30)
                             {
@@ -2158,7 +2158,7 @@ public class MainActivity extends AppCompatActivity
                                     }
                                     else if(hours<48)
                                     {
-                                        final_datetime = days+" yesterday";
+                                        final_datetime = "yesterday";
                                     }
                                     else if(days<30)
                                     {
