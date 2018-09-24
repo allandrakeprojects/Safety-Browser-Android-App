@@ -1718,7 +1718,6 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             ControlsInRightNavigation();
-//                            notification_clear+=2;
                         }
                     }
                 }
@@ -1938,7 +1937,6 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             ControlsInRightNavigation();
-//                            notification_clear+=2;
                         }
                     }
                 }
