@@ -1567,7 +1567,9 @@ public class MainActivity extends AppCompatActivity
                     String line = tmp.get(i);
                     get_count_notification++;
 
-                    if(line.length() > 0){NavigationView navView = findViewById(R.id.nav_view_notification);
+                    if(line.length() > 0){
+                        notification_clear+=2;
+                        NavigationView navView = findViewById(R.id.nav_view_notification);
                         String message_date = "";
                         String message_title = "";
                         String message_content = "";
@@ -1716,7 +1718,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             ControlsInRightNavigation();
-                            notification_clear+=2;
+//                            notification_clear+=2;
                         }
                     }
                 }
@@ -1785,7 +1787,9 @@ public class MainActivity extends AppCompatActivity
                     String line = tmp.get(i);
                     get_count_notification++;
 
-                    if(line.length() > 0){NavigationView navView = findViewById(R.id.nav_view_notification);
+                    if(line.length() > 0){
+                        notification_clear+=2;
+                        NavigationView navView = findViewById(R.id.nav_view_notification);
                         String message_date = "";
                         String message_title = "";
                         String message_content = "";
@@ -1934,7 +1938,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             ControlsInRightNavigation();
-                            notification_clear+=2;
+//                            notification_clear+=2;
                         }
                     }
                 }
@@ -2686,8 +2690,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.openDrawer(GravityCompat.END);
-                linearLayout_notifiation.setVisibility(View.VISIBLE);
-                linearLayout_notifiation.bringToFront();
+//                linearLayout_notifiation.setVisibility(View.VISIBLE);
+//                linearLayout_notifiation.bringToFront();
             }
         });
         return true;
