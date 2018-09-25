@@ -840,8 +840,11 @@ public class MainActivity extends AppCompatActivity
                 isTimerLoaderRunning = true;
                 TimerLoader();
                 textView_textchanged.setText("");
-                relativeLayout_loader.setVisibility(View.VISIBLE);
-                relativeLayout_webview.setVisibility(View.INVISIBLE);
+
+                if(!isLoadingFinished){
+                    relativeLayout_loader.setVisibility(View.VISIBLE);
+                    relativeLayout_webview.setVisibility(View.INVISIBLE);
+                }
 
                 // Start Load
                 SimpleDateFormat start_load_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
