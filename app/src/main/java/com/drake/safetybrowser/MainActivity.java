@@ -1899,11 +1899,11 @@ public class MainActivity extends AppCompatActivity
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
                                 SpannableString parent = new SpannableString("★ " + message_title + " (" + final_datetime + ")");
-                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#000000")), 0, parent.length(), 0);
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
                                 SpannableString child = new SpannableString(message_content);
-                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#000000")), 0, child.length(), 0);
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
@@ -1920,11 +1920,11 @@ public class MainActivity extends AppCompatActivity
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
                                 SpannableString parent = new SpannableString(message_title + " (" + final_datetime + ")");
-                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, parent.length(), 0);
+                                parent.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
                                 SpannableString child = new SpannableString(message_content);
-                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#6A6468")), 0, child.length(), 0);
+                                child.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
