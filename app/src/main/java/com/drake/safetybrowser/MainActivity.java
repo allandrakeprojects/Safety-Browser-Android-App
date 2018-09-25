@@ -591,8 +591,8 @@ public class MainActivity extends AppCompatActivity
                     // Load URL
                     if(domain_count_max != domain_count_current){
                         WebSettings webSettings = webView.getSettings();
-//                        webSettings.setPluginState(WebSettings.PluginState.ON);
-//                        webSettings.setMediaPlaybackRequiresUserGesture(true);
+                        webSettings.setPluginState(WebSettings.PluginState.ON);
+                        webSettings.setMediaPlaybackRequiresUserGesture(true);
                         webSettings.setJavaScriptEnabled(true);
                         webSettings.setAllowFileAccess(true);
                         webSettings.setDefaultTextEncodingName("utf-8");
