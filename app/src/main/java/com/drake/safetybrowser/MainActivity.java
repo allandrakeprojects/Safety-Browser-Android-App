@@ -20,6 +20,7 @@ import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -62,6 +63,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -588,8 +591,8 @@ public class MainActivity extends AppCompatActivity
                     // Load URL
                     if(domain_count_max != domain_count_current){
                         WebSettings webSettings = webView.getSettings();
-                        webSettings.setPluginState(WebSettings.PluginState.OFF);
-                        webSettings.setMediaPlaybackRequiresUserGesture(true);
+//                        webSettings.setPluginState(WebSettings.PluginState.ON);
+//                        webSettings.setMediaPlaybackRequiresUserGesture(true);
                         webSettings.setJavaScriptEnabled(true);
                         webSettings.setAllowFileAccess(true);
                         webSettings.setDefaultTextEncodingName("utf-8");
@@ -617,6 +620,7 @@ public class MainActivity extends AppCompatActivity
                         webView.loadUrl(domain_list.get(domain_count_current));
                         webView.requestFocus();
                         webView.setWebViewClient(new MyBrowser());
+                        webView.setWebChromeClient(new WebChromeClient());
                     }
                 }
             }
@@ -720,31 +724,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public boolean isPermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -816,6 +795,11 @@ public class MainActivity extends AppCompatActivity
     private class MyBrowser extends WebViewClient {
         boolean timeout_detect = true;
 
+//        @Override
+//        public void onReceivedSslError (WebView view, SslErrorHandler handler, SslError error) {
+//            handler.proceed();
+//        }
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (!loadingFinished) {
@@ -826,6 +810,13 @@ public class MainActivity extends AppCompatActivity
             view.loadUrl(url);
 
             return true;
+        }
+
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            Log.d("asdasdasd", "Page error: " + description);
+
+            super.onReceivedError(view, errorCode, description, failingUrl);
         }
 
         @Override
