@@ -84,6 +84,9 @@ import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.request.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.qiniu.android.netdiag.Ping;
+import com.qiniu.android.netdiag.TcpPing;
+import com.qiniu.android.netdiag.TraceRoute;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpEntity;
@@ -152,8 +155,9 @@ public class MainActivity extends AppCompatActivity
     String[] notifications_service = { "http://www.ssicortex.com/GetNotifications", "http://www.ssitectonic.com/GetNotifications", "http://www.ssihedonic.com/GetNotifications" };
     String[] notifications_delete_service = { "http://www.ssicortex.com/GetMessageX", "http://www.ssitectonic.com/GetMessageX", "http://www.ssihedonic.com/GetMessageX" };
     String[] diagnostics_service = { "http://www.ssicortex.com/SendDiagnostic", "http://www.ssitectonic.com/SendDiagnostic", "http://www.ssihedonic.com/SendDiagnostic" };
-    String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
     String BRAND_CODE = "YB";
+    String API_KEY = "6b8c7e5617414bf2d4ace37600b6ab71";
+    String BRAND_ID = "1";
     String domain = "";
     String text_search = "";
     String get_external_ip_address = "";
@@ -196,6 +200,7 @@ public class MainActivity extends AppCompatActivity
     boolean isBack = false;
     boolean isNoInternetConnection;
     boolean isNewLine = true;
+    boolean isNewLineTraceRoute = true;
     boolean isHasUpdate = false;
     boolean isVersion = true;
     boolean isTouch = false;
@@ -311,7 +316,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 textView_clearcache_portrait.setEnabled(false);
                 dialog_cache.setCanceledOnTouchOutside(false);
-                dialog_cache.setCancelable(false);
+//                dialog_cache.setCancelable(false);
                 dialog_cache.setMessage("Clearing cache, please wait...");
                 dialog_cache.show();
                 isClearCache = true;
@@ -328,7 +333,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 textView_clearcache_landscape.setEnabled(false);
                 dialog_cache.setCanceledOnTouchOutside(false);
-                dialog_cache.setCancelable(false);
+//                dialog_cache.setCancelable(false);
                 dialog_cache.setMessage("Clearing cache, please wait...");
                 dialog_cache.show();
                 isClearCache = true;
@@ -344,14 +349,35 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                     textView_getdiagnostics_portrait.setEnabled(false);
                     dialog_diagnostics.setCanceledOnTouchOutside(false);
-                    dialog_diagnostics.setCancelable(false);
+//                    dialog_diagnostics.setCancelable(false);
                     dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                     dialog_diagnostics.show();
 
                     Runnable run = new Runnable() {
                         public void run() {
                             try {
-                                Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
+                                File ping = new File(getFilesDir() + "/ping.txt");
+                                File traceroute = new File(getFilesDir() + "/traceroute.txt");
+                                File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                                if (ping.exists()) {
+                                    ping.delete();
+                                }
+
+                                if (traceroute.exists()) {
+                                    traceroute.delete();
+                                }
+
+                                if (diagnostic.exists()) {
+                                    diagnostic.delete();
+                                }
+
+                                String replace_domain = domain_list.get(domain_count_current);
+                                replace_domain = replace_domain.replace("https://", "");
+                                replace_domain = replace_domain.replace("http://", "");
+                                replace_domain = replace_domain.replace(".com/", ".com");
+
+                                Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 " + replace_domain);
                                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                                 int i;
                                 char[] buffer = new char[4096];
@@ -370,12 +396,38 @@ public class MainActivity extends AppCompatActivity
                                     writeToFile(line + "\r\n", "ping.txt");
                                 }
 
-                                String target_path = getFilesDir() + "/ping.txt";
-                                String destination_path = getFilesDir() + "/sb_diagnostic.zip";
-                                ZipArchive zipArchive = new ZipArchive();
-                                zipArchive.zip(target_path,destination_path,"");
+                                TraceRoute.start(replace_domain, new TraceRouteLogger(), new TraceRoute.Callback() {
+                                    @Override
+                                    public void complete(TraceRoute.Result r) {
+                                        String replace_traceroute = r.content();
+                                        replace_traceroute = replace_traceroute.replace("ms\t", "ms \r\n");
+                                        replace_traceroute = replace_traceroute.replace("9.\t", "9. ");
 
-                                SENDDIAGNOSTICS();
+                                        writeToFile("\r\n" + replace_traceroute, "traceroute.txt");
+
+                                        new Thread()
+                                        {
+                                            public void run()
+                                            {
+                                                MainActivity.this.runOnUiThread(new Runnable()
+                                                {
+                                                    public void run()
+                                                    {
+                                                        String ping_path = getFilesDir() + "/ping.txt";
+                                                        String traceroute_path = getFilesDir() + "/traceroute.txt";
+                                                        String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                                                        ZipArchive zipArchive = new ZipArchive();
+                                                        zipArchive.zip(ping_path, destination_path,"");
+                                                        zipArchive.zip(traceroute_path, destination_path,"");
+
+                                                        SENDDIAGNOSTICS();
+                                                    }
+                                                });
+                                            }
+                                        }.start();
+                                    }
+                                });
+
                             } catch (Exception e) {
                                 Log.d("deleted", "Error: " + e.getMessage());
                             }
@@ -391,14 +443,35 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 textView_getdiagnostics_portrait.setEnabled(false);
                 dialog_diagnostics.setCanceledOnTouchOutside(false);
-                dialog_diagnostics.setCancelable(false);
+//                dialog_diagnostics.setCancelable(false);
                 dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                 dialog_diagnostics.show();
 
                 Runnable run = new Runnable() {
                     public void run() {
                         try {
-                            Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 yb188.com");
+                            File ping = new File(getFilesDir() + "/ping.txt");
+                            File traceroute = new File(getFilesDir() + "/traceroute.txt");
+                            File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                            if (ping.exists()) {
+                                ping.delete();
+                            }
+
+                            if (traceroute.exists()) {
+                                traceroute.delete();
+                            }
+
+                            if (diagnostic.exists()) {
+                                diagnostic.delete();
+                            }
+
+                            String replace_domain = domain_list.get(domain_count_current);
+                            replace_domain = replace_domain.replace("https://", "");
+                            replace_domain = replace_domain.replace("http://", "");
+                            replace_domain = replace_domain.replace(".com/", ".com");
+
+                            Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 " + replace_domain);
                             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                             int i;
                             char[] buffer = new char[4096];
@@ -417,12 +490,38 @@ public class MainActivity extends AppCompatActivity
                                 writeToFile(line + "\r\n", "ping.txt");
                             }
 
-                            String target_path = getFilesDir() + "/ping.txt";
-                            String destination_path = getFilesDir() + "/sb_diagnostic.zip";
-                            ZipArchive zipArchive = new ZipArchive();
-                            zipArchive.zip(target_path,destination_path,"");
+                            TraceRoute.start(replace_domain, new TraceRouteLogger(), new TraceRoute.Callback() {
+                                @Override
+                                public void complete(TraceRoute.Result r) {
+                                    String replace_traceroute = r.content();
+                                    replace_traceroute = replace_traceroute.replace("ms\t", "ms \r\n");
+                                    replace_traceroute = replace_traceroute.replace("9.\t", "9. ");
 
-                            SENDDIAGNOSTICS();
+                                    writeToFile("\r\n" + replace_traceroute, "traceroute.txt");
+
+                                    new Thread()
+                                    {
+                                        public void run()
+                                        {
+                                            MainActivity.this.runOnUiThread(new Runnable()
+                                            {
+                                                public void run()
+                                                {
+                                                    String ping_path = getFilesDir() + "/ping.txt";
+                                                    String traceroute_path = getFilesDir() + "/traceroute.txt";
+                                                    String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                                                    ZipArchive zipArchive = new ZipArchive();
+                                                    zipArchive.zip(ping_path, destination_path,"");
+                                                    zipArchive.zip(traceroute_path, destination_path,"");
+
+                                                    SENDDIAGNOSTICS();
+                                                }
+                                            });
+                                        }
+                                    }.start();
+                                }
+                            });
+
                         } catch (Exception e) {
                             Log.d("deleted", "Error: " + e.getMessage());
                         }
@@ -690,6 +789,7 @@ public class MainActivity extends AppCompatActivity
                                             JSONObject data = array.getJSONObject(i);
 
                                             String id = data.getString("id");
+                                            String brand_id = data.getString("brand_id");
                                             String message_date = data.getString("message_date");
                                             String message_title = data.getString("message_title");
                                             String message_content = data.getString("message_content");
@@ -697,8 +797,11 @@ public class MainActivity extends AppCompatActivity
                                             String message_type = data.getString("message_type");
                                             String edited_id = data.getString("edited_id");
 
-                                            String notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                            writeToFile(notification, "sb_notifications.txt");
+
+                                            if(BRAND_ID.equals(brand_id)){
+                                                String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                                writeToFile(notification, "sb_notifications.txt");
+                                            }
                                         }
                                     } catch (JSONException e) {
                                         e.printStackTrace();
@@ -1587,10 +1690,10 @@ public class MainActivity extends AppCompatActivity
                                 message_content = message_content.replace("&gt;", ">");
                                 message_content = message_content.replace("<br />", lineSep);
                             }else if(i_inner == 6){
-                                if(str.equals("1")){
-                                    isDisplay = false;
-                                } else {
+                                if(str.equals("0")){
                                     isDisplay = true;
+                                } else {
+                                    isDisplay = false;
                                 }
                             }else if(i_inner == 8){
                                 if(isDisplay){
@@ -1805,7 +1908,7 @@ public class MainActivity extends AppCompatActivity
                                 message_content = message_content.replace("&gt;", ">");
                                 message_content = message_content.replace("<br />", lineSep);
                             }else if(i_inner == 6){
-                                if(str.equals("1")){
+                                if(str.equals("2")){
                                     isDisplay = true;
                                     isHasUpdate = true;
                                 } else {
@@ -2408,6 +2511,7 @@ public class MainActivity extends AppCompatActivity
                                         JSONObject data = array.getJSONObject(i);
 
                                         String id = data.getString("id");
+                                        String brand_id = data.getString("brand_id");
                                         String message_date = data.getString("message_date");
                                         String message_title = data.getString("message_title");
                                         String message_content = data.getString("message_content");
@@ -2415,8 +2519,10 @@ public class MainActivity extends AppCompatActivity
                                         String message_type = data.getString("message_type");
                                         String edited_id = data.getString("edited_id");
 
-                                        String notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                        writeToFile(notification, "sb_notifications.txt");
+                                        if(BRAND_ID.equals(brand_id)){
+                                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                            writeToFile(notification, "sb_notifications.txt");
+                                        }
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -2516,7 +2622,9 @@ public class MainActivity extends AppCompatActivity
                                         Log.d("deleted", "add new entry");
                                         new_entry = true;
                                         JSONObject data = array.getJSONObject(i);
+
                                         String id = data.getString("id");
+                                        String brand_id = data.getString("brand_id");
                                         String message_date = data.getString("message_date");
                                         String message_title = data.getString("message_title");
                                         String message_content = data.getString("message_content");
@@ -2524,8 +2632,10 @@ public class MainActivity extends AppCompatActivity
                                         String message_type = data.getString("message_type");
                                         String edited_id = data.getString("edited_id");
 
-                                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                        writeToFile(notification, "sb_notifications.txt");
+                                        if(BRAND_ID.equals(brand_id)){
+                                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                            writeToFile(notification, "sb_notifications.txt");
+                                        }
                                     }
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -2583,6 +2693,22 @@ public class MainActivity extends AppCompatActivity
                         textView_getdiagnostics_portrait.setEnabled(true);
                         textView_getdiagnostics_landscape.setEnabled(true);
                         Snackbar.make(findViewById(android.R.id.content), "Diagnostics has been sent.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+
+                        File ping = new File(getFilesDir() + "/ping.txt");
+                        File traceroute = new File(getFilesDir() + "/traceroute.txt");
+                        File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                        if (ping.exists()) {
+                            ping.delete();
+                        }
+
+                        if (traceroute.exists()) {
+                            traceroute.delete();
+                        }
+
+                        if (diagnostic.exists()) {
+                            diagnostic.delete();
+                        }
                     }
                 }, 2000);
             }
@@ -2808,59 +2934,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void NotificationScrollUpdate() {
-       int asdsad = nav_view_notification.getChildAt(0).getScrollX();
-        Toast.makeText(getApplicationContext(), asdsad + "", Toast.LENGTH_LONG).show();
-    }
-
-
-
-
-
-
-
-
     // Network Handler --------------
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -2878,9 +2951,20 @@ public class MainActivity extends AppCompatActivity
                 if(isFirstOpened){
                     // Functions --------------
 
-                    File fdelete = new File(getFilesDir() + "/ping.txt");
-                    if (fdelete.exists()) {
-                        fdelete.delete();
+                    File ping = new File(getFilesDir() + "/ping.txt");
+                    File traceroute = new File(getFilesDir() + "/traceroute.txt");
+                    File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                    if (ping.exists()) {
+                        ping.delete();
+                    }
+
+                    if (traceroute.exists()) {
+                        traceroute.delete();
+                    }
+
+                    if (diagnostic.exists()) {
+                        diagnostic.delete();
                     }
 
                     notification_count = 0;
@@ -2945,6 +3029,7 @@ public class MainActivity extends AppCompatActivity
                                 for(int i=0;i<array.length();i++){
                                     JSONObject data = array.getJSONObject(i);
                                     String id = data.getString("id");
+                                    String brand_id = data.getString("brand_id");
                                     String message_date = data.getString("message_date");
                                     String message_title = data.getString("message_title");
                                     String message_content = data.getString("message_content");
@@ -2952,8 +3037,10 @@ public class MainActivity extends AppCompatActivity
                                     String message_type = data.getString("message_type");
                                     String edited_id = data.getString("edited_id");
 
-                                    String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                    writeToFile(notification, "sb_notifications.txt");
+                                    if(BRAND_ID.equals(brand_id)){
+                                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                        writeToFile(notification, "sb_notifications.txt");
+                                    }
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();

@@ -64,6 +64,7 @@ dependencies {
 
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.15'
 
+    implementation 'com.qiniu:android-netdiag:0.1.1'
 //    implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    //noinspection GradleCompatible
 //    implementation 'com.android.support:appcompat-v7:23.0.1'
