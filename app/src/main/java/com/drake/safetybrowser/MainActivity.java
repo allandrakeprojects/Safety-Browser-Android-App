@@ -2,8 +2,6 @@ package com.drake.safetybrowser;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,24 +12,19 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.design.internal.NavigationMenuView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -39,11 +32,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -53,7 +44,6 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -63,7 +53,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
-import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -75,17 +64,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.error.AuthFailureError;
 import com.android.volley.error.VolleyError;
 import com.android.volley.request.JsonObjectRequest;
 import com.android.volley.request.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.qiniu.android.netdiag.Ping;
-import com.qiniu.android.netdiag.TcpPing;
 import com.qiniu.android.netdiag.TraceRoute;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -94,38 +79,20 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.NetworkInterface;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,10 +106,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import ir.mahdi.mzip.zip.ZipArchive;
 
@@ -253,7 +216,7 @@ public class MainActivity extends AppCompatActivity
                 boolean isFirstStart = sharedPreferences.getBoolean("firstStart", true);
 
                 if(isFirstStart){
-                    startActivity(new Intent(MainActivity.this, MyAppIntro.class));
+                    startActivity(new Intent(MainActivity.this, Activity_AppIntro.class));
                     SharedPreferences.Editor e = sharedPreferences.edit();
                     e.putBoolean("firstStart", false);
                     e.apply();
@@ -315,14 +278,13 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 textView_clearcache_portrait.setEnabled(false);
-                dialog_cache.setCanceledOnTouchOutside(false);
+//                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("Clearing cache, please wait...");
+                dialog_cache.setMessage("清除緩存，請稍候...");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
                 webView.clearCache(true);
-//                webView.loadUrl("about:blank");
                 webView.reload();
             }
         });
@@ -332,14 +294,13 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 textView_clearcache_landscape.setEnabled(false);
-                dialog_cache.setCanceledOnTouchOutside(false);
+//                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("Clearing cache, please wait...");
+                dialog_cache.setMessage("清除緩存，請稍候...");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
                 webView.clearCache(true);
-//                webView.loadUrl("about:blank");
                 webView.reload();
             }
         });
@@ -348,9 +309,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                     textView_getdiagnostics_portrait.setEnabled(false);
-                    dialog_diagnostics.setCanceledOnTouchOutside(false);
+//                    dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                    dialog_diagnostics.setCancelable(false);
-                    dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                    dialog_diagnostics.setMessage("獲得診斷，請稍候...");
                     dialog_diagnostics.show();
 
                     Runnable run = new Runnable() {
@@ -396,7 +357,7 @@ public class MainActivity extends AppCompatActivity
                                     writeToFile(line + "\r\n", "ping.txt");
                                 }
 
-                                TraceRoute.start(replace_domain, new TraceRouteLogger(), new TraceRoute.Callback() {
+                                TraceRoute.start(replace_domain, new Activity_TraceRouteLogger(), new TraceRoute.Callback() {
                                     @Override
                                     public void complete(TraceRoute.Result r) {
                                         String replace_traceroute = r.content();
@@ -442,9 +403,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 textView_getdiagnostics_portrait.setEnabled(false);
-                dialog_diagnostics.setCanceledOnTouchOutside(false);
+//                dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                dialog_diagnostics.setCancelable(false);
-                dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                dialog_diagnostics.setMessage("獲得診斷，請稍候...");
                 dialog_diagnostics.show();
 
                 Runnable run = new Runnable() {
@@ -490,7 +451,7 @@ public class MainActivity extends AppCompatActivity
                                 writeToFile(line + "\r\n", "ping.txt");
                             }
 
-                            TraceRoute.start(replace_domain, new TraceRouteLogger(), new TraceRoute.Callback() {
+                            TraceRoute.start(replace_domain, new Activity_TraceRouteLogger(), new TraceRoute.Callback() {
                                 @Override
                                 public void complete(TraceRoute.Result r) {
                                     String replace_traceroute = r.content();
@@ -743,7 +704,7 @@ public class MainActivity extends AppCompatActivity
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     textview_notification.setVisibility(View.INVISIBLE);
 
-                    notification_header.setTitle("Loading...");
+                    notification_header.setTitle("載入中...");
                     for(int l=0; l<=notification_clear; l++){
                         menu_notification.removeItem(120);
                     }
@@ -797,10 +758,11 @@ public class MainActivity extends AppCompatActivity
                                             String message_type = data.getString("message_type");
                                             String edited_id = data.getString("edited_id");
 
-
                                             if(BRAND_ID.equals(brand_id)){
-                                                String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                                writeToFile(notification, "sb_notifications.txt");
+                                                if(message_type.equals("0") || message_type.equals("2")){
+                                                    String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                                    writeToFile(notification, "sb_notifications.txt");
+                                                }
                                             }
                                         }
                                     } catch (JSONException e) {
@@ -813,14 +775,14 @@ public class MainActivity extends AppCompatActivity
                             });
 
                             new_entry = false;
-                            Snackbar.make(view, "Notification Updated.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                            Snackbar.make(view, "通知已更新.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                         }
                     };
                     Handler myHandler = new Handler(Looper.myLooper());
                     myHandler.postDelayed(run, 1000);
 
                 } else {
-                    Snackbar.make(view, "No currently notification.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                    Snackbar.make(view, "目前沒有通知.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                 }
 
             }
@@ -1700,10 +1662,10 @@ public class MainActivity extends AppCompatActivity
                                     if(str.contains("U")){
                                         isUnread = true;
                                         notifications_count++;
-                                        notification_header.setTitle("Notifications (" + notifications_count + ")");
+                                        notification_header.setTitle("通知 (" + notifications_count + ")");
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("Notifications");
+                                            notification_header.setTitle("通知");
                                         }
                                     }
                                 }
@@ -1810,7 +1772,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("There are currently no notifications.");
+                                notification_header.setTitle("目前沒有通知.");
                                 isInsertMenu = false;
                             }
 
@@ -1846,7 +1808,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("There are currently no notifications.");
+                notification_header.setTitle("目前沒有通知.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1920,7 +1882,7 @@ public class MainActivity extends AppCompatActivity
                                         isUnread = true;
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("Notifications");
+                                            notification_header.setTitle("通知");
                                         }
                                     }
 
@@ -1933,7 +1895,7 @@ public class MainActivity extends AppCompatActivity
                         if(isDisplay){
                             notification_count++;
                             notifications_count++;
-                            notification_header.setTitle("Notifications (" + notifications_count + ")");
+                            notification_header.setTitle("通知 (" + notifications_count + ")");
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -2029,7 +1991,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("There are currently no notifications.");
+                                notification_header.setTitle("目前沒有通知.");
                                 isInsertMenu = false;
                             }
 
@@ -2041,7 +2003,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("There are currently no notifications.");
+                notification_header.setTitle("目前沒有通知.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2171,15 +2133,15 @@ public class MainActivity extends AppCompatActivity
                                     }
 
                                     if(isHasUpdate && get_group_id == 1){
-                                        String url = "http://raincheck.ssitex.com/download_sb/safetybrowser.apk";
+                                        String url = "http://ssicortex.com/uploads/updates/YB/safetybrowser.apk";
                                         if(isPermissionGranted()){
-                                            UpdateApp atualizaApp = new UpdateApp();
+                                            Activity_UpdateApp atualizaApp = new Activity_UpdateApp();
                                             atualizaApp.setContext(getApplicationContext());
                                             atualizaApp.execute(url);
 
-                                            dialog_update.setCanceledOnTouchOutside(false);
+//                                            dialog_update.setCanceledOnTouchOutside(false);
 //                                            dialog_update.setCancelable(false);
-                                            dialog_update.setMessage("Downloading Updates.\nAutomatically restart the application, please wait...");
+                                            dialog_update.setMessage("下載更新.\n自動重啟應用程序，請稍候...");
                                             dialog_update.show();
 
 //                                            ProgressDialog dialog_update = DialogUtils.showProgressDialog(MainActivity.this,"Downloading Updates.\nAutomatically restart the application, please wait...");
@@ -2330,14 +2292,14 @@ public class MainActivity extends AppCompatActivity
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("Notifications (" + notifications_count + ")");
+                        notification_header.setTitle("通知 (" + notifications_count + ")");
                         textview_notification.setText(notifications_count + "");
                         textview_notification.setVisibility(View.VISIBLE);
                     } else{
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("Notifications");
+                        notification_header.setTitle("通知");
                         textview_notification.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -2384,7 +2346,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("There are currently no notifications.");
+                notification_header.setTitle("目前沒有通知.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2455,7 +2417,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
-                    return s.substring(0, maxLength) + "... view more";
+                    return s.substring(0, maxLength) + "... 查看更多";
                 } else{
 
                 }
@@ -2520,8 +2482,10 @@ public class MainActivity extends AppCompatActivity
                                         String edited_id = data.getString("edited_id");
 
                                         if(BRAND_ID.equals(brand_id)){
-                                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                            writeToFile(notification, "sb_notifications.txt");
+                                            if(message_type.equals("0") || message_type.equals("2")){
+                                                String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                                writeToFile(notification, "sb_notifications.txt");
+                                            }
                                         }
                                     }
                                 } catch (JSONException e) {
@@ -2557,7 +2521,7 @@ public class MainActivity extends AppCompatActivity
                         TextView textview_notification = findViewById(R.id.textview_notification);
                         textview_notification.setVisibility(View.INVISIBLE);
 
-                        notification_header.setTitle("Loading...");
+                        notification_header.setTitle("載入中...");
                         for(int l=0; l<=notification_clear; l++){
                             menu_notification.removeItem(120);
                         }
@@ -2620,7 +2584,6 @@ public class MainActivity extends AppCompatActivity
 
                                     for(int i=0;i<array.length();i++){
                                         Log.d("deleted", "add new entry");
-                                        new_entry = true;
                                         JSONObject data = array.getJSONObject(i);
 
                                         String id = data.getString("id");
@@ -2633,8 +2596,11 @@ public class MainActivity extends AppCompatActivity
                                         String edited_id = data.getString("edited_id");
 
                                         if(BRAND_ID.equals(brand_id)){
-                                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                            writeToFile(notification, "sb_notifications.txt");
+                                            if(message_type.equals("0") || message_type.equals("2")){
+                                                new_entry = true;
+                                                String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                                writeToFile(notification, "sb_notifications.txt");
+                                            }
                                         }
                                     }
                                 } catch (JSONException e) {
@@ -2734,11 +2700,11 @@ public class MainActivity extends AppCompatActivity
                         timer_loader++;
                         Log.d("deleted", timer_loader+"");
                         if(timer_loader < 15){
-                            textView_loader.setText("loading...");
+                            textView_loader.setText("載入中...");
                         } else if(timer_loader < 39) {
-                            textView_loader.setText("getting data to the server...");
+                            textView_loader.setText("將數據提供給服務器...");
                         } else if(timer_loader > 40) {
-                            textView_loader.setText("getting ready...");
+                            textView_loader.setText("做好準備...");
                         }
                     }
                 }
@@ -2849,11 +2815,10 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_reload) {
             webView.reload();
         } else if (id == R.id.nav_hard_reload) {
+            isClearCache = true;
             webView.getSettings().setAppCacheEnabled(false);
             webView.clearCache(true);
-//            webView.loadUrl("about:blank");
-            webView.loadUrl(domain_list.get(domain_count_current));
-//            webView.reload();
+            webView.reload();
         } else if (id == R.id.item_help) {
             Toast.makeText(getApplicationContext(), "Help and Support", Toast.LENGTH_LONG).show();
         } else if (id == R.id.item_notification) {
@@ -2973,10 +2938,10 @@ public class MainActivity extends AppCompatActivity
 
 //                    menu_notification.clear();
                     if(isNoInternetConnection){
-                        menu_notification.add(0, 99999, Menu.NONE, "Loading...");
+                        menu_notification.add(0, 99999, Menu.NONE, "載入中...");
                         isNoInternetConnection = false;
                     } else {
-                        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
+                        menu_notification.add(0, 99999, Menu.NONE, "目前沒有通知.");
                     }
                     TimerNotificationClear();
                     TimerNotification();
@@ -3038,8 +3003,10 @@ public class MainActivity extends AppCompatActivity
                                     String edited_id = data.getString("edited_id");
 
                                     if(BRAND_ID.equals(brand_id)){
-                                        String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                        writeToFile(notification, "sb_notifications.txt");
+                                        if(message_type.equals("0") || message_type.equals("2")){
+                                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                            writeToFile(notification, "sb_notifications.txt");
+                                        }
                                     }
                                 }
                             } catch (JSONException e) {

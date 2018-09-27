@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class UpdateApp extends AsyncTask<String,Void,Void> {
+public class Activity_UpdateApp extends AsyncTask<String,Void,Void> {
     private Context context;
     public void setContext(Context contextf){
         context = contextf;

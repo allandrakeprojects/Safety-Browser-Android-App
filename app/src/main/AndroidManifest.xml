@@ -22,7 +22,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".SplashScreen"
+            android:name=".Activity_SplashScreen"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:hardwareAccelerated="true"
             android:label="Safety Browser"
@@ -43,7 +43,7 @@
         </activity>
 
         <activity
-            android:name=".MyAppIntro"
+            android:name=".Activity_AppIntro"
             android:theme="@style/AppTheme.NoActionBar"/>
 
         <provider
