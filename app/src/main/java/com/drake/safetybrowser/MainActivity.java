@@ -2203,6 +2203,7 @@ public class MainActivity extends AppCompatActivity
                 if(nav_version.toString().contains(text.toString())) {
                     Log.d("asdasdasd", "same ver");
                 } else {
+                    Log.d("asdasdasd", "not same ver");
                     try {
                         String path = getFilesDir() + "/sb_notifications.txt";
                         FileReader fr=new FileReader(path);
@@ -2221,7 +2222,7 @@ public class MainActivity extends AppCompatActivity
                                             id = str;
                                         }
                                         if(i_inner == 6){
-                                            if(str.contains("1")){
+                                            if(str.contains("2")){
                                                 GetUpdateNotification(id);
                                             }
                                         }
@@ -2584,6 +2585,7 @@ public class MainActivity extends AppCompatActivity
 
                                     for(int i=0;i<array.length();i++){
                                         Log.d("deleted", "add new entry");
+                                        new_entry = true;
                                         JSONObject data = array.getJSONObject(i);
 
                                         String id = data.getString("id");
@@ -2597,7 +2599,6 @@ public class MainActivity extends AppCompatActivity
 
                                         if(BRAND_ID.equals(brand_id)){
                                             if(message_type.equals("0") || message_type.equals("2")){
-                                                new_entry = true;
                                                 String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
                                                 writeToFile(notification, "sb_notifications.txt");
                                             }

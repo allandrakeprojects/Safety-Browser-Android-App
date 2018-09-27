@@ -94,17 +94,18 @@
             android:id="@+id/imageView_help_notification_3"
             android:layout_width="47dp"
             android:layout_height="45dp"
+            android:layout_alignParentEnd="true"
             android:layout_alignTop="@+id/textView_emailus"
-            android:layout_toEndOf="@+id/textView_chatus_1"
+            android:layout_marginEnd="24dp"
             app:srcCompat="@drawable/ic_notification_3" />
 
         <ImageView
             android:id="@+id/imageView_help_notification_1"
             android:layout_width="110dp"
             android:layout_height="103dp"
-            android:layout_alignEnd="@+id/imageView_help_notification_3"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="97dp"
+            android:layout_marginBottom="96dp"
+            android:layout_toEndOf="@+id/textView_helpandsupport"
             app:srcCompat="@drawable/ic_notification_1" />
 
         <ImageView
@@ -135,7 +136,7 @@
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:layout_above="@+id/imageView_help_notification_1"
-            android:layout_alignStart="@+id/imageView_help_notification_1"
+            android:layout_alignEnd="@+id/textView_chatus_1"
             android:scaleType="centerInside"
             app:srcCompat="@drawable/ic_notification_2" />
 
