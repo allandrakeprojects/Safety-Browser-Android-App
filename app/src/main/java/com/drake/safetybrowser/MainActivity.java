@@ -1754,7 +1754,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("No currently notification.");
+                                notification_header.setTitle("There are currently no notifications.");
                                 isInsertMenu = false;
                             }
 
@@ -1790,7 +1790,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("No currently notification.");
+                notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1976,7 +1976,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("No currently notification.");
+                                notification_header.setTitle("There are currently no notifications.");
                                 isInsertMenu = false;
                             }
 
@@ -1992,7 +1992,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("No currently notification.");
+                notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2404,7 +2404,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("No currently notification.");
+                notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -3090,7 +3090,7 @@ public class MainActivity extends AppCompatActivity
                         menu_notification.add(0, 99999, Menu.NONE, "Loading...");
                         isNoInternetConnection = false;
                     } else {
-                        menu_notification.add(0, 99999, Menu.NONE, "No currently notification.");
+                        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
                     }
 
                     TimerNotificationClear();
