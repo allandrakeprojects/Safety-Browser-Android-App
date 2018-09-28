@@ -673,6 +673,7 @@ public class MainActivity extends AppCompatActivity
                         webSettings.setLightTouchEnabled(true);
                         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
                         webSettings.supportMultipleWindows();
+                        webSettings.setSupportMultipleWindows(false);
                         webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
                         Log.i("WebViewActivity", "UA: " + webView.getSettings().getUserAgentString());
                         webView.setScrollbarFadingEnabled(false);
@@ -680,7 +681,12 @@ public class MainActivity extends AppCompatActivity
                         webView.loadUrl(domain_list.get(domain_count_current));
                         webView.requestFocus();
                         webView.setWebViewClient(new MyBrowser());
-                        webView.setWebChromeClient(new WebChromeClient());
+                        webView.setWebChromeClient(new WebChromeClient(){
+                            @Override
+                            public void onReceivedTitle(WebView view, String title) {
+                                getWindow().setTitle(title); //Set Activity tile to page title.
+                            }
+                        });
                     }
                 }
             }
@@ -872,9 +878,19 @@ public class MainActivity extends AppCompatActivity
             }
 
             loadingFinished = false;
-            view.loadUrl(url);
 
-            return true;
+            if (url != null && url.startsWith("http://roshan88") || url.startsWith("https://roshan88") ) {
+                view.getContext().startActivity(
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+
+//                view.loadUrl(url);
+                Log.d("asdasdasdasd", "test 1 " + url);
+                return true;
+            } else {
+                view.loadUrl(url);
+                Log.d("asdasdasdasd", "test 2 " + url);
+                return true;
+            }
         }
 
         @Override
@@ -893,13 +909,14 @@ public class MainActivity extends AppCompatActivity
                 // Loading
 //                swipeContainer.setRefreshing(false);
 //                swipeContainer.setEnabled(false);
-                isTimerLoaderRunning = true;
-                TimerLoader();
+
                 textView_textchanged.setText("");
 
                 if(!isLoadingFinished){
                     relativeLayout_loader.setVisibility(View.VISIBLE);
                     relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    isTimerLoaderRunning = true;
+                    TimerLoader();
                 }
 
                 // Start Load
@@ -1251,6 +1268,8 @@ public class MainActivity extends AppCompatActivity
                 redirect = false;
             }
 
+            Log.d("asdasdasdasd", url);
+            super.onPageFinished(view, url);
         }
     }
 
@@ -2257,25 +2276,54 @@ public class MainActivity extends AppCompatActivity
             String path = getFilesDir() + "/sb_notifications.txt";
             FileReader fr = new FileReader(path);
             String s;
-            String totalStr = "";
+            
             try {
                 BufferedReader br = new BufferedReader(fr);
                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
                 Menu menu_delete = navView_delete.getMenu();
                 MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
 
+                int count = 0;
+                String get_line = "";
                 if(pinMenuItem_parent.getTitle().toString().contains("★")){
-                    while ((s = br.readLine()) != null) {
-                        if(s.contains(without_replace)) {
-                            s = s.substring(0, s.length() - 1) + "R";
-                        }
 
-                        totalStr += s + "\n";
+                    int count_line = 0;
+                    List<String> tmp = new ArrayList<>();
+                    do{
+                        s = br.readLine();
+                        if(s != null){
+                            if(s.length() > 0){
+                                count_line++;
+                                tmp.add(s);
+                            }
+                        }
+                    }while(s!=null);
+
+                    for(int i=count_line-1;i>=0;i--) {
+                        String line = tmp.get(i);
+                        count++;
+
+                        if(line.length() > 0){
+                            String message_title = "";
+
+                            String[] values = line.split("\\*\\|\\*");
+
+                            int i_inner = 1;
+                            for(String str : values){
+                                if(i_inner == 3){
+                                    message_title = str;
+
+                                    if(message_title.equals(without_replace) && count == group_id){
+                                        get_line = line;
+                                    }
+                                }
+
+                                i_inner++;
+                            }
+                        }
                     }
 
-                    FileWriter fw = new FileWriter(path);
-                    fw.write(totalStr);
-                    fw.close();
+                    ReplaceRead(get_line);
 
                     MenuItem pinMenuItem = menu_delete.getItem(get_final_id);
                     SpannableString parent = new SpannableString(getSafeSubstring(without_replace, 18, "title") + " (" + date + ")");
@@ -2309,6 +2357,30 @@ public class MainActivity extends AppCompatActivity
             }
         } catch (Exception e) {
             System.out.println("Problem reading file.");
+        }
+    }
+    // Replace Read
+    private void ReplaceRead(String get_line){
+        try {
+            String path = getFilesDir() + "/sb_notifications.txt";
+            FileReader fr = new FileReader(path);
+            String s;
+            String totalStr = "";
+
+            BufferedReader br = new BufferedReader(fr);
+            while ((s = br.readLine()) != null) {
+                if(s.contains(get_line)) {
+                    s = s.substring(0, s.length() - 1) + "R";
+                }
+
+                totalStr += s + "\n";
+
+                FileWriter fw = new FileWriter(path);
+                fw.write(totalStr);
+                fw.close();
+            }
+        } catch(Exception ex){
+
         }
     }
     // Updated Notification
