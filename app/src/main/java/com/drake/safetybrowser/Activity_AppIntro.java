@@ -17,26 +17,24 @@ public class Activity_AppIntro extends com.github.paolorotolo.appintro.AppIntro 
         super.onCreate(savedInstanceState);
 
         try{
-            addSlide(AppIntroFragment.newInstance("导航目录",
-                    "点击目录图标 或 银幕上往右滑.",
+            addSlide(AppIntroFragment.newInstance("Navigation Menu",
+                    "Click the Menu icon or just easily swipe right to the edge of screen.",
                     R.drawable.ic_screenshot_1,
                     Color.parseColor("#EB6306")));
 
-            addSlide(AppIntroFragment.newInstance("通知目录",
-                    "点击通知图标 或 银幕上往左滑.",
+            addSlide(AppIntroFragment.newInstance("Notification Menu",
+                    "Click the Notification icon or just easily swipe left to the edge of screen.",
                     R.drawable.ic_screenshot_2,
                     Color.parseColor("#EB6306")));
 
-            addSlide(AppIntroFragment.newInstance("帮助",
-                    "点击问号图标显示帮助.",
+            addSlide(AppIntroFragment.newInstance("Help and Support",
+                    "Click the Question Mark icon to show Help and Support.",
                     R.drawable.ic_screenshot_3,
                     Color.parseColor("#EB6306")));
 
             showStatusBar(false);
             setBarColor(Color.parseColor("#D35600"));
             setSeparatorColor(Color.parseColor("#D35600"));
-            setDoneText("完成");
-            setSkipText("跳过");
         } catch(Exception e){
             Log.d("deleted", e.getMessage());
         }
