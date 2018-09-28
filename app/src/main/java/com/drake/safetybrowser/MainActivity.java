@@ -43,7 +43,6 @@ import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
-import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,12 +51,10 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -168,6 +165,7 @@ public class MainActivity extends AppCompatActivity
     boolean isVersion = true;
     boolean isTouch = false;
     boolean isBottom = false;
+    boolean isNotHijackedLoaded = false;
     private WebView webView;
     Integer parent = 0;
     Integer child = 0;
@@ -186,11 +184,9 @@ public class MainActivity extends AppCompatActivity
     Menu menu2;
     Menu menu_notification;
     private Context mContext;
-    Button button_test;
     ProgressDialog dialog_diagnostics;
     ProgressDialog dialog_cache;
     ProgressDialog dialog_update;
-    GestureDetector mDetector;
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -261,7 +257,6 @@ public class MainActivity extends AppCompatActivity
         imageView_help_back_landscape = findViewById(R.id.imageView_help_back_landscape);
         imageView_help_back_portrait = findViewById(R.id.imageView_help_back_portrait);
         mContext = getApplicationContext();
-        button_test = findViewById(R.id.button_test);
         // End of Find ID
 
         dialog_diagnostics = new ProgressDialog(MainActivity.this);
@@ -280,7 +275,7 @@ public class MainActivity extends AppCompatActivity
                 textView_clearcache_portrait.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("清除緩存，請稍候...");
+                dialog_cache.setMessage("Clearing cache, please wait...");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
@@ -296,7 +291,7 @@ public class MainActivity extends AppCompatActivity
                 textView_clearcache_landscape.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("清除緩存，請稍候...");
+                dialog_cache.setMessage("Clearing cache, please wait...");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
@@ -311,7 +306,7 @@ public class MainActivity extends AppCompatActivity
                     textView_getdiagnostics_portrait.setEnabled(false);
 //                    dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                    dialog_diagnostics.setCancelable(false);
-                    dialog_diagnostics.setMessage("獲得診斷，請稍候...");
+                    dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                     dialog_diagnostics.show();
 
                     Runnable run = new Runnable() {
@@ -405,7 +400,7 @@ public class MainActivity extends AppCompatActivity
                 textView_getdiagnostics_portrait.setEnabled(false);
 //                dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                dialog_diagnostics.setCancelable(false);
-                dialog_diagnostics.setMessage("獲得診斷，請稍候...");
+                dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                 dialog_diagnostics.show();
 
                 Runnable run = new Runnable() {
@@ -525,18 +520,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        button_test.setOnClickListener( new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                try {
-                } catch(Exception e){
-                    Log.d("deleted", e.getMessage());
-                }
-            }
-        });
-
         imageView_help_back_portrait.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -645,7 +628,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
-            @SuppressLint("SetJavaScriptEnabled")
+            @SuppressLint({"SetJavaScriptEnabled", "NewApi"})
             public void afterTextChanged(Editable s) {
                 if(s.length() > 0) {
                     // Load URL
@@ -709,7 +692,7 @@ public class MainActivity extends AppCompatActivity
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     textview_notification.setVisibility(View.INVISIBLE);
 
-                    notification_header.setTitle("載入中...");
+                    notification_header.setTitle("Loading...");
                     for(int l=0; l<=notification_clear; l++){
                         menu_notification.removeItem(120);
                     }
@@ -738,7 +721,7 @@ public class MainActivity extends AppCompatActivity
                                             GetUpdateNotification(get_delete_id_list);
                                         }
                                     } else{
-                                        Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                                        // Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                                     }
                                 }
                             });
@@ -780,14 +763,14 @@ public class MainActivity extends AppCompatActivity
                             });
 
                             new_entry = false;
-                            Snackbar.make(view, "通知已更新.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                            Snackbar.make(view, "Notification Updated.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                         }
                     };
                     Handler myHandler = new Handler(Looper.myLooper());
                     myHandler.postDelayed(run, 1000);
 
                 } else {
-                    Snackbar.make(view, "目前沒有通知.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                    Snackbar.make(view, "No currently notification.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                 }
 
             }
@@ -865,11 +848,6 @@ public class MainActivity extends AppCompatActivity
     private class MyBrowser extends WebViewClient {
         boolean timeout_detect = true;
 
-//        @Override
-//        public void onReceivedSslError (WebView view, SslErrorHandler handler, SslError error) {
-//            handler.proceed();
-//        }
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (!loadingFinished) {
@@ -878,39 +856,22 @@ public class MainActivity extends AppCompatActivity
 
             loadingFinished = false;
 
-            if (url != null && url.startsWith("http://roshan88") || url.startsWith("https://roshan88") ) {
-//                view.getContext().startActivity(
-//                        new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-
-                view.loadUrl(url);
-                Log.d("asdasdasdasd", "test 1 " + url);
-            } else {
-                view.loadUrl(url);
-                Log.d("asdasdasdasd", "test 2 " + url);
-            }
-
+            view.loadUrl(url);
             return true;
         }
 
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            Log.d("asdasdasd", "Page error: " + description);
-
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
 
         @Override
         public void onPageStarted(
             WebView view, String url, Bitmap favicon) {
-
-//            Log.d("asdasdasdasd", "page started: " + url);
             super.onPageStarted(view, url, favicon);
             loadingFinished = false;
             if (isConnected) {
                 // Loading
-//                swipeContainer.setRefreshing(false);
-//                swipeContainer.setEnabled(false);
-
                 textView_textchanged.setText("");
 
                 if(!isLoadingFinished){
@@ -947,7 +908,6 @@ public class MainActivity extends AppCompatActivity
             if (loadingFinished && !redirect) {
                 if (isConnected) {
                     // Loaded
-//                    swipeContainer.setEnabled(false);
                     timeout_detect = false;
                     NavigationView navView = findViewById(R.id.nav_view);
                     Menu menu = navView.getMenu();
@@ -1130,6 +1090,9 @@ public class MainActivity extends AppCompatActivity
                             domain_count_current++;
                             textView_textchanged.setText("0");
                         } else{
+                            isNotHijackedLoaded = true;
+                            isLoadingFinished = true;
+
                             isBack = true;
                             webView.clearHistory();
 
@@ -1140,7 +1103,6 @@ public class MainActivity extends AppCompatActivity
                                 relativeLayout_webview.setVisibility(View.VISIBLE);
                             }
 
-                            isLoadingFinished = true;
 
                             nav_view(true);
 
@@ -1269,7 +1231,6 @@ public class MainActivity extends AppCompatActivity
                 redirect = false;
             }
 
-//            Log.d("asdasdasdasd", url);
             super.onPageFinished(view, url);
         }
     }
@@ -1325,7 +1286,7 @@ public class MainActivity extends AppCompatActivity
                 return res1.toString();
             }
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1000", Toast.LENGTH_LONG).show();
+            // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1000", Toast.LENGTH_LONG).show();
         }
 
         return "02:00:00:00:00:00";
@@ -1342,7 +1303,7 @@ public class MainActivity extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(com.android.volley.error.VolleyError error) {
-                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1001", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1001", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -1372,14 +1333,14 @@ public class MainActivity extends AppCompatActivity
                     isp = (String) response.get("isp");
                     SENDDEVICEINFO(send_service[0], get_external_ip_address, city, province, country);
                 } catch (JSONException e) {
-                    Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1002", Toast.LENGTH_LONG).show();
+                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1002", Toast.LENGTH_LONG).show();
                 }
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(com.android.volley.error.VolleyError error) {
-                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1003", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1003", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -1402,13 +1363,13 @@ public class MainActivity extends AppCompatActivity
                 if(response.contains("OK")){
                     GETDOMAIN(domain_service[0]);
                 } else{
-                    Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1004", Toast.LENGTH_LONG).show();
+                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1004", Toast.LENGTH_LONG).show();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1005", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1005", Toast.LENGTH_LONG).show();
             }
         }) {
             protected Map<String, String> getParams() {
@@ -1451,13 +1412,13 @@ public class MainActivity extends AppCompatActivity
 
                     textView_textchanged.setText("0");
                 } else{
-                    Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1006", Toast.LENGTH_LONG).show();
+                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1006", Toast.LENGTH_LONG).show();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1007", Toast.LENGTH_LONG).show();
+                // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1007", Toast.LENGTH_LONG).show();
             }
         }) {
             protected Map<String, String> getParams() {
@@ -1486,7 +1447,7 @@ public class MainActivity extends AppCompatActivity
                 {
                     @Override
                     public void onErrorResponse(VolleyError response) {
-                        Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1008", Toast.LENGTH_LONG).show();
+                        // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1008", Toast.LENGTH_LONG).show();
                     }
                 }
         ) {
@@ -1524,7 +1485,7 @@ public class MainActivity extends AppCompatActivity
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-//                Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1009", Toast.LENGTH_LONG).show();
+//                // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1009", Toast.LENGTH_LONG).show();
             }
         }) {
             protected Map<String, String> getParams() {
@@ -1599,7 +1560,7 @@ public class MainActivity extends AppCompatActivity
             fos = openFileOutput(file_name, MODE_APPEND);
             fos.write(data.getBytes());
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1010", Toast.LENGTH_LONG).show();
+            // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1010", Toast.LENGTH_LONG).show();
         }
     }
     // Preview Notifications
@@ -1683,10 +1644,10 @@ public class MainActivity extends AppCompatActivity
                                     if(str.contains("U")){
                                         isUnread = true;
                                         notifications_count++;
-                                        notification_header.setTitle("通知 (" + notifications_count + ")");
+                                        notification_header.setTitle("Notification (" + notifications_count + ")");
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("通知");
+                                            notification_header.setTitle("Notification");
                                         }
                                     }
                                 }
@@ -1793,7 +1754,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("目前沒有通知.");
+                                notification_header.setTitle("No currently notification.");
                                 isInsertMenu = false;
                             }
 
@@ -1829,7 +1790,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("目前沒有通知.");
+                notification_header.setTitle("No currently notification.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1906,7 +1867,7 @@ public class MainActivity extends AppCompatActivity
                                         isUnread = true;
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("通知");
+                                            notification_header.setTitle("Notification");
                                         }
                                     }
 
@@ -1919,7 +1880,7 @@ public class MainActivity extends AppCompatActivity
                         if(isDisplay){
                             notification_count++;
                             notifications_count++;
-                            notification_header.setTitle("通知 (" + notifications_count + ")");
+                            notification_header.setTitle("Notification (" + notifications_count + ")");
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -2015,7 +1976,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("目前沒有通知.");
+                                notification_header.setTitle("No currently notification.");
                                 isInsertMenu = false;
                             }
 
@@ -2031,7 +1992,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("目前沒有通知.");
+                notification_header.setTitle("No currently notification.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2171,14 +2132,14 @@ public class MainActivity extends AppCompatActivity
                                         alertDialogBuilder.setMessage(message_content);
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setPositiveButton("更新",new DialogInterface.OnClickListener() {
+                                                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         String url = "http://ssicortex.com/uploads/updates/YB/safetybrowser.apk";
                                                         Activity_UpdateApp atualizaApp = new Activity_UpdateApp();
                                                         atualizaApp.setContext(getApplicationContext());
                                                         atualizaApp.execute(url);
 
-                                                        dialog_update.setMessage("下載更新.\n自動重啟應用程序，請稍候...");
+                                                        dialog_update.setMessage("Downloading Updates.\nAutomatically restart the application, please wait...");
                                                         dialog_update.show();
 
                                                         drawer.closeDrawer(GravityCompat.END);
@@ -2186,7 +2147,7 @@ public class MainActivity extends AppCompatActivity
                                                 });
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setNegativeButton("取消",new DialogInterface.OnClickListener() {
+                                                .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         dialog.cancel();
                                                     }
@@ -2365,14 +2326,14 @@ public class MainActivity extends AppCompatActivity
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("通知 (" + notifications_count + ")");
+                        notification_header.setTitle("Notification (" + notifications_count + ")");
                         textview_notification.setText(notifications_count + "");
                         textview_notification.setVisibility(View.VISIBLE);
                     } else{
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("通知");
+                        notification_header.setTitle("Notification");
                         textview_notification.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -2443,7 +2404,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("目前沒有通知.");
+                notification_header.setTitle("No currently notification.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2507,16 +2468,12 @@ public class MainActivity extends AppCompatActivity
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
                     return s.substring(0, maxLength) + "...";
-                } else{
-
                 }
             }
         } else {
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
-                    return s.substring(0, maxLength) + "... 查看更多";
-                } else{
-
+                    return s.substring(0, maxLength) + "... view more";
                 }
             }
         }
@@ -2555,7 +2512,7 @@ public class MainActivity extends AppCompatActivity
                                         GetUpdateNotification(get_delete_id_list);
                                     }
                                 } else{
-                                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                                 }
                             }
                         });
@@ -2620,7 +2577,7 @@ public class MainActivity extends AppCompatActivity
                         TextView textview_notification = findViewById(R.id.textview_notification);
                         textview_notification.setVisibility(View.INVISIBLE);
 
-                        notification_header.setTitle("載入中...");
+                        notification_header.setTitle("Loading...");
                         for(int l=0; l<=notification_clear; l++){
                             menu_notification.removeItem(120);
                         }
@@ -2669,7 +2626,7 @@ public class MainActivity extends AppCompatActivity
                                         Log.d("deleted", "deleted no entry");
                                     }
                                 } else{
-                                    Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                                 }
                             }
                         });
@@ -2799,11 +2756,11 @@ public class MainActivity extends AppCompatActivity
                         timer_loader++;
                         Log.d("deleted", timer_loader+"");
                         if(timer_loader < 15){
-                            textView_loader.setText("載入中...");
+                            textView_loader.setText("loading...");
                         } else if(timer_loader < 39) {
-                            textView_loader.setText("將數據提供給服務器...");
+                            textView_loader.setText("getting data to the server...");
                         } else if(timer_loader > 40) {
-                            textView_loader.setText("做好準備...");
+                            textView_loader.setText("getting ready...");
                         }
                     }
                 }
@@ -2914,7 +2871,6 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_reload) {
             webView.reload();
         } else if (id == R.id.nav_hard_reload) {
-            isClearCache = true;
             webView.getSettings().setAppCacheEnabled(false);
             webView.clearCache(true);
             webView.reload();
@@ -2926,19 +2882,18 @@ public class MainActivity extends AppCompatActivity
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
             alertDialogBuilder.setTitle("\n" + "Exit the program?");
             alertDialogBuilder
-                    .setCancelable(false)
-                    .setNegativeButton("是",new DialogInterface.OnClickListener() {
+                    .setCancelable(true)
+                    .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            dialog.cancel();
+                        }
+                    })
+                    .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             webView.clearCache(true);
                             webView.clearHistory();
-                            CookieSyncManager cookieSyncMngr = CookieSyncManager.createInstance(context);
                             CookieManager cookieManager = CookieManager.getInstance(); cookieManager.removeAllCookie();
                             MainActivity.this.finish();
-                        }
-                    })
-                    .setPositiveButton("沒有",new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog,int id) {
-                            dialog.cancel();
                         }
                     });
             AlertDialog alertDialog = alertDialogBuilder.create();
@@ -2998,6 +2953,100 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    // Timer Loader
+    private void TimerLoad() {
+        final Timer timer = new Timer();
+        //Set the schedule function
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(isNotHijackedLoaded){
+                            isNotHijackedLoaded = false;
+                            // Get Public IP
+                            GETPUBLICIP_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    if(get_external_ip_address.equals("")){
+                                        get_external_ip_address = result;
+                                    }
+
+                                    GETIPINFO();
+                                }
+                            });
+                            // Get Deleted Notification
+                            GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    String replace_responce = StringEscapeUtils.unescapeJava(result);
+                                    Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+
+                                    while(m.find()){
+                                        get_deleted_id = m.group(1);
+                                    }
+
+                                    if(result.contains("OK")){
+                                        get_deleted_id = get_deleted_id.replace("\"", "");
+                                        List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                        for(String get_delete_id_list : get_delete_id_lists){
+                                            detect_deleted_notification++;
+                                            GetUpdateNotification(get_delete_id_list);
+                                        }
+                                    } else{
+                                        // Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                            // Get Notification
+                            GETNOTIFICAITON_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    try {
+                                        JSONObject obj = new JSONObject(result);
+                                        JSONArray array = obj.getJSONArray("data");
+
+                                        for(int i=0;i<array.length();i++){
+                                            JSONObject data = array.getJSONObject(i);
+                                            String id = data.getString("id");
+                                            String brand_id = data.getString("brand_id");
+                                            String message_date = data.getString("message_date");
+                                            String message_title = data.getString("message_title");
+                                            String message_content = data.getString("message_content");
+                                            String status = data.getString("status");
+                                            String message_type = data.getString("message_type");
+                                            String edited_id = data.getString("edited_id");
+
+                                            if(BRAND_ID.equals(brand_id)){
+                                                if(message_type.equals("0") || message_type.equals("2")){
+                                                    String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                                    writeToFile(notification, "sb_notifications.txt");
+                                                }
+                                            }
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    // Preview Notification
+                                    UpdatedNotification();
+                                }
+                            });
+                            // Get Inaccessible List
+                            GETINACCESSIBLELIST_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    get_inaccessible_list = result;
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        },0, 1000);
+    }
+
     // Network Handler --------------
     private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -3035,94 +3084,24 @@ public class MainActivity extends AppCompatActivity
                     notification_clear = 1;
                     notifications_count = 0;
 
-//                    menu_notification.clear();
+                    menu_notification.clear();
+
                     if(isNoInternetConnection){
-                        menu_notification.add(0, 99999, Menu.NONE, "載入中...");
+                        menu_notification.add(0, 99999, Menu.NONE, "Loading...");
                         isNoInternetConnection = false;
                     } else {
-                        menu_notification.add(0, 99999, Menu.NONE, "目前沒有通知.");
+                        menu_notification.add(0, 99999, Menu.NONE, "No currently notification.");
                     }
+
                     TimerNotificationClear();
                     TimerNotification();
                     TimerNotificationNewEntry();
 
                     // Get API
                     GETAPI(text_to_search_service[0]);
-                    // Get Public IP
-                    GETPUBLICIP_V(new VolleyCallback(){
-                        @Override
-                        public void onSuccess(String result){
-                            if(get_external_ip_address.equals("")){
-                                get_external_ip_address = result;
-                            }
 
-                            GETIPINFO();
-                        }
-                    });
-                    // Get Deleted Notification
-                    GETDELETEDNOTIFICATION_V(new VolleyCallback(){
-                        @Override
-                        public void onSuccess(String result){
-                            String replace_responce = StringEscapeUtils.unescapeJava(result);
-                            Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
-
-                            while(m.find()){
-                                get_deleted_id = m.group(1);
-                            }
-
-                            if(result.contains("OK")){
-                                get_deleted_id = get_deleted_id.replace("\"", "");
-                                List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
-                                for(String get_delete_id_list : get_delete_id_lists){
-                                    detect_deleted_notification++;
-                                    GetUpdateNotification(get_delete_id_list);
-                                }
-                            } else{
-                                Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
-                    // Get Notification
-                    GETNOTIFICAITON_V(new VolleyCallback(){
-                        @Override
-                        public void onSuccess(String result){
-                            try {
-                                JSONObject obj = new JSONObject(result);
-                                JSONArray array = obj.getJSONArray("data");
-
-                                for(int i=0;i<array.length();i++){
-                                    JSONObject data = array.getJSONObject(i);
-                                    String id = data.getString("id");
-                                    String brand_id = data.getString("brand_id");
-                                    String message_date = data.getString("message_date");
-                                    String message_title = data.getString("message_title");
-                                    String message_content = data.getString("message_content");
-                                    String status = data.getString("status");
-                                    String message_type = data.getString("message_type");
-                                    String edited_id = data.getString("edited_id");
-
-                                    if(BRAND_ID.equals(brand_id)){
-                                        if(message_type.equals("0") || message_type.equals("2")){
-                                            String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                            writeToFile(notification, "sb_notifications.txt");
-                                        }
-                                    }
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            // Preview Notification
-                            UpdatedNotification();
-                        }
-                    });
-                    // Get Inaccessible List
-                    GETINACCESSIBLELIST_V(new VolleyCallback(){
-                        @Override
-                        public void onSuccess(String result){
-                            get_inaccessible_list = result;
-                        }
-                    });
+                    // Timer Load
+                    TimerLoad();
 
                     isFirstOpened = false;
 

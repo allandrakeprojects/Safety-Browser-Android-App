@@ -17,18 +17,18 @@ public class Activity_AppIntro extends com.github.paolorotolo.appintro.AppIntro 
         super.onCreate(savedInstanceState);
 
         try{
-            addSlide(AppIntroFragment.newInstance("導航菜單",
-                    "單擊“菜單”圖標或輕鬆向右滑動到屏幕邊緣.",
+            addSlide(AppIntroFragment.newInstance("Navigation Menu",
+                    "Click the Menu icon or just easily swipe right to the edge of screen.",
                     R.drawable.ic_screenshot_1,
                     Color.parseColor("#EB6306")));
 
-            addSlide(AppIntroFragment.newInstance("通知菜單",
-                    "單擊通知圖標或只需輕鬆向左滑動到屏幕邊緣.",
+            addSlide(AppIntroFragment.newInstance("Notification Menu",
+                    "Click the Notification icon or just easily swipe left to the edge of screen.",
                     R.drawable.ic_screenshot_2,
                     Color.parseColor("#EB6306")));
 
-            addSlide(AppIntroFragment.newInstance("幫助和支持",
-                    "單擊“問號”圖標以顯示“幫助和支持.",
+            addSlide(AppIntroFragment.newInstance("Help and Support",
+                    "Click the Question Mark icon to show Help and Support.",
                     R.drawable.ic_screenshot_3,
                     Color.parseColor("#EB6306")));
 

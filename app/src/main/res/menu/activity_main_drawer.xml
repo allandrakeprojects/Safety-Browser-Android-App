@@ -6,33 +6,33 @@
     android:id="@+id/menu1">
 
     <group android:id="@+id/grp1" android:checkableBehavior="single">
-        <item android:title="導航欄">
+        <item android:title="Navigation Bar">
             <menu>
                 <item
                     android:id="@+id/nav_back"
                     android:enabled="false"
                     android:icon="@drawable/ic_back"
-                    android:title="回去" />
+                    android:title="Go Back" />
                 <item
                     android:id="@+id/nav_forward"
                     android:enabled="false"
                     android:icon="@drawable/ic_forward"
-                    android:title="前鋒" />
+                    android:title="Forward" />
                 <item
                     android:id="@+id/nav_home"
                     android:enabled="false"
                     android:icon="@drawable/ic_home"
-                    android:title="家" />
+                    android:title="Home" />
                 <item
                     android:id="@+id/nav_reload"
                     android:enabled="false"
                     android:icon="@drawable/ic_refresh"
-                    android:title="刷新" />
+                    android:title="Reload" />
                 <item
                     android:id="@+id/nav_hard_reload"
                     android:enabled="false"
                     android:icon="@drawable/ic_hard_reload"
-                    android:title="清潔和重新加載" />
+                    android:title="Clean and Reload" />
             </menu>
         </item>
     </group>
@@ -53,18 +53,18 @@
     <!--</group>-->
 
     <group android:id="@+id/grp3" android:checkableBehavior="single">
-        <item android:title="文件">
+        <item android:title="File">
             <menu>
                 <item
                     android:id="@+id/nav_exit"
                     android:icon="@drawable/ic_exit"
-                    android:title="出口" />
+                    android:title="Exit" />
             </menu>
         </item>
     </group>
 
     <group android:id="@+id/grp4" android:checkableBehavior="single">
-        <item android:title="版">
+        <item android:title="Version">
             <menu>
                 <item
                     android:id="@+id/nav_version"

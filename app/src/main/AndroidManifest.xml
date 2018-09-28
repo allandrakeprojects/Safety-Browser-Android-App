@@ -26,7 +26,7 @@
             android:name=".Activity_SplashScreen"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:hardwareAccelerated="true"
-            android:label="Safety Browser"
+            android:label="Safety Browser (YB)"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
