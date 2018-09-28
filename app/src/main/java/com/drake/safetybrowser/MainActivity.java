@@ -650,6 +650,8 @@ public class MainActivity extends AppCompatActivity
                 if(s.length() > 0) {
                     // Load URL
                     if(domain_count_max != domain_count_current){
+                        CookieManager.getInstance().setAcceptCookie(true);
+                        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
                         WebSettings webSettings = webView.getSettings();
                         webSettings.setPluginState(WebSettings.PluginState.ON);
                         webSettings.setMediaPlaybackRequiresUserGesture(true);
@@ -671,22 +673,17 @@ public class MainActivity extends AppCompatActivity
                         webSettings.setSupportZoom(true);
                         webSettings.setDisplayZoomControls(true);
                         webSettings.setLightTouchEnabled(true);
-                        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-                        webSettings.supportMultipleWindows();
+//                        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+//                        webSettings.supportMultipleWindows();
                         webSettings.setSupportMultipleWindows(false);
                         webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
                         Log.i("WebViewActivity", "UA: " + webView.getSettings().getUserAgentString());
                         webView.setScrollbarFadingEnabled(false);
                         webView.setInitialScale(1);
-                        webView.loadUrl(domain_list.get(domain_count_current));
                         webView.requestFocus();
                         webView.setWebViewClient(new MyBrowser());
-                        webView.setWebChromeClient(new WebChromeClient(){
-                            @Override
-                            public void onReceivedTitle(WebView view, String title) {
-                                getWindow().setTitle(title); //Set Activity tile to page title.
-                            }
-                        });
+                        webView.setWebChromeClient(new WebChromeClient());
+                        webView.loadUrl(domain_list.get(domain_count_current));
                     }
                 }
             }
@@ -705,6 +702,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(final View view) {
                 if(new_entry){
+                    new_entry = false;
+
                     MenuItem notification_header = menu_notification.findItem(99999);
 
                     TextView textview_notification = findViewById(R.id.textview_notification);
@@ -880,17 +879,17 @@ public class MainActivity extends AppCompatActivity
             loadingFinished = false;
 
             if (url != null && url.startsWith("http://roshan88") || url.startsWith("https://roshan88") ) {
-                view.getContext().startActivity(
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+//                view.getContext().startActivity(
+//                        new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
 
-//                view.loadUrl(url);
+                view.loadUrl(url);
                 Log.d("asdasdasdasd", "test 1 " + url);
-                return true;
             } else {
                 view.loadUrl(url);
                 Log.d("asdasdasdasd", "test 2 " + url);
-                return true;
             }
+
+            return true;
         }
 
         @Override
@@ -903,6 +902,8 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onPageStarted(
             WebView view, String url, Bitmap favicon) {
+
+//            Log.d("asdasdasdasd", "page started: " + url);
             super.onPageStarted(view, url, favicon);
             loadingFinished = false;
             if (isConnected) {
@@ -1268,7 +1269,7 @@ public class MainActivity extends AppCompatActivity
                 redirect = false;
             }
 
-            Log.d("asdasdasdasd", url);
+//            Log.d("asdasdasdasd", url);
             super.onPageFinished(view, url);
         }
     }
@@ -1670,6 +1671,7 @@ public class MainActivity extends AppCompatActivity
                                 message_content = message_content.replace("&lt;", "<");
                                 message_content = message_content.replace("&gt;", ">");
                                 message_content = message_content.replace("<br />", lineSep);
+                                message_content = message_content.replace("&bull;", "•");
                             }else if(i_inner == 6){
                                 if(str.equals("0")){
                                     isDisplay = true;
@@ -1839,6 +1841,7 @@ public class MainActivity extends AppCompatActivity
 
             final File file = new File(getFilesDir() + "/sb_notifications.txt");
 
+            int count = 0;
             if (file.exists()) {
                 String path = getFilesDir() + "/sb_notifications.txt";
                 FileReader fr=new FileReader(path);
@@ -1888,10 +1891,12 @@ public class MainActivity extends AppCompatActivity
                                 message_content = message_content.replace("&lt;", "<");
                                 message_content = message_content.replace("&gt;", ">");
                                 message_content = message_content.replace("<br />", lineSep);
+                                message_content = message_content.replace("&bull;", "•");
                             }else if(i_inner == 6){
                                 if(str.equals("2")){
                                     isDisplay = true;
                                     isHasUpdate = true;
+                                    count++;
                                 } else {
                                     isDisplay = false;
                                 }
@@ -1966,8 +1971,8 @@ public class MainActivity extends AppCompatActivity
                             // asd123
                             // Add Navigation View
                             if(isUnread){
-                                menu.add(final_count, 120, Menu.NONE,"★ " + message_title + " (" + final_datetime + ")");
-                                menu.add(final_count, 120, Menu.NONE, message_content);
+                                menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
 
                                 Integer get_final_id = (notification_count*2)-1;
 
@@ -1976,19 +1981,19 @@ public class MainActivity extends AppCompatActivity
                                 MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
-                                SpannableString parent = new SpannableString("★ " + message_title + " (" + final_datetime + ")");
+                                SpannableString parent = new SpannableString(getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 parent.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
-                                SpannableString child = new SpannableString(message_content);
+                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
                                 child.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
                                 isUnread = false;
                                 isInsertMenu = true;
                             } else {
-                                menu.add(final_count, 120, Menu.NONE,message_title + " (" + final_datetime + ")");
-                                menu.add(final_count, 120, Menu.NONE, message_content);
+                                menu.add(final_count, 120, Menu.NONE,getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
+                                menu.add(final_count, 120, Menu.NONE, getSafeSubstring(message_content, 20, "content"));
 
                                 Integer get_final_id = (notification_count*2)-1;
 
@@ -1997,11 +2002,11 @@ public class MainActivity extends AppCompatActivity
                                 MenuItem pinMenuItem_parent = menu_delete.getItem(get_final_id);
                                 MenuItem pinMenuItem_child = menu_delete.getItem(get_final_id+1);
 
-                                SpannableString parent = new SpannableString(message_title + " (" + final_datetime + ")");
+                                SpannableString parent = new SpannableString(getSafeSubstring( "★ " + message_title, 18, "title") + " (" + final_datetime + ")");
                                 parent.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, parent.length(), 0);
                                 pinMenuItem_parent.setTitle(parent);
 
-                                SpannableString child = new SpannableString(message_content);
+                                SpannableString child = new SpannableString(getSafeSubstring(message_content, 20, "content"));
                                 child.setSpan(new ForegroundColorSpan(Color.parseColor("#EB6306")), 0, child.length(), 0);
                                 pinMenuItem_child.setTitle(child);
 
@@ -2017,6 +2022,10 @@ public class MainActivity extends AppCompatActivity
                             ControlsInRightNavigation();
                         }
                     }
+                }
+
+                if(count == 0){
+                    isHasUpdate = false;
                 }
             } else {
                 NavigationView navView = findViewById(R.id.nav_view_notification);
@@ -2098,6 +2107,7 @@ public class MainActivity extends AppCompatActivity
                                             message_content = message_content.replace("&lt;", "<");
                                             message_content = message_content.replace("&gt;", ">");
                                             message_content = message_content.replace("<br />", lineSep);
+                                            message_content = message_content.replace("&bull;", "•");
                                         }else if(i_inner == 8){
                                             message_status = str;
                                         }
@@ -2152,23 +2162,37 @@ public class MainActivity extends AppCompatActivity
                                     }
 
                                     if(isHasUpdate && get_group_id == 1){
-                                        String url = "http://ssicortex.com/uploads/updates/YB/safetybrowser.apk";
-                                        if(isPermissionGranted()){
-                                            Activity_UpdateApp atualizaApp = new Activity_UpdateApp();
-                                            atualizaApp.setContext(getApplicationContext());
-                                            atualizaApp.execute(url);
-
-//                                            dialog_update.setCanceledOnTouchOutside(false);
-//                                            dialog_update.setCancelable(false);
-                                            dialog_update.setMessage("下載更新.\n自動重啟應用程序，請稍候...");
-                                            dialog_update.show();
-
-//                                            ProgressDialog dialog_update = DialogUtils.showProgressDialog(MainActivity.this,"Downloading Updates.\nAutomatically restart the application, please wait...");
-
-                                            drawer.closeDrawer(GravityCompat.END);
-                                        } else {
+                                        if(!isPermissionGranted()){
                                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                                         }
+                                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                                                context);
+                                        alertDialogBuilder.setTitle(message_title);
+                                        alertDialogBuilder.setMessage(message_content);
+                                        alertDialogBuilder
+                                                .setCancelable(true)
+                                                .setPositiveButton("更新",new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog,int id) {
+                                                        String url = "http://ssicortex.com/uploads/updates/YB/safetybrowser.apk";
+                                                        Activity_UpdateApp atualizaApp = new Activity_UpdateApp();
+                                                        atualizaApp.setContext(getApplicationContext());
+                                                        atualizaApp.execute(url);
+
+                                                        dialog_update.setMessage("下載更新.\n自動重啟應用程序，請稍候...");
+                                                        dialog_update.show();
+
+                                                        drawer.closeDrawer(GravityCompat.END);
+                                                    }
+                                                });
+                                        alertDialogBuilder
+                                                .setCancelable(true)
+                                                .setNegativeButton("取消",new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog,int id) {
+                                                        dialog.cancel();
+                                                    }
+                                                });
+                                        AlertDialog alertDialog = alertDialogBuilder.create();
+                                        alertDialog.show();
                                     } else {
                                         ReadNotification(message_title + " (" + final_datetime + ")", message_title, get_group_id, message_content, final_datetime);
 
@@ -2177,7 +2201,7 @@ public class MainActivity extends AppCompatActivity
                                         alertDialogBuilder.setTitle(message_title);
                                         alertDialogBuilder.setMessage(message_content);
                                         alertDialogBuilder
-                                                .setCancelable(false)
+                                                .setCancelable(true)
                                                 .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         dialog.cancel();
@@ -2276,7 +2300,7 @@ public class MainActivity extends AppCompatActivity
             String path = getFilesDir() + "/sb_notifications.txt";
             FileReader fr = new FileReader(path);
             String s;
-            
+
             try {
                 BufferedReader br = new BufferedReader(fr);
                 NavigationView navView_delete = findViewById(R.id.nav_view_notification);
@@ -2507,6 +2531,8 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 if(isLoadingFinished){
                     if(new_entry){
+                        new_entry = false;
+
                         notification_count = 0;
                         notification_clear = 1;
                         notifications_count = 0;
@@ -2901,7 +2927,7 @@ public class MainActivity extends AppCompatActivity
             alertDialogBuilder.setTitle("\n" + "Exit the program?");
             alertDialogBuilder
                     .setCancelable(false)
-                    .setNegativeButton("Yes",new DialogInterface.OnClickListener() {
+                    .setNegativeButton("是",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             webView.clearCache(true);
                             webView.clearHistory();
@@ -2910,7 +2936,7 @@ public class MainActivity extends AppCompatActivity
                             MainActivity.this.finish();
                         }
                     })
-                    .setPositiveButton("No",new DialogInterface.OnClickListener() {
+                    .setPositiveButton("沒有",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             dialog.cancel();
                         }
