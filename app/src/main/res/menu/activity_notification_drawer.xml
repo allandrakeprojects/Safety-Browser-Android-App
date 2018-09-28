@@ -17,37 +17,37 @@
         <!--<item android:title="• Lorem Ipsum (just now)" />-->
         <!--<item-->
             <!--android:enabled="false"-->
-            <!--android:title="Lorem ipsum dolor... view more" />-->
+            <!--android:title="Lorem ipsum dolor。。。 view more" />-->
     <!--</group>-->
     <!--<group android:id="@+id/grp2">-->
         <!--<item android:title="Aenean gravida enim (1 hr ago)" />-->
         <!--<item-->
             <!--android:enabled="false"-->
-            <!--android:title="Aenean gravida enim non... view more" />-->
+            <!--android:title="Aenean gravida enim non。。。 view more" />-->
     <!--</group>-->
     <!--<group android:id="@+id/grp3">-->
         <!--<item android:title="• Vivamus luctus (1 hr ago)" />-->
         <!--<item-->
             <!--android:enabled="false"-->
-            <!--android:title="Etiam suscipit lectus... view more" />-->
+            <!--android:title="Etiam suscipit lectus。。。 view more" />-->
     <!--</group>-->
     <!--<group android:id="@+id/grp4">-->
         <!--<item android:title="• Nunc aliquam (5 days ago)" />-->
         <!--<item-->
             <!--android:enabled="false"-->
-            <!--android:title="Vel interdum enim pretium... view more" />-->
+            <!--android:title="Vel interdum enim pretium。。。 view more" />-->
     <!--</group>-->
     <!--<group android:id="@+id/grp5">-->
         <!--<item android:title="Praesent elementum (10 days ago)" />-->
         <!--<item-->
             <!--android:enabled="false"-->
-            <!--android:title="Sapien a quam fermentum... view more" />-->
+            <!--android:title="Sapien a quam fermentum。。。 view more" />-->
     <!--</group>-->
     <!--<group android:id="@+id/grp6">-->
         <!--<item android:title="Venenatis est (2 months ago)" />-->
         <!--<item-->
             <!--android:enabled="false"-->
-            <!--android:title="Arcu nec consequat nisl... view more" />-->
+            <!--android:title="Arcu nec consequat nisl。。。 view more" />-->
     <!--</group>-->
 
 

@@ -275,7 +275,7 @@ public class MainActivity extends AppCompatActivity
                 textView_clearcache_portrait.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("Clearing cache, please wait...");
+                dialog_cache.setMessage("缓存清除中，请稍等。。。");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity
                 textView_clearcache_landscape.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("Clearing cache, please wait...");
+                dialog_cache.setMessage("缓存清除中，请稍等。。。");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity
                     textView_getdiagnostics_portrait.setEnabled(false);
 //                    dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                    dialog_diagnostics.setCancelable(false);
-                    dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                    dialog_diagnostics.setMessage("诊断中，请稍等。。。");
                     dialog_diagnostics.show();
 
                     Runnable run = new Runnable() {
@@ -400,7 +400,7 @@ public class MainActivity extends AppCompatActivity
                 textView_getdiagnostics_portrait.setEnabled(false);
 //                dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                dialog_diagnostics.setCancelable(false);
-                dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
+                dialog_diagnostics.setMessage("诊断中，请稍等。。。");
                 dialog_diagnostics.show();
 
                 Runnable run = new Runnable() {
@@ -692,7 +692,7 @@ public class MainActivity extends AppCompatActivity
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     textview_notification.setVisibility(View.INVISIBLE);
 
-                    notification_header.setTitle("Loading...");
+                    notification_header.setTitle("加载中。。。");
                     for(int l=0; l<=notification_clear; l++){
                         menu_notification.removeItem(120);
                     }
@@ -763,14 +763,14 @@ public class MainActivity extends AppCompatActivity
                             });
 
                             new_entry = false;
-                            Snackbar.make(view, "Notification Updated.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                            Snackbar.make(view, "最新通知。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                         }
                     };
                     Handler myHandler = new Handler(Looper.myLooper());
                     myHandler.postDelayed(run, 1000);
 
                 } else {
-                    Snackbar.make(view, "No currently notification.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                    Snackbar.make(view, "目前并没通知。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                 }
 
             }
@@ -1201,7 +1201,7 @@ public class MainActivity extends AppCompatActivity
 
                             textView_clearcache_portrait.setEnabled(true);
                             textView_clearcache_landscape.setEnabled(true);
-                            Snackbar.make(view, "Cache has been cleared.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                            Snackbar.make(view, "缓存已清除。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
 
                         }
 
@@ -1644,10 +1644,10 @@ public class MainActivity extends AppCompatActivity
                                     if(str.contains("U")){
                                         isUnread = true;
                                         notifications_count++;
-                                        notification_header.setTitle("Notification (" + notifications_count + ")");
+                                        notification_header.setTitle("通知 (" + notifications_count + ")");
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("Notification");
+                                            notification_header.setTitle("通知");
                                         }
                                     }
                                 }
@@ -1754,7 +1754,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("There are currently no notifications.");
+                                notification_header.setTitle("目前并没通知。");
                                 isInsertMenu = false;
                             }
 
@@ -1790,7 +1790,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("There are currently no notifications.");
+                notification_header.setTitle("目前并没通知。");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1867,7 +1867,7 @@ public class MainActivity extends AppCompatActivity
                                         isUnread = true;
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("Notification");
+                                            notification_header.setTitle("通知");
                                         }
                                     }
 
@@ -1880,7 +1880,7 @@ public class MainActivity extends AppCompatActivity
                         if(isDisplay){
                             notification_count++;
                             notifications_count++;
-                            notification_header.setTitle("Notification (" + notifications_count + ")");
+                            notification_header.setTitle("通知 (" + notifications_count + ")");
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -1976,7 +1976,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("There are currently no notifications.");
+                                notification_header.setTitle("目前并没通知。");
                                 isInsertMenu = false;
                             }
 
@@ -1992,7 +1992,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("There are currently no notifications.");
+                notification_header.setTitle("目前并没通知。");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2132,14 +2132,14 @@ public class MainActivity extends AppCompatActivity
                                         alertDialogBuilder.setMessage(message_content);
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                                                .setPositiveButton("好",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         String url = "http://ssicortex.com/uploads/updates/YB/safetybrowser.apk";
                                                         Activity_UpdateApp atualizaApp = new Activity_UpdateApp();
                                                         atualizaApp.setContext(getApplicationContext());
                                                         atualizaApp.execute(url);
 
-                                                        dialog_update.setMessage("Downloading Updates.\nAutomatically restart the application, please wait...");
+                                                        dialog_update.setMessage("下载更新中。\n软件将自动更新，请稍等。。。");
                                                         dialog_update.show();
 
                                                         drawer.closeDrawer(GravityCompat.END);
@@ -2147,7 +2147,7 @@ public class MainActivity extends AppCompatActivity
                                                 });
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                                                .setNegativeButton("取消",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         dialog.cancel();
                                                     }
@@ -2163,7 +2163,7 @@ public class MainActivity extends AppCompatActivity
                                         alertDialogBuilder.setMessage(message_content);
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                                                .setPositiveButton("好",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         dialog.cancel();
                                                     }
@@ -2326,14 +2326,14 @@ public class MainActivity extends AppCompatActivity
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("Notification (" + notifications_count + ")");
+                        notification_header.setTitle("通知 (" + notifications_count + ")");
                         textview_notification.setText(notifications_count + "");
                         textview_notification.setVisibility(View.VISIBLE);
                     } else{
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("Notification");
+                        notification_header.setTitle("通知");
                         textview_notification.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -2404,7 +2404,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("There are currently no notifications.");
+                notification_header.setTitle("目前并没通知。");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2467,13 +2467,13 @@ public class MainActivity extends AppCompatActivity
         if(type == "title"){
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
-                    return s.substring(0, maxLength) + "...";
+                    return s.substring(0, maxLength) + "。。。";
                 }
             }
         } else {
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
-                    return s.substring(0, maxLength) + "... view more";
+                    return s.substring(0, maxLength) + "。。。 观看更多";
                 }
             }
         }
@@ -2577,7 +2577,7 @@ public class MainActivity extends AppCompatActivity
                         TextView textview_notification = findViewById(R.id.textview_notification);
                         textview_notification.setVisibility(View.INVISIBLE);
 
-                        notification_header.setTitle("Loading...");
+                        notification_header.setTitle("加载中。。。");
                         for(int l=0; l<=notification_clear; l++){
                             menu_notification.removeItem(120);
                         }
@@ -2714,7 +2714,7 @@ public class MainActivity extends AppCompatActivity
 
                         textView_getdiagnostics_portrait.setEnabled(true);
                         textView_getdiagnostics_landscape.setEnabled(true);
-                        Snackbar.make(findViewById(android.R.id.content), "Diagnostics has been sent.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                        Snackbar.make(findViewById(android.R.id.content), "诊断报告已发送。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
 
                         File ping = new File(getFilesDir() + "/ping.txt");
                         File traceroute = new File(getFilesDir() + "/traceroute.txt");
@@ -2756,11 +2756,11 @@ public class MainActivity extends AppCompatActivity
                         timer_loader++;
                         Log.d("deleted", timer_loader+"");
                         if(timer_loader < 15){
-                            textView_loader.setText("loading...");
+                            textView_loader.setText("加载中。。。");
                         } else if(timer_loader < 39) {
-                            textView_loader.setText("getting data to the server...");
+                            textView_loader.setText("资料收取中。。。");
                         } else if(timer_loader > 40) {
-                            textView_loader.setText("getting ready...");
+                            textView_loader.setText("准备中。。。");
                         }
                     }
                 }
@@ -2875,20 +2875,20 @@ public class MainActivity extends AppCompatActivity
             webView.clearCache(true);
             webView.reload();
         } else if (id == R.id.item_help) {
-            Toast.makeText(getApplicationContext(), "Help and Support", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "帮助", Toast.LENGTH_LONG).show();
         } else if (id == R.id.item_notification) {
-            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "通知", Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_exit) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-            alertDialogBuilder.setTitle("\n" + "Exit the program?");
+            alertDialogBuilder.setTitle("\n" + "退出程序？");
             alertDialogBuilder
                     .setCancelable(true)
-                    .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    .setNegativeButton("沒有",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             dialog.cancel();
                         }
                     })
-                    .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+                    .setPositiveButton("是",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             webView.clearCache(true);
                             webView.clearHistory();
@@ -3087,10 +3087,10 @@ public class MainActivity extends AppCompatActivity
                     menu_notification.clear();
 
                     if(isNoInternetConnection){
-                        menu_notification.add(0, 99999, Menu.NONE, "Loading...");
+                        menu_notification.add(0, 99999, Menu.NONE, "加载中。。。");
                         isNoInternetConnection = false;
                     } else {
-                        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
+                        menu_notification.add(0, 99999, Menu.NONE, "目前并没通知。");
                     }
 
                     TimerNotificationClear();
