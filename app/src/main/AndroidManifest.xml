@@ -39,7 +39,7 @@
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:hardwareAccelerated="true"
-            android:label="Safety Browser"
+            android:label="永宝"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
