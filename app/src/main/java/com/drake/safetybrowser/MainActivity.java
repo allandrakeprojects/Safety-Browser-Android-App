@@ -1669,40 +1669,39 @@ public class MainActivity extends AppCompatActivity
 
                             if(seconds<60)
                             {
-
-                                final_datetime = "just now";
+                                final_datetime = "刚刚";
                             }
                             else if(minutes<60)
                             {
                                 if(minutes == 1){
-                                    final_datetime = minutes+" min ago";
+                                    final_datetime = "一分钟前";
                                 } else{
-                                    final_datetime = minutes+" mins ago";
+                                    final_datetime = minutes+"分钟前";
                                 }
                             }
                             else if(hours<24)
                             {
                                 if(hours == 1){
-                                    final_datetime = hours+" hr ago";
+                                    final_datetime = "一小时前";
                                 } else{
-                                    final_datetime = hours+" hrs ago";
+                                    final_datetime = hours+"小时前";
                                 }
                             }
                             else if(hours<48)
                             {
-                                final_datetime = "yesterday";
+                                final_datetime = "昨日";
                             }
                             else if(days<30)
                             {
                                 if(days == 1){
-                                    final_datetime = days+" day ago";
+                                    final_datetime = days+"天前";
                                 } else{
-                                    final_datetime = days+" days ago";
+                                    final_datetime = days+"天前";
                                 }
                             }
                             else
                             {
-                                final_datetime = "older message";
+                                final_datetime = "已读信息";
                             }
 
                             int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
@@ -1892,39 +1891,39 @@ public class MainActivity extends AppCompatActivity
 
                             if(seconds<60)
                             {
-                                final_datetime = "just now";
+                                final_datetime = "刚刚";
                             }
                             else if(minutes<60)
                             {
                                 if(minutes == 1){
-                                    final_datetime = minutes+" min ago";
+                                    final_datetime = "一分钟前";
                                 } else{
-                                    final_datetime = minutes+" mins ago";
+                                    final_datetime = minutes+"分钟前";
                                 }
                             }
                             else if(hours<24)
                             {
                                 if(hours == 1){
-                                    final_datetime = hours+" hr ago";
+                                    final_datetime = "一小时前";
                                 } else{
-                                    final_datetime = hours+" hrs ago";
+                                    final_datetime = hours+"小时前";
                                 }
                             }
                             else if(hours<48)
                             {
-                                final_datetime = "yesterday";
+                                final_datetime = "昨日";
                             }
                             else if(days<30)
                             {
                                 if(days == 1){
-                                    final_datetime = days+" day ago";
+                                    final_datetime = days+"天前";
                                 } else{
-                                    final_datetime = days+" days ago";
+                                    final_datetime = days+"天前";
                                 }
                             }
                             else
                             {
-                                final_datetime = "older message";
+                                final_datetime = "已读信息";
                             }
 
                             int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
@@ -2087,39 +2086,39 @@ public class MainActivity extends AppCompatActivity
 
                                     if(seconds<60)
                                     {
-                                        final_datetime = "just now";
+                                        final_datetime = "刚刚";
                                     }
                                     else if(minutes<60)
                                     {
                                         if(minutes == 1){
-                                            final_datetime = minutes+" min ago";
+                                            final_datetime = "一分钟前";
                                         } else{
-                                            final_datetime = minutes+" mins ago";
+                                            final_datetime = minutes+"分钟前";
                                         }
                                     }
                                     else if(hours<24)
                                     {
                                         if(hours == 1){
-                                            final_datetime = hours+" hr ago";
+                                            final_datetime = "一小时前";
                                         } else{
-                                            final_datetime = hours+" hrs ago";
+                                            final_datetime = hours+"小时前";
                                         }
                                     }
                                     else if(hours<48)
                                     {
-                                        final_datetime = "yesterday";
+                                        final_datetime = "昨日";
                                     }
                                     else if(days<30)
                                     {
                                         if(days == 1){
-                                            final_datetime = days+" day ago";
+                                            final_datetime = days+"天前";
                                         } else{
-                                            final_datetime = days+" days ago";
+                                            final_datetime = days+"天前";
                                         }
                                     }
                                     else
                                     {
-                                        final_datetime = "older message";
+                                        final_datetime = "已读信息";
                                     }
 
                                     if(isHasUpdate && get_group_id == 1){
