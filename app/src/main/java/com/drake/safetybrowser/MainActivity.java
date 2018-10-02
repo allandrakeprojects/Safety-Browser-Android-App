@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity
                 textView_clearcache_portrait.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("缓存清除中，请稍等。。。");
+                dialog_cache.setMessage("Clearing cache, please wait...");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
@@ -359,7 +359,7 @@ public class MainActivity extends AppCompatActivity
                 textView_clearcache_landscape.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
-                dialog_cache.setMessage("缓存清除中，请稍等。。。");
+                dialog_cache.setMessage("Clearing cache, please wait...");
                 dialog_cache.show();
                 isClearCache = true;
                 webView.getSettings().setAppCacheEnabled(false);
@@ -408,7 +408,7 @@ public class MainActivity extends AppCompatActivity
                 textView_getdiagnostics_portrait.setEnabled(false);
 //                    dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                    dialog_diagnostics.setCancelable(false);
-                dialog_diagnostics.setMessage("诊断中，请稍等。。。");
+                dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                 dialog_diagnostics.show();
 
                 Runnable run = new Runnable() {
@@ -536,7 +536,7 @@ public class MainActivity extends AppCompatActivity
                 textView_getdiagnostics_portrait.setEnabled(false);
 //                dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                dialog_diagnostics.setCancelable(false);
-                dialog_diagnostics.setMessage("诊断中，请稍等。。。");
+                dialog_diagnostics.setMessage("Getting diagnostics, please wait...");
                 dialog_diagnostics.show();
 
                 Runnable run = new Runnable() {
@@ -828,7 +828,7 @@ public class MainActivity extends AppCompatActivity
                     TextView textview_notification = findViewById(R.id.textview_notification);
                     textview_notification.setVisibility(View.INVISIBLE);
 
-                    notification_header.setTitle("加载中。。。");
+                    notification_header.setTitle("Loading...");
                     for(int l=0; l<=notification_clear; l++){
                         menu_notification.removeItem(120);
                     }
@@ -899,14 +899,14 @@ public class MainActivity extends AppCompatActivity
                             });
 
                             new_entry = false;
-                            Snackbar.make(view, "最新通知。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                            Snackbar.make(view, "Notification Updated.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                         }
                     };
                     Handler myHandler = new Handler(Looper.myLooper());
                     myHandler.postDelayed(run, 1000);
 
                 } else {
-                    Snackbar.make(view, "目前并没通知。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                    Snackbar.make(view, "No currently notification.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
                 }
 
             }
@@ -1003,7 +1003,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onPageStarted(
-            WebView view, String url, Bitmap favicon) {
+                WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
             loadingFinished = false;
             if (isConnected) {
@@ -1337,7 +1337,7 @@ public class MainActivity extends AppCompatActivity
 
                             textView_clearcache_portrait.setEnabled(true);
                             textView_clearcache_landscape.setEnabled(true);
-                            Snackbar.make(view, "缓存已清除。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                            Snackbar.make(view, "Cache has been cleared.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
 
                         }
 
@@ -1780,10 +1780,10 @@ public class MainActivity extends AppCompatActivity
                                     if(str.contains("U")){
                                         isUnread = true;
                                         notifications_count++;
-                                        notification_header.setTitle("通知 (" + notifications_count + ")");
+                                        notification_header.setTitle("Notification (" + notifications_count + ")");
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("通知");
+                                            notification_header.setTitle("Notification");
                                         }
                                     }
                                 }
@@ -1805,39 +1805,40 @@ public class MainActivity extends AppCompatActivity
 
                             if(seconds<60)
                             {
-                                final_datetime = "刚刚";
+
+                                final_datetime = "just now";
                             }
                             else if(minutes<60)
                             {
                                 if(minutes == 1){
-                                    final_datetime = "一分钟前";
+                                    final_datetime = minutes+" min ago";
                                 } else{
-                                    final_datetime = minutes+"分钟前";
+                                    final_datetime = minutes+" mins ago";
                                 }
                             }
                             else if(hours<24)
                             {
                                 if(hours == 1){
-                                    final_datetime = "一小时前";
+                                    final_datetime = hours+" hr ago";
                                 } else{
-                                    final_datetime = hours+"小时前";
+                                    final_datetime = hours+" hrs ago";
                                 }
                             }
                             else if(hours<48)
                             {
-                                final_datetime = "昨日";
+                                final_datetime = "yesterday";
                             }
                             else if(days<30)
                             {
                                 if(days == 1){
-                                    final_datetime = days+"天前";
+                                    final_datetime = days+" day ago";
                                 } else{
-                                    final_datetime = days+"天前";
+                                    final_datetime = days+" days ago";
                                 }
                             }
                             else
                             {
-                                final_datetime = "已读信息";
+                                final_datetime = "older message";
                             }
 
                             int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
@@ -1889,7 +1890,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("目前并没通知。");
+                                notification_header.setTitle("There are currently no notifications.");
                                 isInsertMenu = false;
                             }
 
@@ -1925,7 +1926,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("目前并没通知。");
+                notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2002,7 +2003,7 @@ public class MainActivity extends AppCompatActivity
                                         isUnread = true;
                                     } else {
                                         if(notifications_count == 0){
-                                            notification_header.setTitle("通知");
+                                            notification_header.setTitle("Notification");
                                         }
                                     }
 
@@ -2015,7 +2016,7 @@ public class MainActivity extends AppCompatActivity
                         if(isDisplay){
                             notification_count++;
                             notifications_count++;
-                            notification_header.setTitle("通知 (" + notifications_count + ")");
+                            notification_header.setTitle("Notification (" + notifications_count + ")");
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String final_datetime = "";
                             Date past = format.parse(message_date);
@@ -2027,39 +2028,39 @@ public class MainActivity extends AppCompatActivity
 
                             if(seconds<60)
                             {
-                                final_datetime = "刚刚";
+                                final_datetime = "just now";
                             }
                             else if(minutes<60)
                             {
                                 if(minutes == 1){
-                                    final_datetime = "一分钟前";
+                                    final_datetime = minutes+" min ago";
                                 } else{
-                                    final_datetime = minutes+"分钟前";
+                                    final_datetime = minutes+" mins ago";
                                 }
                             }
                             else if(hours<24)
                             {
                                 if(hours == 1){
-                                    final_datetime = "一小时前";
+                                    final_datetime = hours+" hr ago";
                                 } else{
-                                    final_datetime = hours+"小时前";
+                                    final_datetime = hours+" hrs ago";
                                 }
                             }
                             else if(hours<48)
                             {
-                                final_datetime = "昨日";
+                                final_datetime = "yesterday";
                             }
                             else if(days<30)
                             {
                                 if(days == 1){
-                                    final_datetime = days+"天前";
+                                    final_datetime = days+" day ago";
                                 } else{
-                                    final_datetime = days+"天前";
+                                    final_datetime = days+" days ago";
                                 }
                             }
                             else
                             {
-                                final_datetime = "已读信息";
+                                final_datetime = "older message";
                             }
 
                             int final_count = Integer.valueOf(String.valueOf(get_count_notification) + "120012" +String.valueOf(notification_count));
@@ -2111,7 +2112,7 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             if(!isInsertMenu){
-                                notification_header.setTitle("目前并没通知。");
+                                notification_header.setTitle("There are currently no notifications.");
                                 isInsertMenu = false;
                             }
 
@@ -2127,7 +2128,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("目前并没通知。");
+                notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2222,39 +2223,39 @@ public class MainActivity extends AppCompatActivity
 
                                     if(seconds<60)
                                     {
-                                        final_datetime = "刚刚";
+                                        final_datetime = "just now";
                                     }
                                     else if(minutes<60)
                                     {
                                         if(minutes == 1){
-                                            final_datetime = "一分钟前";
+                                            final_datetime = minutes+" min ago";
                                         } else{
-                                            final_datetime = minutes+"分钟前";
+                                            final_datetime = minutes+" mins ago";
                                         }
                                     }
                                     else if(hours<24)
                                     {
                                         if(hours == 1){
-                                            final_datetime = "一小时前";
+                                            final_datetime = hours+" hr ago";
                                         } else{
-                                            final_datetime = hours+"小时前";
+                                            final_datetime = hours+" hrs ago";
                                         }
                                     }
                                     else if(hours<48)
                                     {
-                                        final_datetime = "昨日";
+                                        final_datetime = "yesterday";
                                     }
                                     else if(days<30)
                                     {
                                         if(days == 1){
-                                            final_datetime = days+"天前";
+                                            final_datetime = days+" day ago";
                                         } else{
-                                            final_datetime = days+"天前";
+                                            final_datetime = days+" days ago";
                                         }
                                     }
                                     else
                                     {
-                                        final_datetime = "已读信息";
+                                        final_datetime = "older message";
                                     }
 
                                     if(isHasUpdate && get_group_id == 1){
@@ -2267,14 +2268,14 @@ public class MainActivity extends AppCompatActivity
                                         alertDialogBuilder.setMessage(message_content);
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setPositiveButton("好",new DialogInterface.OnClickListener() {
+                                                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         String url = "http://ssicortex.com/uploads/updates/YB/safetybrowser.apk";
                                                         Activity_UpdateApp atualizaApp = new Activity_UpdateApp();
                                                         atualizaApp.setContext(getApplicationContext());
                                                         atualizaApp.execute(url);
 
-                                                        dialog_update.setMessage("下载更新中。\n软件将自动更新，请稍等。。。");
+                                                        dialog_update.setMessage("Downloading Updates.\nAutomatically restart the application, please wait...");
                                                         dialog_update.show();
 
                                                         drawer.closeDrawer(GravityCompat.END);
@@ -2282,7 +2283,7 @@ public class MainActivity extends AppCompatActivity
                                                 });
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setNegativeButton("取消",new DialogInterface.OnClickListener() {
+                                                .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         dialog.cancel();
                                                     }
@@ -2298,7 +2299,7 @@ public class MainActivity extends AppCompatActivity
                                         alertDialogBuilder.setMessage(message_content);
                                         alertDialogBuilder
                                                 .setCancelable(true)
-                                                .setPositiveButton("好",new DialogInterface.OnClickListener() {
+                                                .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog,int id) {
                                                         dialog.cancel();
                                                     }
@@ -2461,14 +2462,14 @@ public class MainActivity extends AppCompatActivity
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("通知 (" + notifications_count + ")");
+                        notification_header.setTitle("Notification (" + notifications_count + ")");
                         textview_notification.setText(notifications_count + "");
                         textview_notification.setVisibility(View.VISIBLE);
                     } else{
                         NavigationView navView = findViewById(R.id.nav_view_notification);
                         Menu menu = navView.getMenu();
                         MenuItem notification_header = menu.findItem(99999);
-                        notification_header.setTitle("通知");
+                        notification_header.setTitle("Notification");
                         textview_notification.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -2539,7 +2540,7 @@ public class MainActivity extends AppCompatActivity
                 NavigationView navView = findViewById(R.id.nav_view_notification);
                 Menu menu = navView.getMenu();
                 MenuItem notification_header = menu.findItem(99999);
-                notification_header.setTitle("目前并没通知。");
+                notification_header.setTitle("There are currently no notifications.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -2602,13 +2603,13 @@ public class MainActivity extends AppCompatActivity
         if(type == "title"){
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
-                    return s.substring(0, maxLength) + "。。。";
+                    return s.substring(0, maxLength) + "...";
                 }
             }
         } else {
             if(!TextUtils.isEmpty(s)){
                 if(s.length() >= maxLength){
-                    return s.substring(0, maxLength) + "。。。 观看更多";
+                    return s.substring(0, maxLength) + "... view more";
                 }
             }
         }
@@ -2701,25 +2702,25 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-            runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                if(isLoadingFinished){
-                    if(new_entry){
-                        MenuItem notification_header = menu_notification.findItem(99999);
+                    @Override
+                    public void run() {
+                        if(isLoadingFinished){
+                            if(new_entry){
+                                MenuItem notification_header = menu_notification.findItem(99999);
 
-                        TextView textview_notification = findViewById(R.id.textview_notification);
-                        textview_notification.setVisibility(View.INVISIBLE);
+                                TextView textview_notification = findViewById(R.id.textview_notification);
+                                textview_notification.setVisibility(View.INVISIBLE);
 
-                        notification_header.setTitle("加载中。。。");
-                        for(int l=0; l<=notification_clear; l++){
-                            menu_notification.removeItem(120);
+                                notification_header.setTitle("Loading...");
+                                for(int l=0; l<=notification_clear; l++){
+                                    menu_notification.removeItem(120);
+                                }
+                            }
                         }
                     }
-                }
-                }
-            });
+                });
             }
         },0, 59000);
     }
@@ -2730,78 +2731,78 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(isLoadingFinished){
-                        // Get Deleted Notification
-                        GETDELETEDNOTIFICATION_V(new VolleyCallback(){
-                            @Override
-                            public void onSuccess(String result){
-                                String replace_responce = StringEscapeUtils.unescapeJava(result);
-                                Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(isLoadingFinished){
+                            // Get Deleted Notification
+                            GETDELETEDNOTIFICATION_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    String replace_responce = StringEscapeUtils.unescapeJava(result);
+                                    Matcher m = Pattern.compile("\\[([^)]+)\\]").matcher(replace_responce);
 
-                                while(m.find()){
-                                    get_deleted_id = m.group(1);
-                                }
-
-                                if(result.contains("OK")){
-                                    Integer count = 0;
-                                    get_deleted_id = get_deleted_id.replace("\"", "");
-                                    List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
-                                    for(String get_delete_id_list : get_delete_id_lists){
-                                        count++;
+                                    while(m.find()){
+                                        get_deleted_id = m.group(1);
                                     }
 
-                                    if(detect_deleted_notification != count){
-                                        Log.d("deleted", "deleted new entry");
-                                        new_entry = true;
-                                        detect_deleted_notification = count;
+                                    if(result.contains("OK")){
+                                        Integer count = 0;
+                                        get_deleted_id = get_deleted_id.replace("\"", "");
+                                        List<String> get_delete_id_lists = new ArrayList<>(Arrays.asList(get_deleted_id.split(",")));
+                                        for(String get_delete_id_list : get_delete_id_lists){
+                                            count++;
+                                        }
+
+                                        if(detect_deleted_notification != count){
+                                            Log.d("deleted", "deleted new entry");
+                                            new_entry = true;
+                                            detect_deleted_notification = count;
+                                        } else{
+                                            Log.d("deleted", "deleted no entry");
+                                        }
                                     } else{
-                                        Log.d("deleted", "deleted no entry");
+                                        // Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                                     }
-                                } else{
-                                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!", Toast.LENGTH_LONG).show();
                                 }
-                            }
-                        });
-                        // Get Notification
-                        GETNOTIFICAITON_V(new VolleyCallback(){
-                            @Override
-                            public void onSuccess(String result){
-                                try {
-                                    JSONObject obj = new JSONObject(result);
-                                    JSONArray array = obj.getJSONArray("data");
+                            });
+                            // Get Notification
+                            GETNOTIFICAITON_V(new VolleyCallback(){
+                                @Override
+                                public void onSuccess(String result){
+                                    try {
+                                        JSONObject obj = new JSONObject(result);
+                                        JSONArray array = obj.getJSONArray("data");
 
-                                    for(int i=0;i<array.length();i++){
-                                        Log.d("deleted", "add new entry");
-                                        new_entry = true;
-                                        JSONObject data = array.getJSONObject(i);
+                                        for(int i=0;i<array.length();i++){
+                                            Log.d("deleted", "add new entry");
+                                            new_entry = true;
+                                            JSONObject data = array.getJSONObject(i);
 
-                                        String id = data.getString("id");
-                                        String brand_id = data.getString("brand_id");
-                                        String message_date = data.getString("message_date");
-                                        String message_title = data.getString("message_title");
-                                        String message_content = data.getString("message_content");
-                                        String status = data.getString("status");
-                                        String message_type = data.getString("message_type");
-                                        String edited_id = data.getString("edited_id");
+                                            String id = data.getString("id");
+                                            String brand_id = data.getString("brand_id");
+                                            String message_date = data.getString("message_date");
+                                            String message_title = data.getString("message_title");
+                                            String message_content = data.getString("message_content");
+                                            String status = data.getString("status");
+                                            String message_type = data.getString("message_type");
+                                            String edited_id = data.getString("edited_id");
 
-                                        if(BRAND_ID.equals(brand_id)){
-                                            if(message_type.equals("0") || message_type.equals("2")){
-                                                String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
-                                                writeToFile(notification, "sb_notifications.txt");
+                                            if(BRAND_ID.equals(brand_id)){
+                                                if(message_type.equals("0") || message_type.equals("2")){
+                                                    String  notification = id + "*|*" + message_date + "*|*" + message_title + "*|*" + message_content + "*|*" + status + "*|*" + message_type + "*|*" + edited_id + "*|*U\n";
+                                                    writeToFile(notification, "sb_notifications.txt");
+                                                }
                                             }
                                         }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
                                     }
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
-                }
-            });
+                });
             }
         },0, 10000);
     }
@@ -2849,7 +2850,7 @@ public class MainActivity extends AppCompatActivity
 
                         textView_getdiagnostics_portrait.setEnabled(true);
                         textView_getdiagnostics_landscape.setEnabled(true);
-                        Snackbar.make(findViewById(android.R.id.content), "诊断报告已发送。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                        Snackbar.make(findViewById(android.R.id.content), "Diagnostics has been sent.", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
 
                         File ping = new File(getFilesDir() + "/ping.txt");
                         File traceroute = new File(getFilesDir() + "/traceroute.txt");
@@ -2884,22 +2885,22 @@ public class MainActivity extends AppCompatActivity
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(isTimerLoaderRunning){
-                        timer_loader++;
-                        Log.d("deleted", timer_loader+"");
-                        if(timer_loader < 15){
-                            textView_loader.setText("加载中。。。");
-                        } else if(timer_loader < 39) {
-                            textView_loader.setText("资料收取中。。。");
-                        } else if(timer_loader > 40) {
-                            textView_loader.setText("准备中。。。");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(isTimerLoaderRunning){
+                            timer_loader++;
+                            Log.d("deleted", timer_loader+"");
+                            if(timer_loader < 15){
+                                textView_loader.setText("loading...");
+                            } else if(timer_loader < 39) {
+                                textView_loader.setText("getting data to the server...");
+                            } else if(timer_loader > 40) {
+                                textView_loader.setText("getting ready...");
+                            }
                         }
                     }
-                }
-            });
+                });
             }
         },0, 1000);
     }
@@ -3010,20 +3011,20 @@ public class MainActivity extends AppCompatActivity
             webView.clearCache(true);
             webView.reload();
         } else if (id == R.id.item_help) {
-            Toast.makeText(getApplicationContext(), "帮助", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Help and Support", Toast.LENGTH_LONG).show();
         } else if (id == R.id.item_notification) {
-            Toast.makeText(getApplicationContext(), "通知", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Notification", Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_exit) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-            alertDialogBuilder.setTitle("\n" + "退出程序？");
+            alertDialogBuilder.setTitle("\n" + "Exit the program?");
             alertDialogBuilder
                     .setCancelable(true)
-                    .setNegativeButton("沒有",new DialogInterface.OnClickListener() {
+                    .setNegativeButton("No",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             dialog.cancel();
                         }
                     })
-                    .setPositiveButton("是",new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
                             webView.clearCache(true);
                             webView.clearHistory();
@@ -3215,10 +3216,10 @@ public class MainActivity extends AppCompatActivity
                     menu_notification.clear();
 
                     if(isNoInternetConnection){
-                        menu_notification.add(0, 99999, Menu.NONE, "加载中。。。");
+                        menu_notification.add(0, 99999, Menu.NONE, "Loading...");
                         isNoInternetConnection = false;
                     } else {
-                        menu_notification.add(0, 99999, Menu.NONE, "目前并没通知。");
+                        menu_notification.add(0, 99999, Menu.NONE, "There are currently no notifications.");
                     }
 
                     TimerNotificationClear();
@@ -3251,7 +3252,7 @@ public class MainActivity extends AppCompatActivity
                 relativeLayout_connection.setVisibility(View.VISIBLE);
 
                 if(isFirstOpened){
-                    menu_notification.add(0, 99999, Menu.NONE, "请查询你的网络连接。");
+                    menu_notification.add(0, 99999, Menu.NONE, "Check your Internet Connection.");
                 }
 
                 NavigationView navView = findViewById(R.id.nav_view);
