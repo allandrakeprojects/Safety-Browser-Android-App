@@ -272,6 +272,40 @@ public class MainActivity extends AppCompatActivity
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
+                if(isHelpAndSupportVisible){
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                    }
+
+                    if(isConnected){
+                        if(isLoadingFinished){
+                            relativeLayout_webview.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        relativeLayout_connection.setVisibility(View.VISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = false;
+                } else{
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_portrait.bringToFront();
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_landscape.bringToFront();
+                    }
+
+                    if(isConnected){
+                        relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_connection.setVisibility(View.INVISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = true;
+                }
+
                 textView_clearcache_portrait.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
@@ -288,6 +322,40 @@ public class MainActivity extends AppCompatActivity
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
+                if(isHelpAndSupportVisible){
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                    }
+
+                    if(isConnected){
+                        if(isLoadingFinished){
+                            relativeLayout_webview.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        relativeLayout_connection.setVisibility(View.VISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = false;
+                } else{
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_portrait.bringToFront();
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_landscape.bringToFront();
+                    }
+
+                    if(isConnected){
+                        relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_connection.setVisibility(View.INVISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = true;
+                }
+
                 textView_clearcache_landscape.setEnabled(false);
 //                dialog_cache.setCanceledOnTouchOutside(false);
 //                dialog_cache.setCancelable(false);
@@ -303,100 +371,168 @@ public class MainActivity extends AppCompatActivity
         textView_getdiagnostics_portrait.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    textView_getdiagnostics_portrait.setEnabled(false);
+                if(isHelpAndSupportVisible){
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                    }
+
+                    if(isConnected){
+                        if(isLoadingFinished){
+                            relativeLayout_webview.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        relativeLayout_connection.setVisibility(View.VISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = false;
+                } else{
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_portrait.bringToFront();
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_landscape.bringToFront();
+                    }
+
+                    if(isConnected){
+                        relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_connection.setVisibility(View.INVISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = true;
+                }
+
+                textView_getdiagnostics_portrait.setEnabled(false);
 //                    dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                    dialog_diagnostics.setCancelable(false);
-                    dialog_diagnostics.setMessage("诊断中，请稍等。。。");
-                    dialog_diagnostics.show();
+                dialog_diagnostics.setMessage("诊断中，请稍等。。。");
+                dialog_diagnostics.show();
 
-                    Runnable run = new Runnable() {
-                        public void run() {
-                            try {
-                                File ping = new File(getFilesDir() + "/ping.txt");
-                                File traceroute = new File(getFilesDir() + "/traceroute.txt");
-                                File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+                Runnable run = new Runnable() {
+                    public void run() {
+                        try {
+                            File ping = new File(getFilesDir() + "/ping.txt");
+                            File traceroute = new File(getFilesDir() + "/traceroute.txt");
+                            File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
 
-                                if (ping.exists()) {
-                                    ping.delete();
-                                }
-
-                                if (traceroute.exists()) {
-                                    traceroute.delete();
-                                }
-
-                                if (diagnostic.exists()) {
-                                    diagnostic.delete();
-                                }
-
-                                String replace_domain = domain_list.get(domain_count_current);
-                                replace_domain = replace_domain.replace("https://", "");
-                                replace_domain = replace_domain.replace("http://", "");
-                                replace_domain = replace_domain.replace(".com/", ".com");
-
-                                Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 " + replace_domain);
-                                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                                int i;
-                                char[] buffer = new char[4096];
-                                StringBuilder output = new StringBuilder();
-                                while ((i = reader.read(buffer)) > 0)
-                                    output.append(buffer, 0, i);
-                                reader.close();
-
-                                String[] lines = output.toString().split(System.getProperty("line.separator"));
-                                for(String line : lines){
-                                    if(isNewLine){
-                                        writeToFile("\r\n", "ping.txt");
-                                        isNewLine = false;
-                                    }
-
-                                    writeToFile(line + "\r\n", "ping.txt");
-                                }
-
-                                TraceRoute.start(replace_domain, new Activity_TraceRouteLogger(), new TraceRoute.Callback() {
-                                    @Override
-                                    public void complete(TraceRoute.Result r) {
-                                        String replace_traceroute = r.content();
-                                        replace_traceroute = replace_traceroute.replace("ms\t", "ms \r\n");
-                                        replace_traceroute = replace_traceroute.replace("9.\t", "9. ");
-
-                                        writeToFile("\r\n" + replace_traceroute, "traceroute.txt");
-
-                                        new Thread()
-                                        {
-                                            public void run()
-                                            {
-                                                MainActivity.this.runOnUiThread(new Runnable()
-                                                {
-                                                    public void run()
-                                                    {
-                                                        String ping_path = getFilesDir() + "/ping.txt";
-                                                        String traceroute_path = getFilesDir() + "/traceroute.txt";
-                                                        String destination_path = getFilesDir() + "/sb_diagnostic.zip";
-                                                        ZipArchive zipArchive = new ZipArchive();
-                                                        zipArchive.zip(ping_path, destination_path,"");
-                                                        zipArchive.zip(traceroute_path, destination_path,"");
-
-                                                        SENDDIAGNOSTICS();
-                                                    }
-                                                });
-                                            }
-                                        }.start();
-                                    }
-                                });
-
-                            } catch (Exception e) {
-                                Log.d("deleted", "Error: " + e.getMessage());
+                            if (ping.exists()) {
+                                ping.delete();
                             }
+
+                            if (traceroute.exists()) {
+                                traceroute.delete();
+                            }
+
+                            if (diagnostic.exists()) {
+                                diagnostic.delete();
+                            }
+
+                            String replace_domain = domain_list.get(domain_count_current);
+                            replace_domain = replace_domain.replace("https://", "");
+                            replace_domain = replace_domain.replace("http://", "");
+                            replace_domain = replace_domain.replace(".com/", ".com");
+
+                            Process process = Runtime.getRuntime().exec("/system/bin/ping -t 1 -c 1 " + replace_domain);
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                            int i;
+                            char[] buffer = new char[4096];
+                            StringBuilder output = new StringBuilder();
+                            while ((i = reader.read(buffer)) > 0)
+                                output.append(buffer, 0, i);
+                            reader.close();
+
+                            String[] lines = output.toString().split(System.getProperty("line.separator"));
+                            for(String line : lines){
+                                if(isNewLine){
+                                    writeToFile("\r\n", "ping.txt");
+                                    isNewLine = false;
+                                }
+
+                                writeToFile(line + "\r\n", "ping.txt");
+                            }
+
+                            TraceRoute.start(replace_domain, new Activity_TraceRouteLogger(), new TraceRoute.Callback() {
+                                @Override
+                                public void complete(TraceRoute.Result r) {
+                                    String replace_traceroute = r.content();
+                                    replace_traceroute = replace_traceroute.replace("ms\t", "ms \r\n");
+                                    replace_traceroute = replace_traceroute.replace("9.\t", "9. ");
+
+                                    writeToFile("\r\n" + replace_traceroute, "traceroute.txt");
+
+                                    new Thread()
+                                    {
+                                        public void run()
+                                        {
+                                            MainActivity.this.runOnUiThread(new Runnable()
+                                            {
+                                                public void run()
+                                                {
+                                                    String ping_path = getFilesDir() + "/ping.txt";
+                                                    String traceroute_path = getFilesDir() + "/traceroute.txt";
+                                                    String destination_path = getFilesDir() + "/sb_diagnostic.zip";
+                                                    ZipArchive zipArchive = new ZipArchive();
+                                                    zipArchive.zip(ping_path, destination_path,"");
+                                                    zipArchive.zip(traceroute_path, destination_path,"");
+
+                                                    SENDDIAGNOSTICS();
+                                                }
+                                            });
+                                        }
+                                    }.start();
+                                }
+                            });
+
+                        } catch (Exception e) {
+                            Log.d("deleted", "Error: " + e.getMessage());
                         }
-                    };
-                    Handler myHandler = new Handler(Looper.myLooper());
-                    myHandler.postDelayed(run, 2000);
+                    }
+                };
+                Handler myHandler = new Handler(Looper.myLooper());
+                myHandler.postDelayed(run, 2000);
             }
         });
 
         textView_getdiagnostics_landscape.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(isHelpAndSupportVisible){
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.INVISIBLE);
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.INVISIBLE);
+                    }
+
+                    if(isConnected){
+                        if(isLoadingFinished){
+                            relativeLayout_webview.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        relativeLayout_connection.setVisibility(View.VISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = false;
+                } else{
+                    if(isPortrait){
+                        relativeLayout_helpandsupport_portrait.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_portrait.bringToFront();
+                    } else{
+                        relativeLayout_helpandsupport_landscape.setVisibility(View.VISIBLE);
+                        relativeLayout_helpandsupport_landscape.bringToFront();
+                    }
+
+                    if(isConnected){
+                        relativeLayout_webview.setVisibility(View.INVISIBLE);
+                    } else {
+                        relativeLayout_connection.setVisibility(View.INVISIBLE);
+                    }
+
+                    isHelpAndSupportVisible = true;
+                }
+
                 textView_getdiagnostics_portrait.setEnabled(false);
 //                dialog_diagnostics.setCanceledOnTouchOutside(false);
 //                dialog_diagnostics.setCancelable(false);
