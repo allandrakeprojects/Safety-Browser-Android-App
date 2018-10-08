@@ -2,6 +2,8 @@ package com.drake.safetybrowser;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -85,11 +87,16 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
 import java.net.NetworkInterface;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -414,9 +421,14 @@ public class MainActivity extends AppCompatActivity
                 Runnable run = new Runnable() {
                     public void run() {
                         try {
+                            File deviceinfo = new File(getFilesDir() + "/deviceinfo.txt");
                             File ping = new File(getFilesDir() + "/ping.txt");
                             File traceroute = new File(getFilesDir() + "/traceroute.txt");
                             File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                            if (deviceinfo.exists()) {
+                                deviceinfo.delete();
+                            }
 
                             if (ping.exists()) {
                                 ping.delete();
@@ -429,6 +441,8 @@ public class MainActivity extends AppCompatActivity
                             if (diagnostic.exists()) {
                                 diagnostic.delete();
                             }
+
+                            GetDeviceInfo();
 
                             String replace_domain = domain_list.get(domain_count_current);
                             replace_domain = replace_domain.replace("https://", "");
@@ -471,10 +485,12 @@ public class MainActivity extends AppCompatActivity
                                             {
                                                 public void run()
                                                 {
+                                                    String deviceinfo_path = getFilesDir() + "/deviceinfo.txt";
                                                     String ping_path = getFilesDir() + "/ping.txt";
                                                     String traceroute_path = getFilesDir() + "/traceroute.txt";
                                                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
                                                     ZipArchive zipArchive = new ZipArchive();
+                                                    zipArchive.zip(deviceinfo_path, destination_path,"");
                                                     zipArchive.zip(ping_path, destination_path,"");
                                                     zipArchive.zip(traceroute_path, destination_path,"");
 
@@ -542,9 +558,14 @@ public class MainActivity extends AppCompatActivity
                 Runnable run = new Runnable() {
                     public void run() {
                         try {
+                            File deviceinfo = new File(getFilesDir() + "/deviceinfo.txt");
                             File ping = new File(getFilesDir() + "/ping.txt");
                             File traceroute = new File(getFilesDir() + "/traceroute.txt");
                             File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                            if (deviceinfo.exists()) {
+                                deviceinfo.delete();
+                            }
 
                             if (ping.exists()) {
                                 ping.delete();
@@ -557,6 +578,8 @@ public class MainActivity extends AppCompatActivity
                             if (diagnostic.exists()) {
                                 diagnostic.delete();
                             }
+
+                            GetDeviceInfo();
 
                             String replace_domain = domain_list.get(domain_count_current);
                             replace_domain = replace_domain.replace("https://", "");
@@ -599,10 +622,12 @@ public class MainActivity extends AppCompatActivity
                                             {
                                                 public void run()
                                                 {
+                                                    String deviceinfo_path = getFilesDir() + "/deviceinfo.txt";
                                                     String ping_path = getFilesDir() + "/ping.txt";
                                                     String traceroute_path = getFilesDir() + "/traceroute.txt";
                                                     String destination_path = getFilesDir() + "/sb_diagnostic.zip";
                                                     ZipArchive zipArchive = new ZipArchive();
+                                                    zipArchive.zip(deviceinfo_path, destination_path,"");
                                                     zipArchive.zip(ping_path, destination_path,"");
                                                     zipArchive.zip(traceroute_path, destination_path,"");
 
@@ -911,6 +936,63 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
+    }
+
+    private void GetDeviceInfo(){
+        StringBuilder builder = new StringBuilder();
+        String android_version = Build.VERSION.RELEASE;
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+
+        String os_name = "";
+        int sdk_version = 0;
+
+        Field[] fields = Build.VERSION_CODES.class.getFields();
+        for (Field field : fields) {
+            os_name = field.getName();
+            sdk_version = -1;
+
+            try {
+                sdk_version = field.getInt(new Object());
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+
+            if (sdk_version == Build.VERSION.SDK_INT) {
+                builder.append(" : ").append(os_name).append(" : ");
+                builder.append("sdk=").append(sdk_version);
+            }
+        }
+
+        if(os_name.equals("O")) os_name = "Oreo";
+        if(os_name.equals("N")) os_name = "Nougat";
+        if(os_name.equals("M")) os_name = "Marshmallow";
+
+        if(os_name.startsWith("O_")) os_name = "Oreo++";
+        if(os_name.startsWith("N_")) os_name = "Nougat++";
+
+//        Log.d("testtest", "Manufacturer: " +  manufacturer);
+//        Log.d("testtest", "Model: " +  model);
+//        Log.d("testtest", "OS Name: " +  os_name);
+//        Log.d("testtest", "Android version: " +  android_version);
+//        Log.d("testtest", "SDK version: " +  sdk_version);
+
+
+        ActivityManager actManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
+        actManager.getMemoryInfo(memInfo);
+        long totalMemory = memInfo.totalMem / (1024 * 1024);
+
+        char first = String.valueOf(totalMemory).charAt(0);
+        char second = String.valueOf(totalMemory).charAt(1);
+
+//        Log.d("testtest", "Installed memory (RAM): " +  first + "." + second + " GB");
+
+        writeToFile("\r\n" + "Manufacturer: " + manufacturer + "\r\n" + "Model: " + model + "\r\n" + "OS Name: " + os_name + "\r\n" + "Android version: " + android_version + "\r\n" + "SDK version: " + sdk_version + "\r\n" + "Installed memory (RAM): " +  first + "." + second + " GB\r\n", "deviceinfo.txt");
     }
 
     public boolean isPermissionGranted() {
@@ -2851,10 +2933,14 @@ public class MainActivity extends AppCompatActivity
                         textView_getdiagnostics_landscape.setEnabled(true);
                         Snackbar.make(findViewById(android.R.id.content), "诊断报告已发送。", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
 
+                        File deviceinfo = new File(getFilesDir() + "/deviceinfo.txt");
                         File ping = new File(getFilesDir() + "/ping.txt");
                         File traceroute = new File(getFilesDir() + "/traceroute.txt");
                         File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
 
+                        if (deviceinfo.exists()) {
+                            deviceinfo.delete();
+                        }
                         if (ping.exists()) {
                             ping.delete();
                         }
@@ -3192,9 +3278,14 @@ public class MainActivity extends AppCompatActivity
                 if(isFirstOpened){
                     // Functions --------------
 
+                    File deviceinfo = new File(getFilesDir() + "/deviceinfo.txt");
                     File ping = new File(getFilesDir() + "/ping.txt");
                     File traceroute = new File(getFilesDir() + "/traceroute.txt");
                     File diagnostic = new File(getFilesDir() + "/sb_diagnostic.zip");
+
+                    if (deviceinfo.exists()) {
+                        deviceinfo.delete();
+                    }
 
                     if (ping.exists()) {
                         ping.delete();
