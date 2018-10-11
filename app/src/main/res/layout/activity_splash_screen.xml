@@ -17,7 +17,7 @@
         <ImageView
             android:id="@+id/imageView_logo"
             android:layout_width="wrap_content"
-            android:layout_height="89dp"
+            android:layout_height="103dp"
             android:layout_weight="1"
             app:srcCompat="@drawable/ic_logo_yb_" />
     </LinearLayout>
