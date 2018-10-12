@@ -19,6 +19,7 @@ import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -53,6 +54,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.JsResult;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -827,6 +830,23 @@ public class MainActivity extends AppCompatActivity
                         webView.requestFocus();
                         webView.setWebViewClient(new MyBrowser());
                         webView.setWebChromeClient(new WebChromeClient());
+                        webView.setWebChromeClient(new WebChromeClient() {
+
+                            @Override
+                            public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
+                                AlertDialog dialog = new AlertDialog.Builder(view.getContext()).
+                                        setTitle("温馨提示").
+                                        setMessage(message).
+                                        setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                // Leave blank
+                                            }
+                                        }).create();
+                                dialog.show();
+                                result.confirm();
+                                return true;
+                            } });
                         webView.loadUrl(domain_list.get(domain_count_current));
                     }
                 }
@@ -1065,6 +1085,11 @@ public class MainActivity extends AppCompatActivity
     // WebView --------------
     private class MyBrowser extends WebViewClient {
         boolean timeout_detect = true;
+
+        @Override
+        public void onReceivedSslError (WebView view, SslErrorHandler handler, SslError error) {
+            handler.proceed();
+        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
