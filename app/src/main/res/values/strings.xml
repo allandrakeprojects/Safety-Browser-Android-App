@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">Safety Browser</string>
+    <string name="app_name">永宝</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_my_app_intro">MyAppIntro</string>
+    <string name="title_activity_my_app_intro">永宝</string>
 </resources>
