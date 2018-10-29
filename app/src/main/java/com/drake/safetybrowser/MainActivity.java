@@ -926,8 +926,9 @@ public class MainActivity extends AppCompatActivity
                                             message_title = message_title.replace("&lt;", "<");
                                             message_title = message_title.replace("&gt;", ">");
                                             message_title = message_title.replace("&#039;", "'");
-                                            message_title = message_title.replace("&yen;", "¥");
+                                            message_title = message_title.replace("&#39;", "'");
                                             message_title = message_title.replace("&quot;", "\"");
+                                            message_title = message_title.replace("&#34;", "\"");
                                             message_title = message_title.replace("&amp;", "&");
                                             String message_content = data.getString("message_content");
                                             message_content = message_content.replace("&amp;", "&");
@@ -935,7 +936,9 @@ public class MainActivity extends AppCompatActivity
                                             message_content = message_content.replace("&gt;", ">");
                                             message_content = message_content.replace("&yen;", "¥");
                                             message_content = message_content.replace("&#039;", "'");
+                                            message_content = message_content.replace("&#39;", "'");
                                             message_content = message_content.replace("&quot;", "\"");
+                                            message_content = message_content.replace("&#34;", "\"");
                                             message_content = message_content.replace("&amp;", "&");
                                             String status = data.getString("status");
                                             String message_type = data.getString("message_type");
@@ -2792,8 +2795,9 @@ public class MainActivity extends AppCompatActivity
                                         message_title = message_title.replace("&lt;", "<");
                                         message_title = message_title.replace("&gt;", ">");
                                         message_title = message_title.replace("&#039;", "'");
-                                        message_title = message_title.replace("&yen;", "¥");
+                                        message_title = message_title.replace("&#39;", "'");
                                         message_title = message_title.replace("&quot;", "\"");
+                                        message_title = message_title.replace("&#34;", "\"");
                                         message_title = message_title.replace("&amp;", "&");
                                         String message_content = data.getString("message_content");
                                         message_content = message_content.replace("&amp;", "&");
@@ -2801,7 +2805,9 @@ public class MainActivity extends AppCompatActivity
                                         message_content = message_content.replace("&gt;", ">");
                                         message_content = message_content.replace("&yen;", "¥");
                                         message_content = message_content.replace("&#039;", "'");
+                                        message_content = message_content.replace("&#39;", "'");
                                         message_content = message_content.replace("&quot;", "\"");
+                                        message_content = message_content.replace("&#34;", "\"");
                                         message_content = message_content.replace("&amp;", "&");
                                         String status = data.getString("status");
                                         String message_type = data.getString("message_type");
@@ -2921,8 +2927,9 @@ public class MainActivity extends AppCompatActivity
                                         message_title = message_title.replace("&lt;", "<");
                                         message_title = message_title.replace("&gt;", ">");
                                         message_title = message_title.replace("&#039;", "'");
-                                        message_title = message_title.replace("&yen;", "¥");
+                                        message_title = message_title.replace("&#39;", "'");
                                         message_title = message_title.replace("&quot;", "\"");
+                                        message_title = message_title.replace("&#34;", "\"");
                                         message_title = message_title.replace("&amp;", "&");
                                         String message_content = data.getString("message_content");
                                         message_content = message_content.replace("&amp;", "&");
@@ -2930,7 +2937,9 @@ public class MainActivity extends AppCompatActivity
                                         message_content = message_content.replace("&gt;", ">");
                                         message_content = message_content.replace("&yen;", "¥");
                                         message_content = message_content.replace("&#039;", "'");
+                                        message_content = message_content.replace("&#39;", "'");
                                         message_content = message_content.replace("&quot;", "\"");
+                                        message_content = message_content.replace("&#34;", "\"");
                                         message_content = message_content.replace("&amp;", "&");
                                         String status = data.getString("status");
                                         String message_type = data.getString("message_type");
@@ -3305,8 +3314,9 @@ public class MainActivity extends AppCompatActivity
                                             message_title = message_title.replace("&lt;", "<");
                                             message_title = message_title.replace("&gt;", ">");
                                             message_title = message_title.replace("&#039;", "'");
-                                            message_title = message_title.replace("&yen;", "¥");
+                                            message_title = message_title.replace("&#39;", "'");
                                             message_title = message_title.replace("&quot;", "\"");
+                                            message_title = message_title.replace("&#34;", "\"");
                                             message_title = message_title.replace("&amp;", "&");
                                             String message_content = data.getString("message_content");
                                             message_content = message_content.replace("&amp;", "&");
@@ -3314,7 +3324,9 @@ public class MainActivity extends AppCompatActivity
                                             message_content = message_content.replace("&gt;", ">");
                                             message_content = message_content.replace("&yen;", "¥");
                                             message_content = message_content.replace("&#039;", "'");
+                                            message_content = message_content.replace("&#39;", "'");
                                             message_content = message_content.replace("&quot;", "\"");
+                                            message_content = message_content.replace("&#34;", "\"");
                                             message_content = message_content.replace("&amp;", "&");
                                             String status = data.getString("status");
                                             String message_type = data.getString("message_type");
