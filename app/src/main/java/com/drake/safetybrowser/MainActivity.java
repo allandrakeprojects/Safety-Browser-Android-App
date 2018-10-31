@@ -2982,6 +2982,11 @@ public class MainActivity extends AppCompatActivity
                     .addTextBody("api_key", API_KEY)
                     .addTextBody("brand_code", BRAND_CODE)
                     .addTextBody("macid", GETMACADDRESS())
+                    .addTextBody("city", city)
+                    .addTextBody("province", province)
+                    .addTextBody("country", country)
+                    .addTextBody("ip", get_external_ip_address)
+                    .addTextBody("isp", isp)
                     .addPart("zipfile", fileBody);
             HttpEntity multiPartEntity = builder.build();
 
