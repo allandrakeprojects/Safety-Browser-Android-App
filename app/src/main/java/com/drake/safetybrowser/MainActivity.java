@@ -2,7 +2,6 @@ package com.drake.safetybrowser;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -90,16 +89,12 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.net.NetworkInterface;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1554,6 +1549,7 @@ public class MainActivity extends AppCompatActivity
 
     // Get Public IP Address --------------
     public void GETPUBLICIP_V(final VolleyCallback callback) {
+        GETIPINFO();
         RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
         StringRequest MyStringRequest = new StringRequest(Request.Method.POST, "https://canihazip.com/s", new Response.Listener<String>() {
             @Override
@@ -1591,9 +1587,10 @@ public class MainActivity extends AppCompatActivity
                     country = (String) response.get("country");
                     province = (String) response.get("regionName");
                     isp = (String) response.get("isp");
+                    get_external_ip_address = (String) response.get("query");
                     SENDDEVICEINFO(send_service[0], get_external_ip_address, city, province, country);
                 } catch (JSONException e) {
-                    // Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1002", Toast.LENGTH_LONG).show();
+                     Toast.makeText(getApplicationContext(), "There is a problem with the server!" + "\nError Code: 1002", Toast.LENGTH_LONG).show();
                 }
 
             }
@@ -3274,8 +3271,6 @@ public class MainActivity extends AppCompatActivity
                                     if(get_external_ip_address.equals("")){
                                         get_external_ip_address = result;
                                     }
-
-                                    GETIPINFO();
                                 }
                             });
                             // Get Deleted Notification
